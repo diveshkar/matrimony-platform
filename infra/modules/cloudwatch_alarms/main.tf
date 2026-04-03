@@ -61,7 +61,7 @@ resource "aws_cloudwatch_metric_alarm" "api_latency" {
   metric_name         = "Latency"
   namespace           = "AWS/ApiGateway"
   period              = 300
-  statistic           = "p95"
+  extended_statistic   = "p95"
   threshold           = var.api_latency_threshold_ms
   alarm_description   = "API Gateway p95 latency too high"
   alarm_actions       = [aws_sns_topic.alarms.arn]

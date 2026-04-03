@@ -4,12 +4,15 @@ import { success } from '../../shared/utils/response.js';
 import { ValidationError } from '../../shared/errors/app-errors.js';
 import { InterestService } from '../domain/interest-service.js';
 import { sendInterestSchema } from '../../../packages/shared-schemas/index.js';
+import { checkEntitlement } from '../../shared/middleware/entitlement-check.js';
 
 const interestService = new InterestService();
 
 async function handler(event: APIGatewayProxyEventV2, context: Context) {
   const requestId = event.requestContext?.requestId || context.awsRequestId;
   const authedEvent = event as AuthenticatedEvent;
+
+  await checkEntitlement(authedEvent.auth.userId, 'send_interest');
 
   const body = event.body ? JSON.parse(event.body) : {};
   const parsed = sendInterestSchema.safeParse(body);

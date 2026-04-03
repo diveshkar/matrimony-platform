@@ -23,6 +23,7 @@ const VerifyOtpPage = lazy(() => import('@/features/auth/pages/VerifyOtpPage'));
 // Phase 1C — Profile pages
 const OnboardingPage = lazy(() => import('@/features/profile/pages/OnboardingPage'));
 const MyProfilePage = lazy(() => import('@/features/profile/pages/MyProfilePage'));
+const EditProfilePage = lazy(() => import('@/features/profile/pages/EditProfilePage'));
 const DashboardPage = lazy(() => import('@/features/home/pages/DashboardPage'));
 
 // Phase 1D — Photos
@@ -46,8 +47,14 @@ const PlansPage = lazy(() => import('@/features/subscription/pages/PlansPage'));
 const PaymentSuccessPage = lazy(() => import('@/features/subscription/pages/PaymentSuccessPage'));
 const PaymentCancelPage = lazy(() => import('@/features/subscription/pages/PaymentCancelPage'));
 
-// Placeholder for future phase pages
-const PlaceholderPage = lazy(() => import('@/features/home/pages/PlaceholderPage'));
+// Phase 1I — Settings & Safety
+const SettingsPage = lazy(() => import('@/features/settings/pages/SettingsPage'));
+const PrivacySettingsPage = lazy(() => import('@/features/settings/pages/PrivacySettingsPage'));
+const BlockedUsersPage = lazy(() => import('@/features/settings/pages/BlockedUsersPage'));
+const WhoViewedMePage = lazy(() => import('@/features/settings/pages/WhoViewedMePage'));
+const NotificationsPage = lazy(() => import('@/features/settings/pages/NotificationsPage'));
+
+
 
 function SuspenseWrapper({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<LoadingScreen message="Loading..." />}>{children}</Suspense>;
@@ -94,19 +101,20 @@ export function AppRouter() {
         >
           <Route path={ROUTES.DASHBOARD} element={<DashboardPage />} />
           <Route path={ROUTES.MY_PROFILE} element={<MyProfilePage />} />
+          <Route path={ROUTES.EDIT_PROFILE} element={<EditProfilePage />} />
           <Route path={ROUTES.MY_PHOTOS} element={<PhotosPage />} />
           <Route path={ROUTES.DISCOVER} element={<DiscoverPage />} />
           <Route path={ROUTES.SEARCH} element={<SearchPage />} />
           <Route path={ROUTES.PROFILE_DETAIL} element={<ProfileDetailPage />} />
           <Route path={ROUTES.INTERESTS} element={<InterestsPage />} />
           <Route path={ROUTES.SHORTLIST} element={<ShortlistPage />} />
-          <Route path={ROUTES.WHO_VIEWED} element={<PlaceholderPage />} />
+          <Route path={ROUTES.WHO_VIEWED} element={<WhoViewedMePage />} />
           <Route path={ROUTES.CHATS} element={<ChatListPage />} />
           <Route path={ROUTES.CHAT_DETAIL} element={<ChatDetailPage />} />
-          <Route path={ROUTES.SETTINGS} element={<PlaceholderPage />} />
-          <Route path={ROUTES.PRIVACY_SETTINGS} element={<PlaceholderPage />} />
-          <Route path={ROUTES.BLOCKED_USERS} element={<PlaceholderPage />} />
-          <Route path={ROUTES.NOTIFICATIONS} element={<PlaceholderPage />} />
+          <Route path={ROUTES.SETTINGS} element={<SettingsPage />} />
+          <Route path={ROUTES.PRIVACY_SETTINGS} element={<PrivacySettingsPage />} />
+          <Route path={ROUTES.BLOCKED_USERS} element={<BlockedUsersPage />} />
+          <Route path={ROUTES.NOTIFICATIONS} element={<NotificationsPage />} />
           <Route path={ROUTES.PAYMENT_SUCCESS} element={<PaymentSuccessPage />} />
           <Route path={ROUTES.PAYMENT_CANCEL} element={<PaymentCancelPage />} />
         </Route>

@@ -4,12 +4,15 @@ import { success } from '../../shared/utils/response.js';
 import { ValidationError } from '../../shared/errors/app-errors.js';
 import { ChatService } from '../domain/chat-service.js';
 import { sendMessageSchema } from '../../../packages/shared-schemas/index.js';
+import { checkEntitlement } from '../../shared/middleware/entitlement-check.js';
 
 const chatService = new ChatService();
 
 async function handler(event: APIGatewayProxyEventV2, context: Context) {
   const requestId = event.requestContext?.requestId || context.awsRequestId;
   const authedEvent = event as AuthenticatedEvent;
+
+  await checkEntitlement(authedEvent.auth.userId, 'chat_access');
 
   const conversationId = event.pathParameters?.conversationId;
   if (!conversationId) throw new ValidationError('Conversation ID is required');

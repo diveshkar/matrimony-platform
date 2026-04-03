@@ -14,6 +14,7 @@ import { ROUTES } from '@/lib/constants/routes';
 
 export default function MyProfilePage() {
   const { data: response, isLoading, isError, refetch } = useMyProfile();
+  const { data: subResponse } = useMySubscription();
 
   if (isLoading) {
     return (
@@ -25,7 +26,7 @@ export default function MyProfilePage() {
     );
   }
 
-  if (isError || !response?.success) {
+  if (isError) {
     return (
       <EmptyState
         title="Could not load profile"
@@ -35,8 +36,17 @@ export default function MyProfilePage() {
     );
   }
 
+  if (!response?.success) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-64 w-full rounded-xl" />
+        <Skeleton className="h-48 w-full rounded-xl" />
+      </div>
+    );
+  }
+
   const { profile, preferences } = response.data;
-  const { data: subResponse } = useMySubscription();
   const planId = subResponse?.success ? subResponse.data.subscription.planId : 'free';
   const isPremium = planId !== 'free';
   const planLabel = planId.charAt(0).toUpperCase() + planId.slice(1);
@@ -55,7 +65,7 @@ export default function MyProfilePage() {
               </Badge>
             )}
             <Button variant="outline" size="sm" asChild>
-              <Link to={ROUTES.SETTINGS}>
+              <Link to={ROUTES.EDIT_PROFILE}>
                 <Edit className="mr-2 h-4 w-4" />
                 Edit Profile
               </Link>

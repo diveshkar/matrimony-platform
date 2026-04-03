@@ -1,7 +1,9 @@
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import {
-  ArrowLeft, MapPin, GraduationCap, Heart, Users, User, Calendar, Star, Loader2,
+  ArrowLeft, MapPin, GraduationCap, Heart, Users, User, Calendar, Star, Loader2, Ban, Flag,
+  Phone, Mail, MessageCircle, Lock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +12,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/common/EmptyState';
 import { profileApi } from '@/features/profile/api/profile-api';
 import { useSendInterest, useAddToShortlist } from '@/features/interests/hooks/useInterests';
+import { useBlockUser } from '@/features/settings/hooks/useSettings';
+import { ReportDialog } from '@/features/settings/components/ReportDialog';
 import { formatHeight, calculateAge } from '@/lib/utils/format';
 import { ROUTES } from '@/lib/constants/routes';
 
@@ -112,6 +116,14 @@ export default function ProfileDetailPage() {
         <Badge variant="outline">{formatEnum(s('motherTongue'))}</Badge>
       </div>
 
+      {/* Contact Info */}
+      <ContactInfoCard
+        phone={s('phone')}
+        email={s('email') || s('personalEmail')}
+        whatsapp={s('whatsappNumber')}
+        canView={raw.contactInfoVisible === true}
+      />
+
       {/* About */}
       {raw.aboutMe && (
         <Card>
@@ -198,31 +210,124 @@ export default function ProfileDetailPage() {
 function ProfileActions({ profileId }: { profileId: string }) {
   const sendInterest = useSendInterest();
   const addToShortlist = useAddToShortlist();
+  const blockUser = useBlockUser();
+  const [showReport, setShowReport] = useState(false);
 
   return (
-    <div className="flex gap-2">
-      <Button
-        className="gap-2"
-        onClick={() => sendInterest.mutate({ receiverId: profileId })}
-        disabled={sendInterest.isPending || sendInterest.isSuccess}
-      >
-        {sendInterest.isPending ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          <Heart className={`h-4 w-4 ${sendInterest.isSuccess ? 'fill-current' : ''}`} />
+    <>
+      <div className="flex flex-wrap gap-2">
+        <Button
+          className="gap-2"
+          onClick={() => sendInterest.mutate({ receiverId: profileId })}
+          disabled={sendInterest.isPending || sendInterest.isSuccess}
+        >
+          {sendInterest.isPending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Heart className={`h-4 w-4 ${sendInterest.isSuccess ? 'fill-current' : ''}`} />
+          )}
+          {sendInterest.isSuccess ? 'Interest Sent' : 'Send Interest'}
+        </Button>
+        <Button
+          variant="outline"
+          className="gap-2"
+          onClick={() => addToShortlist.mutate(profileId)}
+          disabled={addToShortlist.isPending || addToShortlist.isSuccess}
+        >
+          <Star className={`h-4 w-4 ${addToShortlist.isSuccess ? 'fill-accent-400 text-accent-400' : ''}`} />
+          {addToShortlist.isSuccess ? 'Saved' : 'Shortlist'}
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => blockUser.mutate(profileId)}
+          disabled={blockUser.isPending || blockUser.isSuccess}
+          title="Block user"
+        >
+          <Ban className="h-4 w-4 text-muted-foreground" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setShowReport(true)}
+          title="Report user"
+        >
+          <Flag className="h-4 w-4 text-muted-foreground" />
+        </Button>
+      </div>
+      <ReportDialog open={showReport} onOpenChange={setShowReport} reportedUserId={profileId} />
+    </>
+  );
+}
+
+function maskPhone(phone: string): string {
+  if (!phone || phone.length < 6) return '●●●●●●●●●';
+  return phone.slice(0, 4) + '●●●●' + phone.slice(-3);
+}
+
+function maskEmail(email: string): string {
+  if (!email || !email.includes('@')) return '●●●@●●●.com';
+  const [name, domain] = email.split('@');
+  return name.slice(0, 2) + '●●●@' + domain;
+}
+
+function ContactInfoCard({ phone, email, whatsapp, canView }: {
+  phone: string;
+  email: string;
+  whatsapp: string;
+  canView: boolean;
+}) {
+  const hasAny = phone || email || whatsapp;
+  if (!hasAny) return null;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Phone className="h-5 w-5 text-primary-700" />
+          Contact Information
+          {!canView && (
+            <Badge variant="outline" className="ml-auto text-[10px] font-normal">
+              <Lock className="mr-1 h-3 w-3" />
+              Gold+ only
+            </Badge>
+          )}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {phone && (
+          <div className="flex items-center gap-3">
+            <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
+            <span className="text-sm font-medium">
+              {canView ? phone : maskPhone(phone)}
+            </span>
+          </div>
         )}
-        {sendInterest.isSuccess ? 'Interest Sent' : 'Send Interest'}
-      </Button>
-      <Button
-        variant="outline"
-        className="gap-2"
-        onClick={() => addToShortlist.mutate(profileId)}
-        disabled={addToShortlist.isPending || addToShortlist.isSuccess}
-      >
-        <Star className={`h-4 w-4 ${addToShortlist.isSuccess ? 'fill-accent-400 text-accent-400' : ''}`} />
-        {addToShortlist.isSuccess ? 'Saved' : 'Shortlist'}
-      </Button>
-    </div>
+        {email && (
+          <div className="flex items-center gap-3">
+            <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
+            <span className="text-sm font-medium">
+              {canView ? email : maskEmail(email)}
+            </span>
+          </div>
+        )}
+        {whatsapp && (
+          <div className="flex items-center gap-3">
+            <MessageCircle className="h-4 w-4 text-muted-foreground shrink-0" />
+            <span className="text-sm font-medium">
+              {canView ? whatsapp : maskPhone(whatsapp)}
+            </span>
+            <span className="text-xs text-muted-foreground">WhatsApp</span>
+          </div>
+        )}
+        {!canView && (
+          <Link to={ROUTES.PLANS} className="flex items-center gap-2 mt-3 text-xs text-primary-700 hover:underline font-medium">
+            <Lock className="h-3 w-3" />
+            Upgrade to Gold to see full contact details
+          </Link>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

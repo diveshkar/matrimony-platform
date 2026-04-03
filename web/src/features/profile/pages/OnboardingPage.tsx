@@ -2,7 +2,6 @@ import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Loader2, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { useCreateProfile } from '../hooks/useProfile';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import type { ProfileData } from '../api/profile-api';
@@ -35,7 +34,6 @@ export default function OnboardingPage() {
   const [stepErrors, setStepErrors] = useState<Record<string, string>>({});
 
   const createProfile = useCreateProfile();
-  const progress = Math.round(((currentStep + 1) / STEPS.length) * 100);
 
   const updateDraft = useCallback(
     (updates: Partial<ProfileData>) => {
@@ -140,17 +138,27 @@ export default function OnboardingPage() {
   const isLastStep = currentStep === STEPS.length - 1;
 
   return (
-    <div className="min-h-[80vh] py-8">
+    <div className="min-h-[80vh] py-6 sm:py-8">
       <div className="max-w-2xl mx-auto px-4">
-        {/* Progress header */}
+        {/* Step dots + progress */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm text-muted-foreground">
-              Step {currentStep + 1} of {STEPS.length}
-            </p>
-            <p className="text-sm font-medium text-primary-800">{progress}%</p>
+          <div className="flex items-center justify-center gap-1.5 mb-4">
+            {STEPS.map((_, i) => (
+              <div
+                key={i}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  i === currentStep
+                    ? 'w-8 bg-primary-700'
+                    : i < currentStep
+                      ? 'w-4 bg-primary-300'
+                      : 'w-4 bg-muted'
+                }`}
+              />
+            ))}
           </div>
-          <Progress value={progress} />
+          <p className="text-center text-xs text-muted-foreground">
+            Step {currentStep + 1} of {STEPS.length}
+          </p>
         </div>
 
         {/* Step title */}
@@ -158,7 +166,7 @@ export default function OnboardingPage() {
           key={`title-${currentStep}`}
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="mb-8"
+          className="mb-8 text-center"
         >
           <h1 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">
             {STEPS[currentStep].title}

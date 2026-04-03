@@ -4,6 +4,7 @@ import { ArrowLeft, Send, User, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/common/EmptyState';
+import { UpgradePrompt } from '@/features/subscription/components/UpgradePrompt';
 import { useAuth } from '@/lib/auth/auth-context';
 import { formatDate } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/cn';
@@ -15,6 +16,7 @@ export default function ChatDetailPage() {
   const { conversationId } = useParams<{ conversationId: string }>();
   const { user } = useAuth();
   const [newMessage, setNewMessage] = useState('');
+  const [chatBlocked, setChatBlocked] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -44,8 +46,13 @@ export default function ChatDetailPage() {
 
     try {
       await sendMessage.mutateAsync(content);
-    } catch {
+    } catch (err) {
       setNewMessage(content); // Restore on failure
+      // Check if it's a plan restriction
+      const axiosErr = err as { response?: { status?: number } };
+      if (axiosErr.response?.status === 403) {
+        setChatBlocked(true);
+      }
     }
   };
 
@@ -149,7 +156,15 @@ export default function ChatDetailPage() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
+      {/* Input or Upgrade Prompt */}
+      {chatBlocked ? (
+        <div className="border-t py-3 shrink-0">
+          <UpgradePrompt
+            title="Upgrade to chat"
+            description="Chat is available on Silver plan and above."
+          />
+        </div>
+      ) : (
       <div className="border-t py-3 shrink-0">
         <div className="flex items-center gap-2">
           <input
@@ -178,6 +193,7 @@ export default function ChatDetailPage() {
           </Button>
         </div>
       </div>
+      )}
     </div>
   );
 }
