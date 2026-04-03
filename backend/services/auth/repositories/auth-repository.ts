@@ -105,7 +105,7 @@ export class AuthRepository extends BaseRepository {
       updatedAt: now,
     };
 
-    await this.put(account);
+    await this.put(account as unknown as Record<string, unknown>);
 
     // Write GSI1 index entry for phone/email lookup
     if (phone) {

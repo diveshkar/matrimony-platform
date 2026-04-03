@@ -14,7 +14,7 @@ export default function VerifyOtpPage() {
 
   const [otp, setOtp] = useState<string[]>(Array(CONFIG.OTP_LENGTH).fill(''));
   const [error, setError] = useState('');
-  const [cooldown, setCooldown] = useState(CONFIG.OTP_RESEND_COOLDOWN_SECONDS);
+  const [cooldown, setCooldown] = useState<number>(CONFIG.OTP_RESEND_COOLDOWN_SECONDS);
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const authVerify = useAuthVerify();
