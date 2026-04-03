@@ -38,6 +38,8 @@ export interface UserProfile {
   occupation?: string;
   employer?: string;
   incomeRange?: string;
+  whatsappNumber?: string;
+  personalEmail?: string;
   country: string;
   state?: string;
   city?: string;

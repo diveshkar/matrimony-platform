@@ -48,6 +48,19 @@ export class InterestService {
       message,
     });
 
+    // Notify receiver
+    try {
+      const { SafetyRepository } = await import('../../safety/repositories/safety-repository.js');
+      const repo = new SafetyRepository();
+      const senderName = senderProfile?.name as string || 'Someone';
+      await repo.createNotification(receiverId, {
+        type: 'interest_received',
+        title: 'New Interest!',
+        message: `${senderName} is interested in your profile`,
+        actionUrl: '/interests',
+      });
+    } catch { /* non-critical */ }
+
     return { status: 'interest_sent' };
   }
 
@@ -70,6 +83,19 @@ export class InterestService {
     } catch {
       // Non-critical — conversation can be created later
     }
+
+    // Notify sender that interest was accepted
+    try {
+      const { SafetyRepository } = await import('../../safety/repositories/safety-repository.js');
+      const repo = new SafetyRepository();
+      const receiverName = interest.receiverName || 'Someone';
+      await repo.createNotification(senderId, {
+        type: 'interest_accepted',
+        title: 'Interest Accepted!',
+        message: `${receiverName} accepted your interest. You can now chat!`,
+        actionUrl: '/chats',
+      });
+    } catch { /* non-critical */ }
 
     return { status: 'interest_accepted' };
   }

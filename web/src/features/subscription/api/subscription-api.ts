@@ -43,4 +43,9 @@ export const subscriptionApi = {
 
   getMySubscription: () =>
     apiClient.get<ApiResponse<MySubscription>>('/subscriptions/me').then((r) => r.data),
+
+  verifySession: (sessionId: string) =>
+    apiClient
+      .post<ApiResponse<{ status: string; planId: string }>>('/subscriptions/verify-session', { sessionId })
+      .then((r) => r.data),
 };

@@ -197,9 +197,19 @@ export class ProfileService {
       delete publicProfile.dateOfBirth;
     }
 
-    // viewerId is for future use — determining contact visibility by plan
-    if (viewerId) {
-      publicProfile._viewerId = viewerId;
+    // Check if viewer has contact info access (Gold+ plan)
+    if (viewerId && viewerId !== userId) {
+      try {
+        const { getRemainingUsage } = await import('../../shared/middleware/entitlement-check.js');
+        const usage = await getRemainingUsage(viewerId);
+        publicProfile.contactInfoVisible = usage.contactInfoAccess;
+        if (!usage.contactInfoAccess) {
+          delete publicProfile.phone;
+          delete publicProfile.email;
+        }
+      } catch {
+        publicProfile.contactInfoVisible = false;
+      }
     }
 
     return publicProfile;

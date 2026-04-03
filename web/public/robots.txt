@@ -1,0 +1,28 @@
+User-agent: *
+Allow: /
+Allow: /about
+Allow: /safety
+Allow: /faq
+Allow: /contact
+Allow: /terms
+Allow: /privacy
+Allow: /plans
+
+# Block authenticated/private pages
+Disallow: /login
+Disallow: /verify-otp
+Disallow: /onboarding
+Disallow: /dashboard
+Disallow: /my-profile
+Disallow: /discover
+Disallow: /search
+Disallow: /profiles/
+Disallow: /interests
+Disallow: /shortlist
+Disallow: /chats
+Disallow: /settings
+Disallow: /notifications
+Disallow: /who-viewed-me
+Disallow: /payment/
+
+Sitemap: https://matrimony.com/sitemap.xml

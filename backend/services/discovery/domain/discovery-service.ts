@@ -100,40 +100,76 @@ export class DiscoveryService {
     limit = 20,
     cursor?: string,
   ): Promise<{ items: DiscoveryProfile[]; nextCursor?: string }> {
-    // Get user's preferences and profile
-    const [prefs, myProfile] = await Promise.all([
+    // Get user's preferences, profile, and blocked users
+    const [prefs, myProfile, blockedResult] = await Promise.all([
       this.coreRepo.get<UserPreferences>(`USER#${userId}`, 'PREFERENCE#v1'),
       this.coreRepo.get<Record<string, unknown>>(`USER#${userId}`, 'PROFILE#v1'),
+      this.coreRepo.query<{ SK: string }>(`USER#${userId}`, { limit: 100 }),
     ]);
 
-    const myGender = myProfile?.gender as string;
-    const lookingForGender = myGender === 'male' ? 'female' : 'male';
-
-    let results: { items: DiscoveryProfile[]; lastKey?: Record<string, unknown> };
-    const startKey = cursor ? JSON.parse(Buffer.from(cursor, 'base64').toString()) : undefined;
-
-    if (prefs?.countries?.length) {
-      // Search by preferred country
-      results = await this.discoveryRepo.searchByCountryAndGender(
-        prefs.countries[0],
-        lookingForGender,
-        { limit: limit + 5, exclusiveStartKey: startKey },
-      );
-    } else if (prefs?.religions?.length) {
-      // Search by preferred religion
-      results = await this.discoveryRepo.searchByReligionAndGender(
-        prefs.religions[0],
-        lookingForGender,
-        { limit: limit + 5, exclusiveStartKey: startKey },
-      );
-    } else {
-      // Fallback: all profiles
-      results = await this.discoveryRepo.getAllProfiles(limit + 5);
+    // Build blocked user set (users I blocked + users who blocked me)
+    const blockedIds = new Set<string>();
+    for (const item of blockedResult.items) {
+      if (item.SK.startsWith('BLOCK#')) {
+        blockedIds.add(item.SK.replace('BLOCK#', ''));
+      }
     }
 
-    // Filter out own profile and apply preference filters
-    let filtered = results.items.filter((p) => p.userId !== userId);
+    const myGender = myProfile?.gender as string | undefined;
+    const lookingForGender = myGender === 'male' ? 'female' : myGender === 'female' ? 'male' : undefined;
 
+    let allResults: DiscoveryProfile[] = [];
+    const startKey = cursor ? JSON.parse(Buffer.from(cursor, 'base64').toString()) : undefined;
+    let lastKey: Record<string, unknown> | undefined;
+
+    // Strategy 1: Search by preferred countries (try all, not just first)
+    if (prefs?.countries?.length && lookingForGender) {
+      for (const country of prefs.countries) {
+        const results = await this.discoveryRepo.searchByCountryAndGender(
+          country, lookingForGender, { limit: limit + 10, exclusiveStartKey: startKey },
+        );
+        allResults.push(...results.items);
+        if (results.lastKey) lastKey = results.lastKey;
+        if (allResults.length >= limit + 10) break;
+      }
+    }
+
+    // Strategy 2: If not enough, search by preferred religions
+    if (allResults.length < limit && prefs?.religions?.length && lookingForGender) {
+      for (const religion of prefs.religions) {
+        const results = await this.discoveryRepo.searchByReligionAndGender(
+          religion, lookingForGender, { limit: limit + 10, exclusiveStartKey: startKey },
+        );
+        allResults.push(...results.items);
+        if (results.lastKey) lastKey = results.lastKey;
+        if (allResults.length >= limit + 10) break;
+      }
+    }
+
+    // Strategy 3: Fallback — get all profiles
+    if (allResults.length < limit) {
+      const results = await this.discoveryRepo.getAllProfiles(limit + 20);
+      allResults.push(...results.items);
+      if (results.lastKey) lastKey = results.lastKey;
+    }
+
+    // Deduplicate by userId
+    const seen = new Set<string>();
+    allResults = allResults.filter((p) => {
+      if (seen.has(p.userId)) return false;
+      seen.add(p.userId);
+      return true;
+    });
+
+    // Filter out own profile and blocked users
+    let filtered = allResults.filter((p) => p.userId !== userId && !blockedIds.has(p.userId));
+
+    // Filter by opposite gender (always, even in fallback)
+    if (lookingForGender) {
+      filtered = filtered.filter((p) => p.gender === lookingForGender);
+    }
+
+    // Apply preference filters
     if (prefs) {
       filtered = filtered.filter((p) => {
         if (prefs.ageMin && p.age < prefs.ageMin) return false;
@@ -148,8 +184,8 @@ export class DiscoveryService {
     filtered = scoreAndSort(filtered, myProfile, prefs);
 
     const items = filtered.slice(0, limit);
-    const nextCursor = results.lastKey
-      ? Buffer.from(JSON.stringify(results.lastKey)).toString('base64')
+    const nextCursor = lastKey
+      ? Buffer.from(JSON.stringify(lastKey)).toString('base64')
       : undefined;
 
     return { items, nextCursor };
@@ -165,6 +201,15 @@ export class DiscoveryService {
     cursor?: string,
   ): Promise<{ items: DiscoveryProfile[]; nextCursor?: string }> {
     const startKey = cursor ? JSON.parse(Buffer.from(cursor, 'base64').toString()) : undefined;
+
+    // Get blocked users
+    const blockedResult = await this.coreRepo.query<{ SK: string }>(`USER#${userId}`, { limit: 100 });
+    const blockedIds = new Set<string>();
+    for (const item of blockedResult.items) {
+      if (item.SK.startsWith('BLOCK#')) {
+        blockedIds.add(item.SK.replace('BLOCK#', ''));
+      }
+    }
 
     let results: { items: DiscoveryProfile[]; lastKey?: Record<string, unknown> };
 
@@ -184,7 +229,7 @@ export class DiscoveryService {
       results = await this.discoveryRepo.getAllProfiles(limit + 10);
     }
 
-    let filtered = results.items.filter((p) => p.userId !== userId);
+    let filtered = results.items.filter((p) => p.userId !== userId && !blockedIds.has(p.userId));
 
     // Apply filters
     if (filters.gender) filtered = filtered.filter((p) => p.gender === filters.gender);

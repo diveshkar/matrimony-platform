@@ -65,6 +65,13 @@ import { main as getPlansHandler } from './subscriptions/handlers/get-plans.js';
 import { main as createCheckoutHandler } from './subscriptions/handlers/create-checkout.js';
 import { main as webhookHandler } from './subscriptions/handlers/webhook.js';
 import { main as getMySubscriptionHandler } from './subscriptions/handlers/get-my-subscription.js';
+import { main as verifySessionHandler } from './subscriptions/handlers/verify-session.js';
+import { main as blockUserHandler } from './safety/handlers/block-user.js';
+import { main as reportUserHandler } from './safety/handlers/report-user.js';
+import { main as whoViewedMeHandler } from './safety/handlers/who-viewed-me.js';
+import { main as notificationsHandler } from './safety/handlers/notifications.js';
+import { main as privacySettingsHandler } from './safety/handlers/privacy-settings.js';
+import { main as getUsageHandler } from './subscriptions/handlers/get-usage.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -77,6 +84,23 @@ const app = express();
 const PORT = Number(process.env.PORT) || 4000;
 
 app.use(cors({ origin: process.env.CORS_ALLOWED_ORIGINS || 'http://localhost:3000' }));
+
+// Stripe webhook needs raw body for signature verification — must be before express.json()
+app.post('/subscriptions/webhook', express.raw({ type: 'application/json' }), async (req: express.Request, res: express.Response) => {
+  try {
+    const event = buildEvent(req);
+    // Pass raw body as string for Stripe signature verification
+    event.body = req.body.toString();
+    const result = await webhookHandler(event, { ...fakeContext, awsRequestId: `local-${Date.now()}` });
+    const statusCode = typeof result === 'string' ? 200 : (result.statusCode || 200);
+    const body = typeof result === 'string' ? result : (result.body ? JSON.parse(result.body) : {});
+    res.status(statusCode).json(body);
+  } catch (err) {
+    console.error('Webhook error:', err);
+    res.status(500).json({ success: false, error: { code: 'WEBHOOK_ERROR', message: 'Webhook failed' } });
+  }
+});
+
 app.use(express.json());
 
 // Build a fake API Gateway event from an Express request
@@ -231,8 +255,20 @@ route('post', '/chats/:conversationId/messages', sendMessageHandler);
 
 route('get', '/subscriptions/plans', getPlansHandler);
 route('post', '/subscriptions/checkout', createCheckoutHandler);
-route('post', '/subscriptions/webhook', webhookHandler);
+// webhook route is defined above with express.raw() for Stripe signature
 route('get', '/subscriptions/me', getMySubscriptionHandler);
+route('post', '/subscriptions/verify-session', verifySessionHandler);
+
+route('get', '/blocks', blockUserHandler);
+route('post', '/blocks', blockUserHandler);
+route('delete', '/blocks/:userId', blockUserHandler);
+route('post', '/reports', reportUserHandler);
+route('get', '/who-viewed-me', whoViewedMeHandler);
+route('get', '/notifications', notificationsHandler);
+route('patch', '/notifications', notificationsHandler);
+route('get', '/settings/privacy', privacySettingsHandler);
+route('patch', '/settings/privacy', privacySettingsHandler);
+route('get', '/subscriptions/usage', getUsageHandler);
 
 // ── Start ───────────────────────────────────
 

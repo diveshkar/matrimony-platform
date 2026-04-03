@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/common/PageHeader';
 import { EmptyState } from '@/components/common/EmptyState';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { ImageCropDialog } from '@/components/common/ImageCropDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils/cn';
 import { CONFIG } from '@/lib/constants/config';
@@ -35,12 +36,14 @@ export default function PhotosPage() {
   const [dragActive, setDragActive] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<PhotoData | null>(null);
   const [error, setError] = useState('');
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+  const [cropFileName, setCropFileName] = useState('');
 
   const photos = response?.success ? response.data : [];
   const canUpload = photos.length < CONFIG.MAX_PHOTOS;
 
   const handleFiles = useCallback(
-    async (files: FileList | null) => {
+    (files: FileList | null) => {
       if (!files || files.length === 0) return;
       setError('');
 
@@ -61,13 +64,29 @@ export default function PhotosPage() {
         return;
       }
 
+      // Open crop dialog instead of uploading directly
+      const reader = new FileReader();
+      reader.onload = () => {
+        setCropImageSrc(reader.result as string);
+        setCropFileName(file.name);
+      };
+      reader.readAsDataURL(file);
+    },
+    [canUpload],
+  );
+
+  const handleCropComplete = useCallback(
+    async (croppedBlob: Blob) => {
+      const file = new File([croppedBlob], cropFileName || 'photo.jpg', { type: 'image/jpeg' });
+      setCropImageSrc(null);
+
       try {
         await uploadPhoto.mutateAsync(file);
       } catch {
         setError('Upload failed. Please try again.');
       }
     },
-    [canUpload, uploadPhoto],
+    [cropFileName, uploadPhoto],
   );
 
   const handleDrop = useCallback(
@@ -264,6 +283,7 @@ export default function PhotosPage() {
       )}
 
       {/* Delete confirmation */}
+      {/* Delete confirmation */}
       <ConfirmDialog
         open={!!deleteTarget}
         onOpenChange={() => setDeleteTarget(null)}
@@ -279,6 +299,17 @@ export default function PhotosPage() {
         }}
         loading={deletePhoto.isPending}
       />
+
+      {/* Crop dialog */}
+      {cropImageSrc && (
+        <ImageCropDialog
+          open={!!cropImageSrc}
+          onOpenChange={(open) => { if (!open) setCropImageSrc(null); }}
+          imageSrc={cropImageSrc}
+          onCropComplete={handleCropComplete}
+          loading={uploadPhoto.isPending}
+        />
+      )}
     </div>
   );
 }

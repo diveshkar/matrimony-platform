@@ -183,7 +183,7 @@ function InterestCard({
             )}
             {item.status === 'accepted' && (
               <Button size="sm" variant="outline" className="gap-1 text-xs" asChild>
-                <Link to={profileDetailPath(profileId)}>
+                <Link to={ROUTES.CHATS}>
                   <MessageCircle className="h-3 w-3" />
                   Chat
                 </Link>
