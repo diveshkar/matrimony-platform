@@ -121,3 +121,99 @@ module "lambda_health" {
 
   tags = local.common_tags
 }
+
+# ──────────────────────────────────────────────
+# Cognito (Auth)
+# ──────────────────────────────────────────────
+
+module "cognito" {
+  source    = "../../modules/cognito_user_pool"
+  pool_name = "${local.prefix}-users"
+
+  callback_urls = ["https://${var.domain_name}", "https://www.${var.domain_name}"]
+  logout_urls   = ["https://${var.domain_name}", "https://www.${var.domain_name}"]
+
+  tags = local.common_tags
+}
+
+# ──────────────────────────────────────────────
+# SES (Email)
+# ──────────────────────────────────────────────
+
+module "ses" {
+  source      = "../../modules/ses_config"
+  domain      = var.domain_name
+  from_email  = "noreply@${var.domain_name}"
+  environment = var.environment
+  tags        = local.common_tags
+}
+
+# ──────────────────────────────────────────────
+# SNS SMS (Phone OTP)
+# ──────────────────────────────────────────────
+
+module "sns_sms" {
+  source              = "../../modules/sns_sms"
+  environment         = var.environment
+  monthly_spend_limit = 50
+  tags                = local.common_tags
+}
+
+# ──────────────────────────────────────────────
+# CloudFront (Frontend CDN)
+# ──────────────────────────────────────────────
+
+module "cloudfront_frontend" {
+  source = "../../modules/cloudfront_distribution"
+
+  distribution_name     = "${local.prefix}-frontend-cdn"
+  s3_bucket_id          = module.s3_frontend.bucket_id
+  s3_bucket_arn         = module.s3_frontend.bucket_arn
+  s3_bucket_domain_name = module.s3_frontend.bucket_domain_name
+  domain_aliases        = [var.domain_name, "www.${var.domain_name}"]
+  certificate_arn       = var.certificate_arn
+
+  tags = local.common_tags
+}
+
+# ──────────────────────────────────────────────
+# CloudFront (Media CDN - Phase 1D Photos)
+# ──────────────────────────────────────────────
+
+module "cloudfront_media" {
+  source = "../../modules/cloudfront_distribution"
+
+  distribution_name     = "${local.prefix}-media-cdn"
+  s3_bucket_id          = module.s3_media.bucket_id
+  s3_bucket_arn         = module.s3_media.bucket_arn
+  s3_bucket_domain_name = module.s3_media.bucket_domain_name
+  domain_aliases        = ["media.${var.domain_name}"]
+  certificate_arn       = var.certificate_arn
+
+  tags = local.common_tags
+}
+
+# ──────────────────────────────────────────────
+# CloudWatch Alarms
+# ──────────────────────────────────────────────
+
+module "alarms" {
+  source      = "../../modules/cloudwatch_alarms"
+  environment = var.environment
+  alarm_email = var.alarm_email
+
+  api_gateway_id = module.api_gateway.api_id
+
+  lambda_function_names = [
+    module.lambda_health.function_name,
+  ]
+
+  dynamodb_table_names = [
+    module.dynamodb_core.table_name,
+    module.dynamodb_messages.table_name,
+    module.dynamodb_discovery.table_name,
+    module.dynamodb_events.table_name,
+  ]
+
+  tags = local.common_tags
+}

@@ -16,6 +16,7 @@ export const ROUTES = {
   // Authenticated
   DASHBOARD: '/dashboard',
   MY_PROFILE: '/my-profile',
+  MY_PHOTOS: '/my-profile/photos',
   PROFILE_PREVIEW: '/my-profile/preview',
 
   // Discovery

@@ -27,6 +27,28 @@ import { main as authVerifyHandler } from './auth/handlers/auth-verify.js';
 import { main as authRefreshHandler } from './auth/handlers/auth-refresh.js';
 import { main as authLogoutHandler } from './auth/handlers/auth-logout.js';
 import { main as authMeHandler } from './auth/handlers/auth-me.js';
+import { main as createProfileHandler } from './profile/handlers/create-profile.js';
+import { main as getMyProfileHandler } from './profile/handlers/get-my-profile.js';
+import { main as updateProfileHandler } from './profile/handlers/update-profile.js';
+import { main as getProfileHandler } from './profile/handlers/get-profile.js';
+import { main as getUploadUrlHandler } from './uploads/handlers/get-upload-url.js';
+import { main as confirmUploadHandler } from './uploads/handlers/confirm-upload.js';
+import { main as getPhotosHandler } from './uploads/handlers/get-photos.js';
+import { main as updatePhotoHandler } from './uploads/handlers/update-photo.js';
+import { main as deletePhotoHandler } from './uploads/handlers/delete-photo.js';
+import { main as getRecommendationsHandler } from './discovery/handlers/get-recommendations.js';
+import { main as searchProfilesHandler } from './discovery/handlers/search-profiles.js';
+import { main as sendInterestHandler } from './interests/handlers/send-interest.js';
+import { main as respondInterestHandler } from './interests/handlers/respond-interest.js';
+import { main as getInterestsHandler } from './interests/handlers/get-interests.js';
+import { main as shortlistHandler } from './interests/handlers/shortlist.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const UPLOADS_DIR = path.join(__dirname, '..', 'uploads-local');
+if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
@@ -144,6 +166,40 @@ route('post', '/auth/verify', authVerifyHandler);
 route('post', '/auth/refresh', authRefreshHandler);
 route('post', '/auth/logout', authLogoutHandler);
 route('get', '/auth/me', authMeHandler);
+
+route('post', '/profiles', createProfileHandler);
+route('get', '/me', getMyProfileHandler);
+route('patch', '/me', updateProfileHandler);
+route('get', '/profiles/:id', getProfileHandler);
+
+route('post', '/uploads/photo-url', getUploadUrlHandler);
+route('post', '/uploads/photo-confirm', confirmUploadHandler);
+route('get', '/uploads/photos', getPhotosHandler);
+route('patch', '/uploads/photos/:photoId', updatePhotoHandler);
+route('delete', '/uploads/photos/:photoId', deletePhotoHandler);
+
+// Local file upload — saves to disk, returns URL (replaces S3 in dev)
+app.post('/uploads/file', express.raw({ type: ['image/*'], limit: '5mb' }), (req, res) => {
+  const ext = (req.headers['content-type'] || 'image/jpeg').split('/')[1] || 'jpg';
+  const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const filePath = path.join(UPLOADS_DIR, fileName);
+  fs.writeFileSync(filePath, req.body);
+  const url = `http://localhost:${PORT}/uploads/local/${fileName}`;
+  res.json({ success: true, data: { url, fileName } });
+});
+
+// Serve local uploaded files
+app.use('/uploads/local', express.static(UPLOADS_DIR));
+
+route('get', '/discover', getRecommendationsHandler);
+route('get', '/discover/search', searchProfilesHandler);
+
+route('post', '/interests', sendInterestHandler);
+route('post', '/interests/:senderId/respond', respondInterestHandler);
+route('get', '/interests', getInterestsHandler);
+route('get', '/shortlist', shortlistHandler);
+route('post', '/shortlist', shortlistHandler);
+route('delete', '/shortlist/:userId', shortlistHandler);
 
 // ── Start ───────────────────────────────────
 

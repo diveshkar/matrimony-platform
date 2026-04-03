@@ -14,11 +14,27 @@ export default function VerifyOtpPage() {
 
   const [otp, setOtp] = useState<string[]>(Array(CONFIG.OTP_LENGTH).fill(''));
   const [error, setError] = useState('');
-  const [cooldown, setCooldown] = useState<number>(CONFIG.OTP_RESEND_COOLDOWN_SECONDS);
+  const [cooldown, setCooldown] = useState<number>(() => {
+    const stored = localStorage.getItem('otp_cooldown_until');
+    if (stored) {
+      const remaining = Math.ceil((Number(stored) - Date.now()) / 1000);
+      return remaining > 0 ? remaining : 0;
+    }
+    return CONFIG.OTP_RESEND_COOLDOWN_SECONDS;
+  });
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const authVerify = useAuthVerify();
   const authStart = useAuthStart();
+
+  // Set initial cooldown expiry if not already stored
+  useEffect(() => {
+    const stored = localStorage.getItem('otp_cooldown_until');
+    if (!stored || Number(stored) < Date.now()) {
+      const expiryMs = Date.now() + CONFIG.OTP_RESEND_COOLDOWN_SECONDS * 1000;
+      localStorage.setItem('otp_cooldown_until', String(expiryMs));
+    }
+  }, []);
 
   // Redirect if no identifier
   useEffect(() => {
@@ -87,6 +103,7 @@ export default function VerifyOtpPage() {
           : { email: state.identifier, otp: otpString };
 
       await authVerify.mutateAsync(payload);
+      localStorage.removeItem('otp_cooldown_until');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Verification failed';
       setError(message);
@@ -106,6 +123,8 @@ export default function VerifyOtpPage() {
           : { email: state.identifier };
 
       await authStart.mutateAsync(payload);
+      const expiryMs = Date.now() + CONFIG.OTP_RESEND_COOLDOWN_SECONDS * 1000;
+      localStorage.setItem('otp_cooldown_until', String(expiryMs));
       setCooldown(CONFIG.OTP_RESEND_COOLDOWN_SECONDS);
       setOtp(Array(CONFIG.OTP_LENGTH).fill(''));
       inputRefs.current[0]?.focus();

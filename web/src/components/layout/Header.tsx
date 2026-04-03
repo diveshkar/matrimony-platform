@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Bell, MessageCircle, Heart, User } from 'lucide-react';
+import { Menu, X, Bell, MessageCircle, Heart, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/common/Logo';
 import { useAuth } from '@/lib/auth/auth-context';
+import { useLogout } from '@/features/auth/hooks/useAuthMutation';
 import { ROUTES } from '@/lib/constants/routes';
 import { cn } from '@/lib/utils/cn';
 import { MobileNav } from './MobileNav';
@@ -23,6 +24,7 @@ const authNavLinks = [
 
 export function Header() {
   const { isAuthenticated } = useAuth();
+  const logout = useLogout();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -64,6 +66,9 @@ export function Header() {
                 <Link to={ROUTES.MY_PROFILE}>
                   <User className="h-5 w-5" />
                 </Link>
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => logout.mutate()}>
+                <LogOut className="h-5 w-5" />
               </Button>
             </>
           ) : (

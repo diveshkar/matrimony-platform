@@ -44,6 +44,9 @@ infra/**/.terraform.lock.hcl
 # Docker
 .docker/
 
+# Local uploads (dev only)
+backend/uploads-local/
+
 # Lambda build artifacts
 backend/services/**/dist/
 backend/services/**/*.zip

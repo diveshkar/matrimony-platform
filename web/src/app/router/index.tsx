@@ -20,6 +20,23 @@ const ContactPage = lazy(() => import('@/features/static/pages/ContactPage'));
 const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage'));
 const VerifyOtpPage = lazy(() => import('@/features/auth/pages/VerifyOtpPage'));
 
+// Phase 1C — Profile pages
+const OnboardingPage = lazy(() => import('@/features/profile/pages/OnboardingPage'));
+const MyProfilePage = lazy(() => import('@/features/profile/pages/MyProfilePage'));
+const DashboardPage = lazy(() => import('@/features/home/pages/DashboardPage'));
+
+// Phase 1D — Photos
+const PhotosPage = lazy(() => import('@/features/profile/pages/PhotosPage'));
+
+// Phase 1E — Discovery
+const DiscoverPage = lazy(() => import('@/features/discovery/pages/DiscoverPage'));
+const SearchPage = lazy(() => import('@/features/discovery/pages/SearchPage'));
+const ProfileDetailPage = lazy(() => import('@/features/discovery/pages/ProfileDetailPage'));
+
+// Phase 1F — Interests & Shortlist
+const InterestsPage = lazy(() => import('@/features/interests/pages/InterestsPage'));
+const ShortlistPage = lazy(() => import('@/features/interests/pages/ShortlistPage'));
+
 // Placeholder for future phase pages
 const PlaceholderPage = lazy(() => import('@/features/home/pages/PlaceholderPage'));
 
@@ -47,7 +64,18 @@ export function AppRouter() {
           <Route path={ROUTES.PLANS} element={<PlaceholderPage />} />
         </Route>
 
-        {/* Protected routes — all placeholder until future phases */}
+        {/* Onboarding — auth required but no profile required */}
+        <Route
+          element={
+            <ProtectedRoute requireOnboarding={false}>
+              <AppLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route path={ROUTES.ONBOARDING} element={<OnboardingPage />} />
+        </Route>
+
+        {/* Protected routes — require auth + completed onboarding */}
         <Route
           element={
             <ProtectedRoute>
@@ -55,14 +83,14 @@ export function AppRouter() {
             </ProtectedRoute>
           }
         >
-          <Route path={ROUTES.ONBOARDING} element={<PlaceholderPage />} />
-          <Route path={ROUTES.DASHBOARD} element={<PlaceholderPage />} />
-          <Route path={ROUTES.MY_PROFILE} element={<PlaceholderPage />} />
-          <Route path={ROUTES.DISCOVER} element={<PlaceholderPage />} />
-          <Route path={ROUTES.SEARCH} element={<PlaceholderPage />} />
-          <Route path={ROUTES.PROFILE_DETAIL} element={<PlaceholderPage />} />
-          <Route path={ROUTES.INTERESTS} element={<PlaceholderPage />} />
-          <Route path={ROUTES.SHORTLIST} element={<PlaceholderPage />} />
+          <Route path={ROUTES.DASHBOARD} element={<DashboardPage />} />
+          <Route path={ROUTES.MY_PROFILE} element={<MyProfilePage />} />
+          <Route path={ROUTES.MY_PHOTOS} element={<PhotosPage />} />
+          <Route path={ROUTES.DISCOVER} element={<DiscoverPage />} />
+          <Route path={ROUTES.SEARCH} element={<SearchPage />} />
+          <Route path={ROUTES.PROFILE_DETAIL} element={<ProfileDetailPage />} />
+          <Route path={ROUTES.INTERESTS} element={<InterestsPage />} />
+          <Route path={ROUTES.SHORTLIST} element={<ShortlistPage />} />
           <Route path={ROUTES.WHO_VIEWED} element={<PlaceholderPage />} />
           <Route path={ROUTES.CHATS} element={<PlaceholderPage />} />
           <Route path={ROUTES.CHAT_DETAIL} element={<PlaceholderPage />} />
