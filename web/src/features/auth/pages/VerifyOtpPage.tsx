@@ -176,6 +176,7 @@ export default function VerifyOtpPage() {
               onChange={(e) => handleChange(index, e.target.value)}
               onKeyDown={(e) => handleKeyDown(index, e)}
               autoFocus={index === 0}
+              aria-label={`OTP digit ${index + 1} of ${CONFIG.OTP_LENGTH}`}
               className={`h-14 w-12 rounded-xl border-2 text-center text-xl font-bold font-heading transition-all focus:outline-none focus:ring-2 focus:ring-offset-1 ${
                 error
                   ? 'border-destructive focus:ring-destructive'

@@ -61,6 +61,16 @@ export class InterestService {
     }
 
     await this.repo.updateInterestStatus(senderId, receiverId, 'accepted');
+
+    // Auto-create chat conversation
+    try {
+      const { ChatService } = await import('../../chat/domain/chat-service.js');
+      const chatService = new ChatService();
+      await chatService.createConversation(senderId, receiverId);
+    } catch {
+      // Non-critical — conversation can be created later
+    }
+
     return { status: 'interest_accepted' };
   }
 

@@ -1,7 +1,8 @@
 import { useRef, useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Upload, Star, Trash2, Eye, EyeOff, Users, Loader2, ImagePlus, AlertCircle,
+  Upload, Star, Trash2, Eye, EyeOff, Users, Loader2, ImagePlus, AlertCircle, ArrowLeft,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,6 +13,7 @@ import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils/cn';
 import { CONFIG } from '@/lib/constants/config';
+import { ROUTES } from '@/lib/constants/routes';
 import { PHOTO_VISIBILITY_OPTIONS } from '@/lib/constants/enums';
 import {
   useMyPhotos,
@@ -92,6 +94,13 @@ export default function PhotosPage() {
 
   return (
     <div className="space-y-6 max-w-3xl">
+      <Button variant="ghost" size="sm" asChild className="mb-2">
+        <Link to={ROUTES.MY_PROFILE}>
+          <ArrowLeft className="mr-1.5 h-4 w-4" />
+          Back to Profile
+        </Link>
+      </Button>
+
       <PageHeader
         title="My Photos"
         description={`${photos.length} of ${CONFIG.MAX_PHOTOS} photos uploaded`}
@@ -100,12 +109,16 @@ export default function PhotosPage() {
       {/* Upload area */}
       {canUpload && (
         <div
+          role="button"
+          tabIndex={0}
+          aria-label="Upload photo. Click or drag and drop an image file."
           onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
           onDragLeave={() => setDragActive(false)}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInputRef.current?.click(); } }}
           className={cn(
-            'relative cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition-all',
+            'relative cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition-all focus-ring',
             dragActive
               ? 'border-primary-700 bg-primary-50'
               : 'border-border hover:border-primary-300 hover:bg-warm-50',
@@ -173,6 +186,7 @@ export default function PhotosPage() {
                     <img
                       src={photo.url}
                       alt="Profile photo"
+                      loading="lazy"
                       className="h-full w-full object-cover"
                     />
 
@@ -198,8 +212,8 @@ export default function PhotosPage() {
                       )}
                     </Badge>
 
-                    {/* Hover overlay */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-end justify-center opacity-0 group-hover:opacity-100 p-3 gap-2">
+                    {/* Action overlay — visible on hover (desktop) or always (mobile) */}
+                    <div className="absolute inset-0 bg-black/0 sm:group-hover:bg-black/40 transition-colors flex items-end justify-center sm:opacity-0 sm:group-hover:opacity-100 p-3 gap-2">
                       {!photo.isPrimary && (
                         <Button
                           size="sm"

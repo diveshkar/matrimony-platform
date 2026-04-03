@@ -3,6 +3,18 @@
  * Run: pnpm dev:backend (or: npx tsx watch services/dev-server.ts)
  */
 
+// Load .env file for local secrets (Stripe keys, etc.)
+try {
+  const { readFileSync: readF } = await import('fs');
+  const { resolve: res, dirname: dir } = await import('path');
+  const { fileURLToPath: toPath } = await import('url');
+  const envPath = res(dir(toPath(import.meta.url)), '..', '.env');
+  for (const line of readF(envPath, 'utf-8').split('\n')) {
+    const [key, ...vals] = line.split('=');
+    if (key?.trim() && vals.length) process.env[key.trim()] = vals.join('=').trim();
+  }
+} catch { /* .env file not found — use defaults */ }
+
 // Set env vars before any imports so DynamoDB client picks them up
 process.env.DYNAMODB_ENDPOINT = process.env.DYNAMODB_ENDPOINT || 'http://localhost:8000';
 process.env.AWS_REGION = process.env.AWS_REGION || 'ap-south-1';
@@ -10,7 +22,10 @@ process.env.AWS_ACCESS_KEY_ID = 'fakeMyKeyId';
 process.env.AWS_SECRET_ACCESS_KEY = 'fakeSecretAccessKey';
 process.env.AWS_SESSION_TOKEN = '';
 process.env.ENVIRONMENT = process.env.ENVIRONMENT || 'dev';
-process.env.USE_MEMORY_STORE = 'false';
+// Set STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET in .env file
+process.env.STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
+process.env.STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
+process.env.FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
 import express from 'express';
 import cors from 'cors';
@@ -42,6 +57,14 @@ import { main as sendInterestHandler } from './interests/handlers/send-interest.
 import { main as respondInterestHandler } from './interests/handlers/respond-interest.js';
 import { main as getInterestsHandler } from './interests/handlers/get-interests.js';
 import { main as shortlistHandler } from './interests/handlers/shortlist.js';
+import { main as getConversationsHandler } from './chat/handlers/get-conversations.js';
+import { main as getMessagesHandler } from './chat/handlers/get-messages.js';
+import { main as sendMessageHandler } from './chat/handlers/send-message.js';
+import { main as createConversationHandler } from './chat/handlers/create-conversation.js';
+import { main as getPlansHandler } from './subscriptions/handlers/get-plans.js';
+import { main as createCheckoutHandler } from './subscriptions/handlers/create-checkout.js';
+import { main as webhookHandler } from './subscriptions/handlers/webhook.js';
+import { main as getMySubscriptionHandler } from './subscriptions/handlers/get-my-subscription.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -200,6 +223,16 @@ route('get', '/interests', getInterestsHandler);
 route('get', '/shortlist', shortlistHandler);
 route('post', '/shortlist', shortlistHandler);
 route('delete', '/shortlist/:userId', shortlistHandler);
+
+route('get', '/chats', getConversationsHandler);
+route('post', '/chats', createConversationHandler);
+route('get', '/chats/:conversationId/messages', getMessagesHandler);
+route('post', '/chats/:conversationId/messages', sendMessageHandler);
+
+route('get', '/subscriptions/plans', getPlansHandler);
+route('post', '/subscriptions/checkout', createCheckoutHandler);
+route('post', '/subscriptions/webhook', webhookHandler);
+route('get', '/subscriptions/me', getMySubscriptionHandler);
 
 // ── Start ───────────────────────────────────
 

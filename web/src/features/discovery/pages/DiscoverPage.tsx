@@ -9,7 +9,7 @@ import { useRecommendations } from '../hooks/useDiscovery';
 import { ROUTES } from '@/lib/constants/routes';
 
 export default function DiscoverPage() {
-  const { data: response, isLoading, isError } = useRecommendations();
+  const { data: response, isLoading, isError, refetch } = useRecommendations();
 
   const profiles = response?.success ? response.data.items : [];
 
@@ -29,7 +29,7 @@ export default function DiscoverPage() {
       />
 
       {isLoading && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {[...Array(8)].map((_, i) => (
             <div key={i} className="space-y-3">
               <Skeleton className="aspect-[4/5] rounded-xl" />
@@ -44,8 +44,8 @@ export default function DiscoverPage() {
         <EmptyState
           icon={<Sparkles className="h-8 w-8" />}
           title="Could not load matches"
-          description="Please try again later."
-          action={<Button onClick={() => window.location.reload()}>Retry</Button>}
+          description="Please try again."
+          action={<Button onClick={() => refetch()}>Retry</Button>}
         />
       )}
 
@@ -63,7 +63,7 @@ export default function DiscoverPage() {
       )}
 
       {profiles.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {profiles.map((profile) => (
             <ProfileCard key={profile.userId} profile={profile} />
           ))}

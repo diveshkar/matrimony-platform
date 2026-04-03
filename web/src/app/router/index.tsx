@@ -37,6 +37,15 @@ const ProfileDetailPage = lazy(() => import('@/features/discovery/pages/ProfileD
 const InterestsPage = lazy(() => import('@/features/interests/pages/InterestsPage'));
 const ShortlistPage = lazy(() => import('@/features/interests/pages/ShortlistPage'));
 
+// Phase 1G — Chat
+const ChatListPage = lazy(() => import('@/features/chat/pages/ChatListPage'));
+const ChatDetailPage = lazy(() => import('@/features/chat/pages/ChatDetailPage'));
+
+// Phase 1H — Subscription
+const PlansPage = lazy(() => import('@/features/subscription/pages/PlansPage'));
+const PaymentSuccessPage = lazy(() => import('@/features/subscription/pages/PaymentSuccessPage'));
+const PaymentCancelPage = lazy(() => import('@/features/subscription/pages/PaymentCancelPage'));
+
 // Placeholder for future phase pages
 const PlaceholderPage = lazy(() => import('@/features/home/pages/PlaceholderPage'));
 
@@ -61,7 +70,7 @@ export function AppRouter() {
           {/* Auth pages */}
           <Route path={ROUTES.LOGIN} element={<LoginPage />} />
           <Route path={ROUTES.VERIFY_OTP} element={<VerifyOtpPage />} />
-          <Route path={ROUTES.PLANS} element={<PlaceholderPage />} />
+          <Route path={ROUTES.PLANS} element={<PlansPage />} />
         </Route>
 
         {/* Onboarding — auth required but no profile required */}
@@ -92,14 +101,14 @@ export function AppRouter() {
           <Route path={ROUTES.INTERESTS} element={<InterestsPage />} />
           <Route path={ROUTES.SHORTLIST} element={<ShortlistPage />} />
           <Route path={ROUTES.WHO_VIEWED} element={<PlaceholderPage />} />
-          <Route path={ROUTES.CHATS} element={<PlaceholderPage />} />
-          <Route path={ROUTES.CHAT_DETAIL} element={<PlaceholderPage />} />
+          <Route path={ROUTES.CHATS} element={<ChatListPage />} />
+          <Route path={ROUTES.CHAT_DETAIL} element={<ChatDetailPage />} />
           <Route path={ROUTES.SETTINGS} element={<PlaceholderPage />} />
           <Route path={ROUTES.PRIVACY_SETTINGS} element={<PlaceholderPage />} />
           <Route path={ROUTES.BLOCKED_USERS} element={<PlaceholderPage />} />
           <Route path={ROUTES.NOTIFICATIONS} element={<PlaceholderPage />} />
-          <Route path={ROUTES.PAYMENT_SUCCESS} element={<PlaceholderPage />} />
-          <Route path={ROUTES.PAYMENT_CANCEL} element={<PlaceholderPage />} />
+          <Route path={ROUTES.PAYMENT_SUCCESS} element={<PaymentSuccessPage />} />
+          <Route path={ROUTES.PAYMENT_CANCEL} element={<PaymentCancelPage />} />
         </Route>
 
         {/* 404 */}

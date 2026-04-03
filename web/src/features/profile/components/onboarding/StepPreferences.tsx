@@ -21,7 +21,7 @@ export function StepPreferences({ data, onChange, errors: _errors }: StepProps) 
   const prefs = data.preferences || { ageMin: 18, ageMax: 45 };
 
   const updatePref = (key: string, value: unknown) => {
-    onChange({ preferences: { ...prefs, ageMin: prefs.ageMin || 18, ageMax: prefs.ageMax || 45, [key]: value } });
+    onChange({ preferences: { ...prefs, [key]: value } });
   };
 
   return (
@@ -37,16 +37,18 @@ export function StepPreferences({ data, onChange, errors: _errors }: StepProps) 
           <Input
             type="number"
             min={18} max={70}
-            value={prefs.ageMin || 18}
-            onChange={(e) => updatePref('ageMin', Number(e.target.value))}
+            value={prefs.ageMin ?? ''}
+            onChange={(e) => updatePref('ageMin', e.target.value === '' ? undefined : Number(e.target.value))}
+            placeholder="18"
             className="w-24"
           />
           <span className="text-muted-foreground">to</span>
           <Input
             type="number"
             min={18} max={70}
-            value={prefs.ageMax || 45}
-            onChange={(e) => updatePref('ageMax', Number(e.target.value))}
+            value={prefs.ageMax ?? ''}
+            onChange={(e) => updatePref('ageMax', e.target.value === '' ? undefined : Number(e.target.value))}
+            placeholder="45"
             className="w-24"
           />
           <span className="text-sm text-muted-foreground">years</span>

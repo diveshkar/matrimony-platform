@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Edit, MapPin, GraduationCap, Briefcase, Users, Heart, Calendar, Camera } from 'lucide-react';
+import { Edit, MapPin, GraduationCap, Briefcase, Users, Heart, Calendar, Camera, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,11 +8,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/common/EmptyState';
 import { PageHeader } from '@/components/common/PageHeader';
 import { useMyProfile } from '../hooks/useProfile';
+import { useMySubscription } from '@/features/subscription/hooks/useSubscription';
 import { calculateAge, formatHeight } from '@/lib/utils/format';
 import { ROUTES } from '@/lib/constants/routes';
 
 export default function MyProfilePage() {
-  const { data: response, isLoading, isError } = useMyProfile();
+  const { data: response, isLoading, isError, refetch } = useMyProfile();
 
   if (isLoading) {
     return (
@@ -29,12 +30,16 @@ export default function MyProfilePage() {
       <EmptyState
         title="Could not load profile"
         description="Please try again later."
-        action={<Button onClick={() => window.location.reload()}>Retry</Button>}
+        action={<Button onClick={() => refetch()}>Retry</Button>}
       />
     );
   }
 
   const { profile, preferences } = response.data;
+  const { data: subResponse } = useMySubscription();
+  const planId = subResponse?.success ? subResponse.data.subscription.planId : 'free';
+  const isPremium = planId !== 'free';
+  const planLabel = planId.charAt(0).toUpperCase() + planId.slice(1);
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -42,12 +47,20 @@ export default function MyProfilePage() {
         title="My Profile"
         description={`Matrimony ID: ${profile.userId?.slice(0, 12) || 'N/A'}`}
         action={
-          <Button variant="outline" size="sm" asChild>
-            <Link to={ROUTES.SETTINGS}>
-              <Edit className="mr-2 h-4 w-4" />
-              Edit Profile
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            {isPremium && (
+              <Badge variant="gold" className="px-3 py-1">
+                <Crown className="mr-1 h-3 w-3" />
+                {planLabel}
+              </Badge>
+            )}
+            <Button variant="outline" size="sm" asChild>
+              <Link to={ROUTES.SETTINGS}>
+                <Edit className="mr-2 h-4 w-4" />
+                Edit Profile
+              </Link>
+            </Button>
+          </div>
         }
       />
 

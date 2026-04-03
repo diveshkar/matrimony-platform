@@ -26,6 +26,7 @@ export function ProfileCard({ profile, className }: ProfileCardProps) {
             <img
               src={profile.primaryPhotoUrl}
               alt={profile.name}
+              loading="lazy"
               className="h-full w-full object-cover"
             />
           ) : (
@@ -47,7 +48,7 @@ export function ProfileCard({ profile, className }: ProfileCardProps) {
 
         {/* Info */}
         <CardContent className="p-4">
-          <h3 className="font-heading font-semibold text-base truncate group-hover:text-primary-800 transition-colors">
+          <h3 className="font-heading font-semibold text-base truncate group-hover:text-primary-800 transition-colors" title={profile.name}>
             {profile.name}
           </h3>
 

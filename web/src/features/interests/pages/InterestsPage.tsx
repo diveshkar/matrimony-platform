@@ -10,7 +10,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { PageHeader } from '@/components/common/PageHeader';
 import { cn } from '@/lib/utils/cn';
 import { formatRelativeTime } from '@/lib/utils/format';
-import { profileDetailPath } from '@/lib/constants/routes';
+import { profileDetailPath, ROUTES } from '@/lib/constants/routes';
 import { useInbox, useOutbox, useRespondInterest } from '../hooks/useInterests';
 import type { InterestItem } from '../api/interest-api';
 
@@ -67,14 +67,29 @@ export default function InterestsPage() {
         </div>
       )}
 
+      {/* Error */}
+      {!isLoading && (tab === 'inbox' ? inbox.isError : outbox.isError) && (
+        <EmptyState
+          icon={<Heart className="h-8 w-8" />}
+          title="Could not load interests"
+          description="Please try again."
+          action={<Button onClick={() => tab === 'inbox' ? inbox.refetch() : outbox.refetch()}>Retry</Button>}
+        />
+      )}
+
       {/* Empty */}
-      {!isLoading && items.length === 0 && (
+      {!isLoading && !inbox.isError && !outbox.isError && items.length === 0 && (
         <EmptyState
           icon={<Heart className="h-8 w-8" />}
           title={tab === 'inbox' ? 'No interests received yet' : 'No interests sent yet'}
           description={tab === 'inbox'
             ? 'When someone is interested in your profile, it will appear here.'
             : 'Browse profiles and send interests to people you like.'}
+          action={
+            <Button asChild>
+              <Link to={ROUTES.DISCOVER}>{tab === 'inbox' ? 'Complete Your Profile' : 'Browse Profiles'}</Link>
+            </Button>
+          }
         />
       )}
 

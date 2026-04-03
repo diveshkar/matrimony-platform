@@ -59,7 +59,7 @@ export default function ProfileDetailPage() {
   return (
     <div className="max-w-3xl space-y-6">
       {/* Back */}
-      <Button variant="ghost" size="sm" asChild>
+      <Button variant="outline" size="sm" asChild>
         <Link to={ROUTES.DISCOVER}>
           <ArrowLeft className="mr-1.5 h-4 w-4" />
           Back to Discover
@@ -67,11 +67,12 @@ export default function ProfileDetailPage() {
       </Button>
 
       {/* Hero photo */}
-      <div className="aspect-[16/9] sm:aspect-[2/1] rounded-2xl overflow-hidden bg-muted relative">
+      <div className="aspect-[4/5] sm:aspect-[16/9] lg:aspect-[2/1] rounded-2xl overflow-hidden bg-muted relative">
         {raw.primaryPhotoUrl ? (
           <img
             src={s('primaryPhotoUrl')}
             alt={s('name')}
+            loading="lazy"
             className="h-full w-full object-cover"
           />
         ) : (

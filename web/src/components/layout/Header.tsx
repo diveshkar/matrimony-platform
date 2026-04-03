@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Bell, MessageCircle, Heart, User, LogOut } from 'lucide-react';
+import { Menu, X, Bell, MessageCircle, Heart, User, LogOut, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Logo } from '@/components/common/Logo';
 import { useAuth } from '@/lib/auth/auth-context';
 import { useLogout } from '@/features/auth/hooks/useAuthMutation';
+import { useMySubscription } from '@/features/subscription/hooks/useSubscription';
 import { ROUTES } from '@/lib/constants/routes';
 import { cn } from '@/lib/utils/cn';
 import { MobileNav } from './MobileNav';
@@ -41,6 +43,7 @@ export function Header() {
             <Link
               key={link.href}
               to={link.href}
+              aria-current={location.pathname === link.href ? 'page' : undefined}
               className={cn(
                 'px-3 py-2 text-sm font-medium rounded-lg transition-colors',
                 location.pathname === link.href
@@ -57,6 +60,7 @@ export function Header() {
         <div className="hidden md:flex items-center gap-3">
           {isAuthenticated ? (
             <>
+              <PlanBadge />
               <Button variant="ghost" size="icon" asChild>
                 <Link to={ROUTES.NOTIFICATIONS}>
                   <Bell className="h-5 w-5" />
@@ -96,5 +100,31 @@ export function Header() {
 
       <MobileNav open={mobileOpen} onClose={() => setMobileOpen(false)} />
     </header>
+  );
+}
+
+function PlanBadge() {
+  const { data: subResponse } = useMySubscription();
+  const planId = subResponse?.success ? subResponse.data.subscription.planId : 'free';
+
+  if (planId === 'free') {
+    return (
+      <Link to={ROUTES.PLANS}>
+        <Badge variant="outline" className="cursor-pointer hover:bg-primary-50 transition-colors">
+          <Crown className="mr-1 h-3 w-3" />
+          Upgrade
+        </Badge>
+      </Link>
+    );
+  }
+
+  const planLabel = planId.charAt(0).toUpperCase() + planId.slice(1);
+  return (
+    <Link to={ROUTES.PLANS}>
+      <Badge variant="gold" className="cursor-pointer">
+        <Crown className="mr-1 h-3 w-3" />
+        {planLabel}
+      </Badge>
+    </Link>
   );
 }
