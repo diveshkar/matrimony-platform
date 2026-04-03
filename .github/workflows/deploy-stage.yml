@@ -1,0 +1,63 @@
+name: Deploy Stage
+
+on:
+  push:
+    branches: [develop]
+
+concurrency:
+  group: deploy-stage
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: ap-south-1
+
+jobs:
+  deploy:
+    name: Deploy to Stage
+    runs-on: ubuntu-latest
+    environment: stage
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm run build:web
+        env:
+          VITE_API_BASE_URL: ${{ vars.API_BASE_URL }}
+
+      - run: pnpm run build:backend
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # Deploy frontend to S3
+      - name: Deploy frontend
+        run: |
+          aws s3 sync web/dist/ s3://matrimony-stage-frontend --delete
+          aws cloudfront create-invalidation --distribution-id ${{ vars.CLOUDFRONT_DIST_ID }} --paths "/*"
+
+      # Terraform apply
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.6"
+
+      - name: Terraform apply
+        working-directory: infra/environments/stage
+        run: |
+          terraform init
+          terraform apply -auto-approve
