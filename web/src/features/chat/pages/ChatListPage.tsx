@@ -18,7 +18,9 @@ export default function ChatListPage() {
     return (
       <div className="space-y-6 max-w-2xl">
         <Skeleton className="h-8 w-48" />
-        {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
+        {[...Array(4)].map((_, i) => (
+          <Skeleton key={i} className="h-20 rounded-xl" />
+        ))}
       </div>
     );
   }
@@ -59,7 +61,12 @@ export default function ChatListPage() {
             >
               <div className="h-12 w-12 rounded-full overflow-hidden bg-primary-50 shrink-0">
                 {conv.otherUserPhoto ? (
-                  <img src={conv.otherUserPhoto} alt={conv.otherUserName} loading="lazy" className="h-full w-full object-cover" />
+                  <img
+                    src={conv.otherUserPhoto}
+                    alt={conv.otherUserName}
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
                 ) : (
                   <div className="h-full w-full flex items-center justify-center">
                     <User className="h-6 w-6 text-primary-300" />
@@ -69,7 +76,10 @@ export default function ChatListPage() {
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-heading font-semibold text-sm truncate" title={conv.otherUserName}>
+                  <h3
+                    className="font-heading font-semibold text-sm truncate"
+                    title={conv.otherUserName}
+                  >
                     {conv.otherUserName}
                   </h3>
                   {conv.lastMessageAt && (
@@ -83,7 +93,10 @@ export default function ChatListPage() {
                     {conv.lastMessage || 'No messages yet'}
                   </p>
                   {conv.unreadCount > 0 && (
-                    <Badge variant="default" className="h-5 min-w-[20px] p-0 justify-center text-[10px] ml-2 shrink-0">
+                    <Badge
+                      variant="default"
+                      className="h-5 min-w-[20px] p-0 justify-center text-[10px] ml-2 shrink-0"
+                    >
                       {conv.unreadCount}
                     </Badge>
                   )}

@@ -39,16 +39,20 @@ export function StepProfileFor({ data, onChange, errors }: StepProps) {
                   : 'border-border hover:border-primary-300 hover:bg-warm-50',
               )}
             >
-              <div className={cn(
-                'flex h-12 w-12 items-center justify-center rounded-full',
-                selected ? 'bg-primary-700 text-white' : 'bg-muted text-muted-foreground',
-              )}>
+              <div
+                className={cn(
+                  'flex h-12 w-12 items-center justify-center rounded-full',
+                  selected ? 'bg-primary-700 text-white' : 'bg-muted text-muted-foreground',
+                )}
+              >
                 <Icon className="h-6 w-6" />
               </div>
-              <span className={cn(
-                'text-sm font-medium',
-                selected ? 'text-primary-800' : 'text-foreground',
-              )}>
+              <span
+                className={cn(
+                  'text-sm font-medium',
+                  selected ? 'text-primary-800' : 'text-foreground',
+                )}
+              >
                 {option.label}
               </span>
             </button>

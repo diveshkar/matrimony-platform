@@ -28,7 +28,9 @@ export default function NotificationsPage() {
     return (
       <div className="space-y-6 max-w-2xl">
         <Skeleton className="h-8 w-48" />
-        {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
+        {[...Array(4)].map((_, i) => (
+          <Skeleton key={i} className="h-20 rounded-xl" />
+        ))}
       </div>
     );
   }
@@ -40,7 +42,12 @@ export default function NotificationsPage() {
         description={unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
         action={
           unreadCount > 0 ? (
-            <Button variant="outline" size="sm" onClick={() => markAll.mutate()} disabled={markAll.isPending}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => markAll.mutate()}
+              disabled={markAll.isPending}
+            >
               <CheckCheck className="mr-1.5 h-4 w-4" />
               Mark all read
             </Button>
@@ -60,19 +67,29 @@ export default function NotificationsPage() {
             const Icon = typeIcons[notif.type] || Bell;
             return (
               <Link key={notif.notificationId} to={notif.actionUrl || '#'}>
-                <Card className={cn(
-                  'border-0 transition-shadow',
-                  notif.isRead ? 'shadow-soft-sm' : 'shadow-soft bg-primary-50/30 border-l-4 border-l-primary-700',
-                )}>
+                <Card
+                  className={cn(
+                    'border-0 transition-shadow',
+                    notif.isRead
+                      ? 'shadow-soft-sm'
+                      : 'shadow-soft bg-primary-50/30 border-l-4 border-l-primary-700',
+                  )}
+                >
                   <CardContent className="p-4 flex items-start gap-3">
-                    <div className={cn(
-                      'flex h-9 w-9 shrink-0 items-center justify-center rounded-full',
-                      notif.isRead ? 'bg-muted text-muted-foreground' : 'bg-primary-100 text-primary-700',
-                    )}>
+                    <div
+                      className={cn(
+                        'flex h-9 w-9 shrink-0 items-center justify-center rounded-full',
+                        notif.isRead
+                          ? 'bg-muted text-muted-foreground'
+                          : 'bg-primary-100 text-primary-700',
+                      )}
+                    >
                       <Icon className="h-4 w-4" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className={cn('text-sm', !notif.isRead && 'font-semibold')}>{notif.title}</h3>
+                      <h3 className={cn('text-sm', !notif.isRead && 'font-semibold')}>
+                        {notif.title}
+                      </h3>
                       <p className="text-xs text-muted-foreground mt-0.5">{notif.message}</p>
                     </div>
                     <span className="text-[10px] text-muted-foreground shrink-0">

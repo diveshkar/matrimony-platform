@@ -12,13 +12,23 @@ import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useDebounce } from '@/hooks/useDebounce';
 import { cn } from '@/lib/utils/cn';
 import {
-  GENDER_OPTIONS, RELIGION_OPTIONS, EDUCATION_OPTIONS, MARITAL_STATUS_OPTIONS,
+  GENDER_OPTIONS,
+  RELIGION_OPTIONS,
+  EDUCATION_OPTIONS,
+  MARITAL_STATUS_OPTIONS,
 } from '@/lib/constants/enums';
 import type { SearchFilters } from '../api/discovery-api';
 
 const countries = [
-  'United Kingdom', 'Sri Lanka', 'India', 'Canada', 'Australia',
-  'United States', 'United Arab Emirates', 'Germany', 'France',
+  'United Kingdom',
+  'Sri Lanka',
+  'India',
+  'Canada',
+  'Australia',
+  'United States',
+  'United Arab Emirates',
+  'Germany',
+  'France',
 ];
 
 export default function SearchPage() {
@@ -42,7 +52,9 @@ export default function SearchPage() {
 
   const clearFilters = useCallback(() => setFilters({}), []);
 
-  const activeFilterCount = Object.values(filters).filter((v) => v !== undefined && v !== '').length;
+  const activeFilterCount = Object.values(filters).filter(
+    (v) => v !== undefined && v !== '',
+  ).length;
 
   return (
     <div className="space-y-6">
@@ -69,10 +81,12 @@ export default function SearchPage() {
 
       <div className="flex gap-6">
         {/* Filters sidebar */}
-        <div className={cn(
-          'w-full md:w-64 shrink-0 space-y-4',
-          showFilters ? 'block' : 'hidden md:block',
-        )}>
+        <div
+          className={cn(
+            'w-full md:w-64 shrink-0 space-y-4',
+            showFilters ? 'block' : 'hidden md:block',
+          )}
+        >
           <div className="flex items-center justify-between">
             <h3 className="font-heading font-semibold text-sm">Filters</h3>
             {hasFilters && (
@@ -91,7 +105,9 @@ export default function SearchPage() {
                   key={opt.value}
                   label={opt.label}
                   active={filters.gender === opt.value}
-                  onClick={() => updateFilter('gender', filters.gender === opt.value ? '' : opt.value)}
+                  onClick={() =>
+                    updateFilter('gender', filters.gender === opt.value ? '' : opt.value)
+                  }
                 />
               ))}
             </div>
@@ -101,16 +117,26 @@ export default function SearchPage() {
           <FilterSection label="Age Range">
             <div className="flex items-center gap-2">
               <Input
-                type="number" min={18} max={70} placeholder="Min"
+                type="number"
+                min={18}
+                max={70}
+                placeholder="Min"
                 value={filters.ageMin || ''}
-                onChange={(e) => updateFilter('ageMin', e.target.value ? Number(e.target.value) : undefined)}
+                onChange={(e) =>
+                  updateFilter('ageMin', e.target.value ? Number(e.target.value) : undefined)
+                }
                 className="h-9 text-xs"
               />
               <span className="text-xs text-muted-foreground">to</span>
               <Input
-                type="number" min={18} max={70} placeholder="Max"
+                type="number"
+                min={18}
+                max={70}
+                placeholder="Max"
                 value={filters.ageMax || ''}
-                onChange={(e) => updateFilter('ageMax', e.target.value ? Number(e.target.value) : undefined)}
+                onChange={(e) =>
+                  updateFilter('ageMax', e.target.value ? Number(e.target.value) : undefined)
+                }
                 className="h-9 text-xs"
               />
             </div>
@@ -124,7 +150,11 @@ export default function SearchPage() {
               className="w-full h-9 rounded-lg border border-input bg-white px-3 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
             >
               <option value="">All countries</option>
-              {countries.map((c) => <option key={c} value={c}>{c}</option>)}
+              {countries.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
             </select>
           </FilterSection>
 
@@ -136,7 +166,9 @@ export default function SearchPage() {
                   key={opt.value}
                   label={opt.label}
                   active={filters.religion === opt.value}
-                  onClick={() => updateFilter('religion', filters.religion === opt.value ? '' : opt.value)}
+                  onClick={() =>
+                    updateFilter('religion', filters.religion === opt.value ? '' : opt.value)
+                  }
                 />
               ))}
             </div>
@@ -150,7 +182,11 @@ export default function SearchPage() {
               className="w-full h-9 rounded-lg border border-input bg-white px-3 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
             >
               <option value="">Any education</option>
-              {EDUCATION_OPTIONS.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+              {EDUCATION_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
             </select>
           </FilterSection>
 
@@ -162,7 +198,12 @@ export default function SearchPage() {
                   key={opt.value}
                   label={opt.label}
                   active={filters.maritalStatus === opt.value}
-                  onClick={() => updateFilter('maritalStatus', filters.maritalStatus === opt.value ? '' : opt.value)}
+                  onClick={() =>
+                    updateFilter(
+                      'maritalStatus',
+                      filters.maritalStatus === opt.value ? '' : opt.value,
+                    )
+                  }
                 />
               ))}
             </div>
@@ -204,7 +245,13 @@ export default function SearchPage() {
               icon={<SearchIcon className="h-8 w-8" />}
               title="No profiles found"
               description={hasFilters ? 'Try adjusting your filters' : 'No profiles available yet'}
-              action={hasFilters ? <Button variant="outline" onClick={clearFilters}>Clear Filters</Button> : undefined}
+              action={
+                hasFilters ? (
+                  <Button variant="outline" onClick={clearFilters}>
+                    Clear Filters
+                  </Button>
+                ) : undefined
+              }
             />
           )}
 
@@ -230,7 +277,15 @@ function FilterSection({ label, children }: { label: string; children: React.Rea
   );
 }
 
-function FilterChip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+function FilterChip({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
   return (
     <button
       type="button"

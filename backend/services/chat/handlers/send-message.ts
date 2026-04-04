@@ -19,7 +19,8 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
 
   const body = event.body ? JSON.parse(event.body) : {};
   const parsed = sendMessageSchema.safeParse(body);
-  if (!parsed.success) throw new ValidationError(parsed.error.errors[0]?.message || 'Invalid input');
+  if (!parsed.success)
+    throw new ValidationError(parsed.error.errors[0]?.message || 'Invalid input');
 
   const result = await chatService.sendMessage(
     authedEvent.auth.userId,

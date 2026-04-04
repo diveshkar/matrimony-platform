@@ -8,9 +8,24 @@ import { useMySubscription } from '@/features/subscription/hooks/useSubscription
 import { ROUTES } from '@/lib/constants/routes';
 
 const settingsLinks = [
-  { label: 'Privacy Settings', href: ROUTES.PRIVACY_SETTINGS, icon: Shield, desc: 'Control who sees your info' },
-  { label: 'Blocked Users', href: ROUTES.BLOCKED_USERS, icon: UserX, desc: 'Manage blocked profiles' },
-  { label: 'Who Viewed Me', href: ROUTES.WHO_VIEWED, icon: Eye, desc: 'See who viewed your profile' },
+  {
+    label: 'Privacy Settings',
+    href: ROUTES.PRIVACY_SETTINGS,
+    icon: Shield,
+    desc: 'Control who sees your info',
+  },
+  {
+    label: 'Blocked Users',
+    href: ROUTES.BLOCKED_USERS,
+    icon: UserX,
+    desc: 'Manage blocked profiles',
+  },
+  {
+    label: 'Who Viewed Me',
+    href: ROUTES.WHO_VIEWED,
+    icon: Eye,
+    desc: 'See who viewed your profile',
+  },
   { label: 'Notifications', href: ROUTES.NOTIFICATIONS, icon: Bell, desc: 'Your notifications' },
   { label: 'Subscription', href: ROUTES.PLANS, icon: Crown, desc: 'Manage your plan' },
 ];
@@ -34,7 +49,9 @@ export default function SettingsPage() {
             </div>
             <div>
               <p className="text-sm font-medium">Current Plan</p>
-              <Badge variant={planId === 'free' ? 'outline' : 'gold'} className="mt-0.5">{planLabel}</Badge>
+              <Badge variant={planId === 'free' ? 'outline' : 'gold'} className="mt-0.5">
+                {planLabel}
+              </Badge>
             </div>
           </div>
           <Link to={ROUTES.PLANS} className="text-sm text-primary-700 hover:underline font-medium">

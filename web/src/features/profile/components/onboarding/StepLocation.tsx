@@ -21,7 +21,9 @@ export function StepLocation({ data, onChange, errors }: StepProps) {
         >
           <option value="">Select country</option>
           {COUNTRY_OPTIONS.map((c) => (
-            <option key={c.value} value={c.value}>{c.label}</option>
+            <option key={c.value} value={c.value}>
+              {c.label}
+            </option>
           ))}
         </select>
         {errors.country && <p className="mt-1 text-sm text-destructive">{errors.country}</p>}

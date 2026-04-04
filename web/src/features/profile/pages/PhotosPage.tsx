@@ -2,7 +2,16 @@ import { useRef, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Upload, Star, Trash2, Eye, EyeOff, Users, Loader2, ImagePlus, AlertCircle, ArrowLeft,
+  Upload,
+  Star,
+  Trash2,
+  Eye,
+  EyeOff,
+  Users,
+  Loader2,
+  ImagePlus,
+  AlertCircle,
+  ArrowLeft,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -131,11 +140,19 @@ export default function PhotosPage() {
           role="button"
           tabIndex={0}
           aria-label="Upload photo. Click or drag and drop an image file."
-          onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragActive(true);
+          }}
           onDragLeave={() => setDragActive(false)}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInputRef.current?.click(); } }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              fileInputRef.current?.click();
+            }
+          }}
           className={cn(
             'relative cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition-all focus-ring',
             dragActive
@@ -304,7 +321,9 @@ export default function PhotosPage() {
       {cropImageSrc && (
         <ImageCropDialog
           open={!!cropImageSrc}
-          onOpenChange={(open) => { if (!open) setCropImageSrc(null); }}
+          onOpenChange={(open) => {
+            if (!open) setCropImageSrc(null);
+          }}
           imageSrc={cropImageSrc}
           onCropComplete={handleCropComplete}
           loading={uploadPhoto.isPending}

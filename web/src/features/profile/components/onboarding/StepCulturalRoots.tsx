@@ -1,6 +1,11 @@
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils/cn';
-import { RELIGION_OPTIONS, MOTHER_TONGUE_OPTIONS, CASTE_OPTIONS, DENOMINATION_OPTIONS } from '@/lib/constants/enums';
+import {
+  RELIGION_OPTIONS,
+  MOTHER_TONGUE_OPTIONS,
+  CASTE_OPTIONS,
+  DENOMINATION_OPTIONS,
+} from '@/lib/constants/enums';
 import type { ProfileData } from '../../api/profile-api';
 
 interface StepProps {
@@ -23,7 +28,9 @@ export function StepCulturalRoots({ data, onChange, errors }: StepProps) {
             <button
               key={option.value}
               type="button"
-              onClick={() => onChange({ religion: option.value, caste: undefined, denomination: undefined })}
+              onClick={() =>
+                onChange({ religion: option.value, caste: undefined, denomination: undefined })
+              }
               className={cn(
                 'py-3 rounded-lg border-2 text-sm font-medium transition-all',
                 data.religion === option.value
@@ -58,13 +65,17 @@ export function StepCulturalRoots({ data, onChange, errors }: StepProps) {
             </button>
           ))}
         </div>
-        {errors.motherTongue && <p className="mt-1 text-sm text-destructive">{errors.motherTongue}</p>}
+        {errors.motherTongue && (
+          <p className="mt-1 text-sm text-destructive">{errors.motherTongue}</p>
+        )}
       </div>
 
       {/* Caste — dropdown based on religion */}
       {casteOptions.length > 0 && (
         <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">Caste / Community</label>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">
+            Caste / Community
+          </label>
           <select
             value={data.caste || ''}
             onChange={(e) => onChange({ caste: e.target.value })}
@@ -72,7 +83,9 @@ export function StepCulturalRoots({ data, onChange, errors }: StepProps) {
           >
             <option value="">Select caste</option>
             {casteOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
             ))}
           </select>
         </div>
@@ -81,7 +94,9 @@ export function StepCulturalRoots({ data, onChange, errors }: StepProps) {
       {/* Denomination — dropdown based on religion */}
       {denominationOptions.length > 0 && (
         <div>
-          <label className="text-sm font-medium text-foreground mb-1.5 block">Denomination / Branch</label>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">
+            Denomination / Branch
+          </label>
           <select
             value={data.denomination || ''}
             onChange={(e) => onChange({ denomination: e.target.value })}
@@ -89,7 +104,9 @@ export function StepCulturalRoots({ data, onChange, errors }: StepProps) {
           >
             <option value="">Select denomination</option>
             {denominationOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
             ))}
           </select>
         </div>

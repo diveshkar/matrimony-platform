@@ -33,7 +33,9 @@ export default function WhoViewedMePage() {
     return (
       <div className="space-y-6 max-w-2xl">
         <Skeleton className="h-8 w-48" />
-        {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
+        {[...Array(4)].map((_, i) => (
+          <Skeleton key={i} className="h-20 rounded-xl" />
+        ))}
       </div>
     );
   }
@@ -56,7 +58,12 @@ export default function WhoViewedMePage() {
                 <CardContent className="p-4 flex items-center gap-4">
                   <div className="h-12 w-12 rounded-full overflow-hidden bg-primary-50 shrink-0">
                     {view.viewerPhoto ? (
-                      <img src={view.viewerPhoto} alt={view.viewerName} loading="lazy" className="h-full w-full object-cover" />
+                      <img
+                        src={view.viewerPhoto}
+                        alt={view.viewerName}
+                        loading="lazy"
+                        className="h-full w-full object-cover"
+                      />
                     ) : (
                       <div className="h-full w-full flex items-center justify-center">
                         <User className="h-6 w-6 text-primary-300" />
@@ -64,14 +71,18 @@ export default function WhoViewedMePage() {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-heading font-semibold text-sm truncate" title={view.viewerName}>
+                    <h3
+                      className="font-heading font-semibold text-sm truncate"
+                      title={view.viewerName}
+                    >
                       {view.viewerName || 'Someone'}
                     </h3>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
                       {view.viewerAge && <span>{view.viewerAge}y</span>}
                       {view.viewerCity && (
                         <span className="flex items-center gap-1">
-                          <MapPin className="h-3 w-3" />{view.viewerCity}
+                          <MapPin className="h-3 w-3" />
+                          {view.viewerCity}
                         </span>
                       )}
                     </div>

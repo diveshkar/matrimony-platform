@@ -1,4 +1,4 @@
 packages:
-  - "web"
-  - "backend"
-  - "backend/packages/*"
+  - 'web'
+  - 'backend'
+  - 'backend/packages/*'

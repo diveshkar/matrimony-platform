@@ -43,7 +43,9 @@ export function AnimatedCounter({
 
   return (
     <span ref={ref} className={className}>
-      {prefix}{count.toLocaleString()}{suffix}
+      {prefix}
+      {count.toLocaleString()}
+      {suffix}
     </span>
   );
 }

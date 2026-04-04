@@ -1,6 +1,17 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Search, Heart, MessageCircle, User, Star, Crown, Calendar, Eye, Camera, ArrowRight } from 'lucide-react';
+import {
+  Search,
+  Heart,
+  MessageCircle,
+  User,
+  Star,
+  Crown,
+  Calendar,
+  Eye,
+  Camera,
+  ArrowRight,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,12 +22,48 @@ import { formatDate } from '@/lib/utils/format';
 import { ROUTES } from '@/lib/constants/routes';
 
 const quickActions = [
-  { label: 'Discover', href: ROUTES.DISCOVER, icon: Search, desc: 'Find your match', color: 'bg-purple-50 text-purple-600' },
-  { label: 'Interests', href: ROUTES.INTERESTS, icon: Heart, desc: 'Sent & received', color: 'bg-rose-50 text-rose-600' },
-  { label: 'Messages', href: ROUTES.CHATS, icon: MessageCircle, desc: 'Your conversations', color: 'bg-blue-50 text-blue-600' },
-  { label: 'Shortlist', href: ROUTES.SHORTLIST, icon: Star, desc: 'Saved profiles', color: 'bg-amber-50 text-amber-600' },
-  { label: 'Who Viewed', href: ROUTES.WHO_VIEWED, icon: Eye, desc: 'Profile visitors', color: 'bg-emerald-50 text-emerald-600' },
-  { label: 'My Photos', href: ROUTES.MY_PHOTOS, icon: Camera, desc: 'Manage photos', color: 'bg-indigo-50 text-indigo-600' },
+  {
+    label: 'Discover',
+    href: ROUTES.DISCOVER,
+    icon: Search,
+    desc: 'Find your match',
+    color: 'bg-purple-50 text-purple-600',
+  },
+  {
+    label: 'Interests',
+    href: ROUTES.INTERESTS,
+    icon: Heart,
+    desc: 'Sent & received',
+    color: 'bg-rose-50 text-rose-600',
+  },
+  {
+    label: 'Messages',
+    href: ROUTES.CHATS,
+    icon: MessageCircle,
+    desc: 'Your conversations',
+    color: 'bg-blue-50 text-blue-600',
+  },
+  {
+    label: 'Shortlist',
+    href: ROUTES.SHORTLIST,
+    icon: Star,
+    desc: 'Saved profiles',
+    color: 'bg-amber-50 text-amber-600',
+  },
+  {
+    label: 'Who Viewed',
+    href: ROUTES.WHO_VIEWED,
+    icon: Eye,
+    desc: 'Profile visitors',
+    color: 'bg-emerald-50 text-emerald-600',
+  },
+  {
+    label: 'My Photos',
+    href: ROUTES.MY_PHOTOS,
+    icon: Camera,
+    desc: 'Manage photos',
+    color: 'bg-indigo-50 text-indigo-600',
+  },
 ];
 
 export default function DashboardPage() {
@@ -77,19 +124,30 @@ export default function DashboardPage() {
       {/* Plan + Profile completion row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Plan card */}
-        <Card className={isPremium
-          ? 'border-accent-200 bg-gradient-to-r from-accent-50/50 to-warm-50'
-          : 'border-0 shadow-soft'
-        }>
+        <Card
+          className={
+            isPremium
+              ? 'border-accent-200 bg-gradient-to-r from-accent-50/50 to-warm-50'
+              : 'border-0 shadow-soft'
+          }
+        >
           <CardContent className="pt-5 pb-5">
             <div className="flex items-center gap-3">
-              <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${isPremium ? 'bg-accent-100' : 'bg-primary-50'}`}>
-                <Crown className={`h-5 w-5 ${isPremium ? 'text-accent-600' : 'text-primary-600'}`} />
+              <div
+                className={`flex h-11 w-11 items-center justify-center rounded-xl ${isPremium ? 'bg-accent-100' : 'bg-primary-50'}`}
+              >
+                <Crown
+                  className={`h-5 w-5 ${isPremium ? 'text-accent-600' : 'text-primary-600'}`}
+                />
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <p className="font-heading font-semibold text-sm">{planLabel} Plan</p>
-                  {isPremium && <Badge variant="success" className="text-[9px]">Active</Badge>}
+                  {isPremium && (
+                    <Badge variant="success" className="text-[9px]">
+                      Active
+                    </Badge>
+                  )}
                 </div>
                 {isPremium && endDate ? (
                   <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
@@ -100,7 +158,10 @@ export default function DashboardPage() {
                   <p className="text-[11px] text-muted-foreground">Upgrade for more features</p>
                 )}
               </div>
-              <Link to={ROUTES.PLANS} className="text-xs text-primary-700 hover:underline font-medium">
+              <Link
+                to={ROUTES.PLANS}
+                className="text-xs text-primary-700 hover:underline font-medium"
+              >
                 {isPremium ? 'Manage' : 'Upgrade'}
               </Link>
             </div>
@@ -126,7 +187,10 @@ export default function DashboardPage() {
                   />
                 </div>
               </div>
-              <Link to={ROUTES.MY_PROFILE} className="text-xs text-primary-700 hover:underline font-medium">
+              <Link
+                to={ROUTES.MY_PROFILE}
+                className="text-xs text-primary-700 hover:underline font-medium"
+              >
                 View
               </Link>
             </div>
@@ -148,7 +212,9 @@ export default function DashboardPage() {
               <Link to={action.href}>
                 <Card className="h-full border-0 shadow-soft-sm hover:shadow-soft transition-all cursor-pointer group text-center">
                   <CardContent className="pt-5 pb-4 px-3">
-                    <div className={`mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl ${action.color} transition-transform group-hover:scale-110`}>
+                    <div
+                      className={`mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl ${action.color} transition-transform group-hover:scale-110`}
+                    >
                       <action.icon className="h-5 w-5" />
                     </div>
                     <h3 className="font-heading font-semibold text-xs">{action.label}</h3>

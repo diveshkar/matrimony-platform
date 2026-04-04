@@ -44,9 +44,7 @@ export const discoveryApi = {
   getRecommendations: (limit = 20, cursor?: string) => {
     const params = new URLSearchParams({ limit: String(limit) });
     if (cursor) params.set('cursor', cursor);
-    return apiClient
-      .get<ApiResponse<DiscoveryResponse>>(`/discover?${params}`)
-      .then((r) => r.data);
+    return apiClient.get<ApiResponse<DiscoveryResponse>>(`/discover?${params}`).then((r) => r.data);
   },
 
   search: (filters: SearchFilters) => {

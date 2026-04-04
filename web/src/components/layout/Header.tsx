@@ -1,8 +1,19 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
-  Menu, X, Bell, MessageCircle, Heart, User, Crown, Settings,
-  Shield, UserX, Eye, Camera, LogOut,
+  Menu,
+  X,
+  Bell,
+  MessageCircle,
+  Heart,
+  User,
+  Crown,
+  Settings,
+  Shield,
+  UserX,
+  Eye,
+  Camera,
+  LogOut,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -83,11 +94,7 @@ export function Header() {
         {/* Mobile menu button */}
         <div className="flex md:hidden items-center gap-1">
           {isAuthenticated && <NotificationBell />}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setMobileOpen(!mobileOpen)}
-          >
+          <Button variant="ghost" size="icon" onClick={() => setMobileOpen(!mobileOpen)}>
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
         </div>
@@ -134,7 +141,9 @@ function NotificationBell() {
             <h3 className="font-heading font-semibold text-sm">Notifications</h3>
             {unreadCount > 0 && (
               <button
-                onClick={() => { markAll.mutate(undefined, { onSuccess: () => refetch() }); }}
+                onClick={() => {
+                  markAll.mutate(undefined, { onSuccess: () => refetch() });
+                }}
                 className="text-[10px] text-primary-700 hover:underline font-medium"
               >
                 Mark all read
@@ -165,10 +174,12 @@ function NotificationBell() {
                     !n.isRead && 'bg-primary-50/30',
                   )}
                 >
-                  <div className={cn(
-                    'h-2 w-2 rounded-full mt-1.5 shrink-0',
-                    n.isRead ? 'bg-transparent' : 'bg-primary-700',
-                  )} />
+                  <div
+                    className={cn(
+                      'h-2 w-2 rounded-full mt-1.5 shrink-0',
+                      n.isRead ? 'bg-transparent' : 'bg-primary-700',
+                    )}
+                  />
                   <div className="flex-1 min-w-0">
                     <p className={cn('text-xs', !n.isRead && 'font-semibold')}>{n.title}</p>
                     <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{n.message}</p>
@@ -242,7 +253,10 @@ function SettingsDropdown() {
             <div className="border-t my-1" />
 
             <button
-              onClick={() => { setOpen(false); logout.mutate(); }}
+              onClick={() => {
+                setOpen(false);
+                logout.mutate();
+              }}
               className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-destructive hover:bg-destructive/5 transition-colors"
             >
               <LogOut className="h-4 w-4" />

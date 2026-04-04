@@ -1,8 +1,11 @@
 import { Input } from '@/components/ui/input';
 import { MultiSelect } from '@/components/ui/multi-select';
 import {
-  RELIGION_OPTIONS, CASTE_OPTIONS, COUNTRY_OPTIONS,
-  EDUCATION_OPTIONS, MARITAL_STATUS_OPTIONS,
+  RELIGION_OPTIONS,
+  CASTE_OPTIONS,
+  COUNTRY_OPTIONS,
+  EDUCATION_OPTIONS,
+  MARITAL_STATUS_OPTIONS,
 } from '@/lib/constants/enums';
 import type { ProfileData } from '../../api/profile-api';
 
@@ -36,18 +39,24 @@ export function StepPreferences({ data, onChange, errors: _errors }: StepProps) 
         <div className="flex items-center gap-3">
           <Input
             type="number"
-            min={18} max={70}
+            min={18}
+            max={70}
             value={prefs.ageMin ?? ''}
-            onChange={(e) => updatePref('ageMin', e.target.value === '' ? undefined : Number(e.target.value))}
+            onChange={(e) =>
+              updatePref('ageMin', e.target.value === '' ? undefined : Number(e.target.value))
+            }
             placeholder="18"
             className="w-24"
           />
           <span className="text-muted-foreground">to</span>
           <Input
             type="number"
-            min={18} max={70}
+            min={18}
+            max={70}
             value={prefs.ageMax ?? ''}
-            onChange={(e) => updatePref('ageMax', e.target.value === '' ? undefined : Number(e.target.value))}
+            onChange={(e) =>
+              updatePref('ageMax', e.target.value === '' ? undefined : Number(e.target.value))
+            }
             placeholder="45"
             className="w-24"
           />
@@ -57,11 +66,14 @@ export function StepPreferences({ data, onChange, errors: _errors }: StepProps) 
 
       {/* Height Range */}
       <div>
-        <label className="text-sm font-medium text-foreground mb-1.5 block">Height Range (cm)</label>
+        <label className="text-sm font-medium text-foreground mb-1.5 block">
+          Height Range (cm)
+        </label>
         <div className="flex items-center gap-3">
           <Input
             type="number"
-            min={120} max={220}
+            min={120}
+            max={220}
             value={prefs.heightMin || ''}
             onChange={(e) => updatePref('heightMin', Number(e.target.value) || undefined)}
             placeholder="Min"
@@ -70,7 +82,8 @@ export function StepPreferences({ data, onChange, errors: _errors }: StepProps) 
           <span className="text-muted-foreground">to</span>
           <Input
             type="number"
-            min={120} max={220}
+            min={120}
+            max={220}
             value={prefs.heightMax || ''}
             onChange={(e) => updatePref('heightMax', Number(e.target.value) || undefined)}
             placeholder="Max"
@@ -82,7 +95,9 @@ export function StepPreferences({ data, onChange, errors: _errors }: StepProps) 
 
       {/* Preferred Religions — Multi-select */}
       <div>
-        <label className="text-sm font-medium text-foreground mb-1.5 block">Preferred Religion(s)</label>
+        <label className="text-sm font-medium text-foreground mb-1.5 block">
+          Preferred Religion(s)
+        </label>
         <MultiSelect
           options={RELIGION_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
           value={prefs.religions || []}
@@ -93,7 +108,9 @@ export function StepPreferences({ data, onChange, errors: _errors }: StepProps) 
 
       {/* Preferred Castes — Multi-select */}
       <div>
-        <label className="text-sm font-medium text-foreground mb-1.5 block">Preferred Caste(s)</label>
+        <label className="text-sm font-medium text-foreground mb-1.5 block">
+          Preferred Caste(s)
+        </label>
         <MultiSelect
           options={allCasteOptions}
           value={prefs.castes || []}
@@ -104,7 +121,9 @@ export function StepPreferences({ data, onChange, errors: _errors }: StepProps) 
 
       {/* Preferred Countries — Multi-select */}
       <div>
-        <label className="text-sm font-medium text-foreground mb-1.5 block">Preferred Country(ies)</label>
+        <label className="text-sm font-medium text-foreground mb-1.5 block">
+          Preferred Country(ies)
+        </label>
         <MultiSelect
           options={COUNTRY_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
           value={prefs.countries || []}
@@ -115,7 +134,9 @@ export function StepPreferences({ data, onChange, errors: _errors }: StepProps) 
 
       {/* Preferred Education — Multi-select */}
       <div>
-        <label className="text-sm font-medium text-foreground mb-1.5 block">Preferred Education</label>
+        <label className="text-sm font-medium text-foreground mb-1.5 block">
+          Preferred Education
+        </label>
         <MultiSelect
           options={EDUCATION_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
           value={prefs.educations || []}
@@ -126,7 +147,9 @@ export function StepPreferences({ data, onChange, errors: _errors }: StepProps) 
 
       {/* Preferred Marital Status — Multi-select */}
       <div>
-        <label className="text-sm font-medium text-foreground mb-1.5 block">Preferred Marital Status</label>
+        <label className="text-sm font-medium text-foreground mb-1.5 block">
+          Preferred Marital Status
+        </label>
         <MultiSelect
           options={MARITAL_STATUS_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
           value={prefs.maritalStatuses || []}

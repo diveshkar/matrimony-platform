@@ -18,7 +18,9 @@ export default function BlockedUsersPage() {
     return (
       <div className="space-y-6 max-w-2xl">
         <Skeleton className="h-8 w-48" />
-        {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-16 rounded-xl" />)}
+        {[...Array(3)].map((_, i) => (
+          <Skeleton key={i} className="h-16 rounded-xl" />
+        ))}
       </div>
     );
   }
@@ -47,7 +49,9 @@ export default function BlockedUsersPage() {
               <CardContent className="p-4 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium">{item.blockedUserId}</p>
-                  <p className="text-xs text-muted-foreground">{formatRelativeTime(item.createdAt)}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatRelativeTime(item.createdAt)}
+                  </p>
                 </div>
                 <Button
                   variant="outline"

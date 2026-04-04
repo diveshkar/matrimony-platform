@@ -17,13 +17,16 @@ export class PhotoRepository extends BaseRepository {
     return this.get<PhotoMetadata>(`USER#${userId}`, `PHOTO#${photoId}`);
   }
 
-  async savePhoto(userId: string, data: {
-    s3Key: string;
-    url: string;
-    fileSize: number;
-    mimeType: string;
-    visibility: 'all' | 'contacts' | 'hidden';
-  }): Promise<PhotoMetadata> {
+  async savePhoto(
+    userId: string,
+    data: {
+      s3Key: string;
+      url: string;
+      fileSize: number;
+      mimeType: string;
+      visibility: 'all' | 'contacts' | 'hidden';
+    },
+  ): Promise<PhotoMetadata> {
     const photoId = generateId('PHT');
     const existingPhotos = await this.getPhotos(userId);
     const isPrimary = existingPhotos.length === 0; // First photo is primary
@@ -59,7 +62,11 @@ export class PhotoRepository extends BaseRepository {
     }
   }
 
-  async updateVisibility(userId: string, photoId: string, visibility: 'all' | 'contacts' | 'hidden'): Promise<void> {
+  async updateVisibility(
+    userId: string,
+    photoId: string,
+    visibility: 'all' | 'contacts' | 'hidden',
+  ): Promise<void> {
     await this.update(`USER#${userId}`, `PHOTO#${photoId}`, { visibility });
   }
 

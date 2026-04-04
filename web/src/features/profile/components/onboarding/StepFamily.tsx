@@ -1,6 +1,10 @@
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils/cn';
-import { FAMILY_TYPE_OPTIONS, FAMILY_STATUS_OPTIONS, FAMILY_VALUES_OPTIONS } from '@/lib/constants/enums';
+import {
+  FAMILY_TYPE_OPTIONS,
+  FAMILY_STATUS_OPTIONS,
+  FAMILY_VALUES_OPTIONS,
+} from '@/lib/constants/enums';
 import type { ProfileData } from '../../api/profile-api';
 
 interface StepProps {
@@ -16,7 +20,9 @@ export function StepFamily({ data, onChange, errors: _errors }: StepProps) {
 
       {/* Father's Occupation */}
       <div>
-        <label className="text-sm font-medium text-foreground mb-1.5 block">Father&apos;s Occupation</label>
+        <label className="text-sm font-medium text-foreground mb-1.5 block">
+          Father&apos;s Occupation
+        </label>
         <Input
           value={data.fatherOccupation || ''}
           onChange={(e) => onChange({ fatherOccupation: e.target.value })}
@@ -26,7 +32,9 @@ export function StepFamily({ data, onChange, errors: _errors }: StepProps) {
 
       {/* Mother's Occupation */}
       <div>
-        <label className="text-sm font-medium text-foreground mb-1.5 block">Mother&apos;s Occupation</label>
+        <label className="text-sm font-medium text-foreground mb-1.5 block">
+          Mother&apos;s Occupation
+        </label>
         <Input
           value={data.motherOccupation || ''}
           onChange={(e) => onChange({ motherOccupation: e.target.value })}
@@ -39,7 +47,9 @@ export function StepFamily({ data, onChange, errors: _errors }: StepProps) {
         <div>
           <label className="text-sm font-medium text-foreground mb-1.5 block">Brothers</label>
           <Input
-            type="number" min={0} max={15}
+            type="number"
+            min={0}
+            max={15}
             value={data.brothersCount ?? ''}
             onChange={(e) => onChange({ brothersCount: Number(e.target.value) })}
           />
@@ -47,7 +57,9 @@ export function StepFamily({ data, onChange, errors: _errors }: StepProps) {
         <div>
           <label className="text-sm font-medium text-foreground mb-1.5 block">Sisters</label>
           <Input
-            type="number" min={0} max={15}
+            type="number"
+            min={0}
+            max={15}
             value={data.sistersCount ?? ''}
             onChange={(e) => onChange({ sistersCount: Number(e.target.value) })}
           />

@@ -1,6 +1,11 @@
 import { InterestRepository } from '../repositories/interest-repository.js';
 import { BaseRepository } from '../../shared/repositories/base-repository.js';
-import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from '../../shared/errors/app-errors.js';
+import {
+  ConflictError,
+  ForbiddenError,
+  NotFoundError,
+  ValidationError,
+} from '../../shared/errors/app-errors.js';
 
 export class InterestService {
   private repo: InterestRepository;
@@ -11,7 +16,11 @@ export class InterestService {
     this.coreRepo = new BaseRepository('core');
   }
 
-  async sendInterest(senderId: string, receiverId: string, message?: string): Promise<{ status: string }> {
+  async sendInterest(
+    senderId: string,
+    receiverId: string,
+    message?: string,
+  ): Promise<{ status: string }> {
     if (senderId === receiverId) {
       throw new ValidationError('Cannot send interest to yourself');
     }
@@ -52,14 +61,16 @@ export class InterestService {
     try {
       const { SafetyRepository } = await import('../../safety/repositories/safety-repository.js');
       const repo = new SafetyRepository();
-      const senderName = senderProfile?.name as string || 'Someone';
+      const senderName = (senderProfile?.name as string) || 'Someone';
       await repo.createNotification(receiverId, {
         type: 'interest_received',
         title: 'New Interest!',
         message: `${senderName} is interested in your profile`,
         actionUrl: '/interests',
       });
-    } catch { /* non-critical */ }
+    } catch {
+      /* non-critical */
+    }
 
     return { status: 'interest_sent' };
   }
@@ -95,7 +106,9 @@ export class InterestService {
         message: `${receiverName} accepted your interest. You can now chat!`,
         actionUrl: '/chats',
       });
-    } catch { /* non-critical */ }
+    } catch {
+      /* non-critical */
+    }
 
     return { status: 'interest_accepted' };
   }
@@ -130,13 +143,18 @@ export class InterestService {
       throw new ValidationError('Cannot shortlist yourself');
     }
 
-    const targetProfile = await this.coreRepo.get<Record<string, unknown>>(`USER#${targetUserId}`, 'PROFILE#v1');
+    const targetProfile = await this.coreRepo.get<Record<string, unknown>>(
+      `USER#${targetUserId}`,
+      'PROFILE#v1',
+    );
     if (!targetProfile) {
       throw new NotFoundError('Profile');
     }
 
     const age = targetProfile.dateOfBirth
-      ? Math.floor((Date.now() - new Date(targetProfile.dateOfBirth as string).getTime()) / 31557600000)
+      ? Math.floor(
+          (Date.now() - new Date(targetProfile.dateOfBirth as string).getTime()) / 31557600000,
+        )
       : undefined;
 
     await this.repo.addToShortlist({

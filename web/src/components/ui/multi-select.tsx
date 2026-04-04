@@ -66,7 +66,9 @@ export function MultiSelect({
         className={cn(
           'flex min-h-[44px] w-full items-center justify-between rounded-lg border bg-white px-3 py-2 text-sm transition-colors',
           'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1',
-          open ? 'border-primary-700 ring-2 ring-ring ring-offset-1' : 'border-input hover:border-primary-300',
+          open
+            ? 'border-primary-700 ring-2 ring-ring ring-offset-1'
+            : 'border-input hover:border-primary-300',
         )}
       >
         <div className="flex flex-wrap gap-1.5 flex-1">
@@ -98,7 +100,12 @@ export function MultiSelect({
             </>
           )}
         </div>
-        <ChevronDown className={cn('h-4 w-4 shrink-0 text-muted-foreground transition-transform ml-2', open && 'rotate-180')} />
+        <ChevronDown
+          className={cn(
+            'h-4 w-4 shrink-0 text-muted-foreground transition-transform ml-2',
+            open && 'rotate-180',
+          )}
+        />
       </button>
 
       {/* Dropdown */}
@@ -116,10 +123,12 @@ export function MultiSelect({
                   selected ? 'bg-primary-50 text-primary-800' : 'hover:bg-muted',
                 )}
               >
-                <div className={cn(
-                  'flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors',
-                  selected ? 'bg-primary-700 border-primary-700 text-white' : 'border-input',
-                )}>
+                <div
+                  className={cn(
+                    'flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors',
+                    selected ? 'bg-primary-700 border-primary-700 text-white' : 'border-input',
+                  )}
+                >
                   {selected && <Check className="h-3 w-3" />}
                 </div>
                 {option.label}

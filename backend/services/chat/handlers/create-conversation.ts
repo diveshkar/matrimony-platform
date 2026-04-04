@@ -13,10 +13,7 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
   const body = event.body ? JSON.parse(event.body) : {};
   if (!body.otherUserId) throw new ValidationError('otherUserId is required');
 
-  const result = await chatService.createConversation(
-    authedEvent.auth.userId,
-    body.otherUserId,
-  );
+  const result = await chatService.createConversation(authedEvent.auth.userId, body.otherUserId);
 
   return success(result, requestId, 201);
 }

@@ -163,7 +163,10 @@ export default function LoginPage() {
           <div className="flex rounded-xl bg-muted/70 p-1.5 mb-6">
             <button
               type="button"
-              onClick={() => { setMode('phone'); setError(''); }}
+              onClick={() => {
+                setMode('phone');
+                setError('');
+              }}
               className={`flex-1 flex items-center justify-center gap-2 rounded-lg py-3 text-sm font-medium transition-all ${
                 mode === 'phone'
                   ? 'bg-white text-foreground shadow-soft'
@@ -175,7 +178,10 @@ export default function LoginPage() {
             </button>
             <button
               type="button"
-              onClick={() => { setMode('email'); setError(''); }}
+              onClick={() => {
+                setMode('email');
+                setError('');
+              }}
               className={`flex-1 flex items-center justify-center gap-2 rounded-lg py-3 text-sm font-medium transition-all ${
                 mode === 'email'
                   ? 'bg-white text-foreground shadow-soft'

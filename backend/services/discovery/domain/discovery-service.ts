@@ -1,4 +1,7 @@
-import { DiscoveryRepository, type DiscoveryProfile } from '../repositories/discovery-repository.js';
+import {
+  DiscoveryRepository,
+  type DiscoveryProfile,
+} from '../repositories/discovery-repository.js';
 import { BaseRepository } from '../../shared/repositories/base-repository.js';
 import { calculateAge } from './matching.js';
 
@@ -39,10 +42,16 @@ export class DiscoveryService {
    * Write/update the discovery projection when a profile changes.
    */
   async syncProfileToDiscovery(userId: string): Promise<void> {
-    const profile = await this.coreRepo.get<Record<string, unknown>>(`USER#${userId}`, 'PROFILE#v1');
+    const profile = await this.coreRepo.get<Record<string, unknown>>(
+      `USER#${userId}`,
+      'PROFILE#v1',
+    );
     if (!profile) return;
 
-    const privacy = await this.coreRepo.get<Record<string, unknown>>(`USER#${userId}`, 'PRIVACY#v1');
+    const privacy = await this.coreRepo.get<Record<string, unknown>>(
+      `USER#${userId}`,
+      'PRIVACY#v1',
+    );
     const showInSearch = privacy?.showInSearch !== false;
     if (!showInSearch) {
       await this.discoveryRepo.removeProjection(userId);
@@ -116,7 +125,8 @@ export class DiscoveryService {
     }
 
     const myGender = myProfile?.gender as string | undefined;
-    const lookingForGender = myGender === 'male' ? 'female' : myGender === 'female' ? 'male' : undefined;
+    const lookingForGender =
+      myGender === 'male' ? 'female' : myGender === 'female' ? 'male' : undefined;
 
     let allResults: DiscoveryProfile[] = [];
     const startKey = cursor ? JSON.parse(Buffer.from(cursor, 'base64').toString()) : undefined;
@@ -126,7 +136,9 @@ export class DiscoveryService {
     if (prefs?.countries?.length && lookingForGender) {
       for (const country of prefs.countries) {
         const results = await this.discoveryRepo.searchByCountryAndGender(
-          country, lookingForGender, { limit: limit + 10, exclusiveStartKey: startKey },
+          country,
+          lookingForGender,
+          { limit: limit + 10, exclusiveStartKey: startKey },
         );
         allResults.push(...results.items);
         if (results.lastKey) lastKey = results.lastKey;
@@ -138,7 +150,9 @@ export class DiscoveryService {
     if (allResults.length < limit && prefs?.religions?.length && lookingForGender) {
       for (const religion of prefs.religions) {
         const results = await this.discoveryRepo.searchByReligionAndGender(
-          religion, lookingForGender, { limit: limit + 10, exclusiveStartKey: startKey },
+          religion,
+          lookingForGender,
+          { limit: limit + 10, exclusiveStartKey: startKey },
         );
         allResults.push(...results.items);
         if (results.lastKey) lastKey = results.lastKey;
@@ -203,7 +217,9 @@ export class DiscoveryService {
     const startKey = cursor ? JSON.parse(Buffer.from(cursor, 'base64').toString()) : undefined;
 
     // Get blocked users
-    const blockedResult = await this.coreRepo.query<{ SK: string }>(`USER#${userId}`, { limit: 100 });
+    const blockedResult = await this.coreRepo.query<{ SK: string }>(`USER#${userId}`, {
+      limit: 100,
+    });
     const blockedIds = new Set<string>();
     for (const item of blockedResult.items) {
       if (item.SK.startsWith('BLOCK#')) {
@@ -214,11 +230,10 @@ export class DiscoveryService {
     let results: { items: DiscoveryProfile[]; lastKey?: Record<string, unknown> };
 
     if (filters.country && filters.gender) {
-      results = await this.discoveryRepo.searchByCountryAndGender(
-        filters.country,
-        filters.gender,
-        { limit: limit + 10, exclusiveStartKey: startKey },
-      );
+      results = await this.discoveryRepo.searchByCountryAndGender(filters.country, filters.gender, {
+        limit: limit + 10,
+        exclusiveStartKey: startKey,
+      });
     } else if (filters.religion && filters.gender) {
       results = await this.discoveryRepo.searchByReligionAndGender(
         filters.religion,
@@ -237,11 +252,15 @@ export class DiscoveryService {
     if (filters.ageMax) filtered = filtered.filter((p) => p.age <= filters.ageMax!);
     if (filters.country) filtered = filtered.filter((p) => p.country === filters.country);
     if (filters.state) filtered = filtered.filter((p) => p.state === filters.state);
-    if (filters.city) filtered = filtered.filter((p) => p.city?.toLowerCase().includes(filters.city!.toLowerCase()));
+    if (filters.city)
+      filtered = filtered.filter((p) =>
+        p.city?.toLowerCase().includes(filters.city!.toLowerCase()),
+      );
     if (filters.religion) filtered = filtered.filter((p) => p.religion === filters.religion);
     if (filters.caste) filtered = filtered.filter((p) => p.caste === filters.caste);
     if (filters.education) filtered = filtered.filter((p) => p.education === filters.education);
-    if (filters.maritalStatus) filtered = filtered.filter((p) => p.maritalStatus === filters.maritalStatus);
+    if (filters.maritalStatus)
+      filtered = filtered.filter((p) => p.maritalStatus === filters.maritalStatus);
     if (filters.hasPhoto) filtered = filtered.filter((p) => !!p.primaryPhotoUrl);
 
     const items = filtered.slice(0, limit);
@@ -288,6 +307,10 @@ function scoreAndSort(
 
       return { ...p, _matchScore: score };
     })
-    .sort((a, b) => (b as unknown as { _matchScore: number })._matchScore - (a as unknown as { _matchScore: number })._matchScore)
+    .sort(
+      (a, b) =>
+        (b as unknown as { _matchScore: number })._matchScore -
+        (a as unknown as { _matchScore: number })._matchScore,
+    )
     .map(({ _matchScore: _, ...p }) => p as DiscoveryProfile);
 }

@@ -11,7 +11,10 @@ export function useBlockUser() {
   const toast = useToast();
   return useMutation({
     mutationFn: (userId: string) => settingsApi.blockUser(userId),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['blocked'] }); toast.success('User blocked'); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['blocked'] });
+      toast.success('User blocked');
+    },
     onError: () => toast.error('Failed to block user'),
   });
 }
@@ -21,14 +24,18 @@ export function useUnblockUser() {
   const toast = useToast();
   return useMutation({
     mutationFn: (userId: string) => settingsApi.unblockUser(userId),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['blocked'] }); toast.info('User unblocked'); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['blocked'] });
+      toast.info('User unblocked');
+    },
   });
 }
 
 export function useReportUser() {
   const toast = useToast();
   return useMutation({
-    mutationFn: (data: { reportedUserId: string; reason: string; description?: string }) => settingsApi.reportUser(data),
+    mutationFn: (data: { reportedUserId: string; reason: string; description?: string }) =>
+      settingsApi.reportUser(data),
     onSuccess: () => toast.success('Report submitted', 'Our team will review it within 24 hours'),
     onError: () => toast.error('Failed to submit report'),
   });
@@ -39,7 +46,11 @@ export function useWhoViewedMe() {
 }
 
 export function useNotifications() {
-  return useQuery({ queryKey: ['notifications'], queryFn: () => settingsApi.getNotifications(), refetchInterval: 30000 });
+  return useQuery({
+    queryKey: ['notifications'],
+    queryFn: () => settingsApi.getNotifications(),
+    refetchInterval: 30000,
+  });
 }
 
 export function useMarkAllRead() {
@@ -59,7 +70,10 @@ export function useUpdatePrivacy() {
   const toast = useToast();
   return useMutation({
     mutationFn: (data: Record<string, unknown>) => settingsApi.updatePrivacy(data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['privacy'] }); toast.success('Privacy settings updated'); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['privacy'] });
+      toast.success('Privacy settings updated');
+    },
     onError: () => toast.error('Failed to update settings'),
   });
 }

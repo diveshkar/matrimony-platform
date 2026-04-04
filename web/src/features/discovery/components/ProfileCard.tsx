@@ -19,7 +19,12 @@ function formatEnum(str: string): string {
 export function ProfileCard({ profile, className }: ProfileCardProps) {
   return (
     <Link to={profileDetailPath(profile.userId)}>
-      <Card className={cn('overflow-hidden border-0 shadow-soft hover-lift cursor-pointer group', className)}>
+      <Card
+        className={cn(
+          'overflow-hidden border-0 shadow-soft hover-lift cursor-pointer group',
+          className,
+        )}
+      >
         {/* Photo */}
         <div className="aspect-[3/4] relative bg-muted overflow-hidden">
           {profile.primaryPhotoUrl ? (
@@ -40,13 +45,17 @@ export function ProfileCard({ profile, className }: ProfileCardProps) {
 
           {/* Name + age on photo */}
           <div className="absolute bottom-0 left-0 right-0 p-3">
-            <h3 className="font-heading font-bold text-white text-sm sm:text-base truncate" title={profile.name}>
+            <h3
+              className="font-heading font-bold text-white text-sm sm:text-base truncate"
+              title={profile.name}
+            >
               {profile.name}, {profile.age}
             </h3>
             <div className="flex items-center gap-1 mt-0.5">
               <MapPin className="h-3 w-3 text-white/70" />
               <span className="text-[11px] text-white/70 truncate">
-                {profile.city ? `${profile.city}, ` : ''}{profile.country}
+                {profile.city ? `${profile.city}, ` : ''}
+                {profile.country}
               </span>
             </div>
           </div>
@@ -61,7 +70,10 @@ export function ProfileCard({ profile, className }: ProfileCardProps) {
           {/* Verified badge */}
           {profile.primaryPhotoUrl && (
             <div className="absolute top-2 left-2">
-              <Badge variant="success" className="text-[9px] backdrop-blur-sm bg-emerald-500/90 border-0">
+              <Badge
+                variant="success"
+                className="text-[9px] backdrop-blur-sm bg-emerald-500/90 border-0"
+              >
                 Verified
               </Badge>
             </div>
@@ -85,9 +97,17 @@ export function ProfileCard({ profile, className }: ProfileCardProps) {
           </div>
 
           <div className="mt-2.5 flex items-center gap-1.5 flex-wrap">
-            <Badge variant="outline" className="text-[9px] px-2 py-0">{formatEnum(profile.religion)}</Badge>
-            <Badge variant="outline" className="text-[9px] px-2 py-0">{formatHeight(profile.height)}</Badge>
-            {profile.caste && <Badge variant="outline" className="text-[9px] px-2 py-0">{formatEnum(profile.caste)}</Badge>}
+            <Badge variant="outline" className="text-[9px] px-2 py-0">
+              {formatEnum(profile.religion)}
+            </Badge>
+            <Badge variant="outline" className="text-[9px] px-2 py-0">
+              {formatHeight(profile.height)}
+            </Badge>
+            {profile.caste && (
+              <Badge variant="outline" className="text-[9px] px-2 py-0">
+                {formatEnum(profile.caste)}
+              </Badge>
+            )}
           </div>
         </CardContent>
       </Card>

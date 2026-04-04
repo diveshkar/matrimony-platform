@@ -17,12 +17,7 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
   const limit = Number(params.limit) || 20;
   const cursor = params.cursor;
 
-  const result = await discoveryService.search(
-    authedEvent.auth.userId,
-    filters,
-    limit,
-    cursor,
-  );
+  const result = await discoveryService.search(authedEvent.auth.userId, filters, limit, cursor);
 
   return success(result, requestId);
 }

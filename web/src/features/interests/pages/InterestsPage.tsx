@@ -23,9 +23,14 @@ export default function InterestsPage() {
   const respond = useRespondInterest();
 
   const isLoading = tab === 'inbox' ? inbox.isLoading : outbox.isLoading;
-  const items = tab === 'inbox'
-    ? (inbox.data?.success ? inbox.data.data.items : [])
-    : (outbox.data?.success ? outbox.data.data.items : []);
+  const items =
+    tab === 'inbox'
+      ? inbox.data?.success
+        ? inbox.data.data.items
+        : []
+      : outbox.data?.success
+        ? outbox.data.data.items
+        : [];
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -42,11 +47,12 @@ export default function InterestsPage() {
         >
           <Heart className="h-4 w-4" />
           Received
-          {inbox.data?.success && inbox.data.data.items.filter((i) => i.status === 'pending').length > 0 && (
-            <Badge variant="default" className="h-5 min-w-[20px] p-0 justify-center text-[10px]">
-              {inbox.data.data.items.filter((i) => i.status === 'pending').length}
-            </Badge>
-          )}
+          {inbox.data?.success &&
+            inbox.data.data.items.filter((i) => i.status === 'pending').length > 0 && (
+              <Badge variant="default" className="h-5 min-w-[20px] p-0 justify-center text-[10px]">
+                {inbox.data.data.items.filter((i) => i.status === 'pending').length}
+              </Badge>
+            )}
         </button>
         <button
           onClick={() => setTab('outbox')}
@@ -63,7 +69,9 @@ export default function InterestsPage() {
       {/* Loading */}
       {isLoading && (
         <div className="space-y-3">
-          {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)}
+          {[...Array(3)].map((_, i) => (
+            <Skeleton key={i} className="h-24 rounded-xl" />
+          ))}
         </div>
       )}
 
@@ -73,7 +81,11 @@ export default function InterestsPage() {
           icon={<Heart className="h-8 w-8" />}
           title="Could not load interests"
           description="Please try again."
-          action={<Button onClick={() => tab === 'inbox' ? inbox.refetch() : outbox.refetch()}>Retry</Button>}
+          action={
+            <Button onClick={() => (tab === 'inbox' ? inbox.refetch() : outbox.refetch())}>
+              Retry
+            </Button>
+          }
         />
       )}
 
@@ -82,12 +94,16 @@ export default function InterestsPage() {
         <EmptyState
           icon={<Heart className="h-8 w-8" />}
           title={tab === 'inbox' ? 'No interests received yet' : 'No interests sent yet'}
-          description={tab === 'inbox'
-            ? 'When someone is interested in your profile, it will appear here.'
-            : 'Browse profiles and send interests to people you like.'}
+          description={
+            tab === 'inbox'
+              ? 'When someone is interested in your profile, it will appear here.'
+              : 'Browse profiles and send interests to people you like.'
+          }
           action={
             <Button asChild>
-              <Link to={ROUTES.DISCOVER}>{tab === 'inbox' ? 'Complete Your Profile' : 'Browse Profiles'}</Link>
+              <Link to={ROUTES.DISCOVER}>
+                {tab === 'inbox' ? 'Complete Your Profile' : 'Browse Profiles'}
+              </Link>
             </Button>
           }
         />
@@ -113,7 +129,11 @@ export default function InterestsPage() {
 }
 
 function InterestCard({
-  item, type, onAccept, onDecline, isResponding,
+  item,
+  type,
+  onAccept,
+  onDecline,
+  isResponding,
 }: {
   item: InterestItem;
   type: Tab;
@@ -149,11 +169,15 @@ function InterestCard({
               <h3 className="font-heading font-semibold text-sm truncate">{name || 'Unknown'}</h3>
             </Link>
             {item.message && (
-              <p className="text-xs text-muted-foreground mt-0.5 truncate">&ldquo;{item.message}&rdquo;</p>
+              <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                &ldquo;{item.message}&rdquo;
+              </p>
             )}
             <div className="flex items-center gap-2 mt-1">
               <StatusBadge status={item.status} />
-              <span className="text-[10px] text-muted-foreground">{formatRelativeTime(item.createdAt)}</span>
+              <span className="text-[10px] text-muted-foreground">
+                {formatRelativeTime(item.createdAt)}
+              </span>
             </div>
           </div>
 
@@ -167,7 +191,11 @@ function InterestCard({
                   disabled={isResponding}
                   className="gap-1 text-xs"
                 >
-                  {isResponding ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+                  {isResponding ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <Check className="h-3 w-3" />
+                  )}
                   Accept
                 </Button>
                 <Button
@@ -197,8 +225,23 @@ function InterestCard({
 }
 
 function StatusBadge({ status }: { status: string }) {
-  if (status === 'pending') return <Badge variant="warning" className="text-[10px]">Pending</Badge>;
-  if (status === 'accepted') return <Badge variant="success" className="text-[10px]">Accepted</Badge>;
-  if (status === 'declined') return <Badge variant="destructive" className="text-[10px]">Declined</Badge>;
+  if (status === 'pending')
+    return (
+      <Badge variant="warning" className="text-[10px]">
+        Pending
+      </Badge>
+    );
+  if (status === 'accepted')
+    return (
+      <Badge variant="success" className="text-[10px]">
+        Accepted
+      </Badge>
+    );
+  if (status === 'declined')
+    return (
+      <Badge variant="destructive" className="text-[10px]">
+        Declined
+      </Badge>
+    );
   return null;
 }

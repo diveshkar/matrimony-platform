@@ -32,9 +32,15 @@ export function StepBasicInfo({ data, onChange, errors }: StepProps) {
           value={data.dateOfBirth || ''}
           onChange={(e) => onChange({ dateOfBirth: e.target.value })}
           error={!!errors.dateOfBirth}
-          max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
+          max={
+            new Date(new Date().setFullYear(new Date().getFullYear() - 18))
+              .toISOString()
+              .split('T')[0]
+          }
         />
-        {errors.dateOfBirth && <p className="mt-1 text-sm text-destructive">{errors.dateOfBirth}</p>}
+        {errors.dateOfBirth && (
+          <p className="mt-1 text-sm text-destructive">{errors.dateOfBirth}</p>
+        )}
       </div>
 
       {/* Gender */}
@@ -73,7 +79,9 @@ export function StepBasicInfo({ data, onChange, errors }: StepProps) {
         >
           <option value="">Select height</option>
           {HEIGHT_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
           ))}
         </select>
         {errors.height && <p className="mt-1 text-sm text-destructive">{errors.height}</p>}
@@ -99,7 +107,9 @@ export function StepBasicInfo({ data, onChange, errors }: StepProps) {
             </button>
           ))}
         </div>
-        {errors.maritalStatus && <p className="mt-1 text-sm text-destructive">{errors.maritalStatus}</p>}
+        {errors.maritalStatus && (
+          <p className="mt-1 text-sm text-destructive">{errors.maritalStatus}</p>
+        )}
       </div>
     </div>
   );

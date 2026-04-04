@@ -144,7 +144,10 @@ export default function ChatDetailPage() {
                         isMine ? 'text-white/50 text-right' : 'text-muted-foreground',
                       )}
                     >
-                      {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(msg.createdAt).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
                     </p>
                   </div>
                 </div>
@@ -165,34 +168,34 @@ export default function ChatDetailPage() {
           />
         </div>
       ) : (
-      <div className="border-t py-3 shrink-0">
-        <div className="flex items-center gap-2">
-          <input
-            ref={inputRef}
-            type="text"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Type a message..."
-            maxLength={2000}
-            autoFocus
-            disabled={sendMessage.isPending}
-            className="flex-1 h-11 rounded-full border border-input bg-white px-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
-          />
-          <Button
-            size="icon"
-            className="h-11 w-11 rounded-full shrink-0"
-            onClick={handleSend}
-            disabled={!newMessage.trim() || sendMessage.isPending}
-          >
-            {sendMessage.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
-          </Button>
+        <div className="border-t py-3 shrink-0">
+          <div className="flex items-center gap-2">
+            <input
+              ref={inputRef}
+              type="text"
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Type a message..."
+              maxLength={2000}
+              autoFocus
+              disabled={sendMessage.isPending}
+              className="flex-1 h-11 rounded-full border border-input bg-white px-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+            />
+            <Button
+              size="icon"
+              className="h-11 w-11 rounded-full shrink-0"
+              onClick={handleSend}
+              disabled={!newMessage.trim() || sendMessage.isPending}
+            >
+              {sendMessage.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
         </div>
-      </div>
       )}
     </div>
   );

@@ -11,9 +11,10 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
 
   const type = event.queryStringParameters?.type || 'inbox';
 
-  const result = type === 'outbox'
-    ? await interestService.getOutbox(authedEvent.auth.userId)
-    : await interestService.getInbox(authedEvent.auth.userId);
+  const result =
+    type === 'outbox'
+      ? await interestService.getOutbox(authedEvent.auth.userId)
+      : await interestService.getInbox(authedEvent.auth.userId);
 
   return success(result, requestId);
 }

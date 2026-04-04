@@ -1,14 +1,42 @@
 import { Shield, Eye, AlertTriangle, Phone, Lock, UserX } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/common/AnimatedSection';
+import {
+  AnimatedSection,
+  StaggerContainer,
+  StaggerItem,
+} from '@/components/common/AnimatedSection';
 
 const tips = [
-  { icon: Lock, title: 'Protect Your Identity', desc: 'Never share your password, financial details, or personal documents with anyone on the platform.' },
-  { icon: Eye, title: 'Verify Before You Trust', desc: 'Take your time getting to know someone. Ask questions, meet their family, and do your own checks.' },
-  { icon: Phone, title: 'Meet in Safe Places', desc: 'Always meet in public places for the first time. Inform a friend or family member about your plans.' },
-  { icon: AlertTriangle, title: 'Watch for Red Flags', desc: 'Be cautious of people who refuse video calls, ask for money, or pressure you to move fast.' },
-  { icon: UserX, title: 'Block & Report', desc: 'If someone makes you uncomfortable, block them immediately and report the profile to our team.' },
-  { icon: Shield, title: 'We Are Here to Help', desc: 'Our support team reviews every report. Contact us anytime at support@matrimony.com.' },
+  {
+    icon: Lock,
+    title: 'Protect Your Identity',
+    desc: 'Never share your password, financial details, or personal documents with anyone on the platform.',
+  },
+  {
+    icon: Eye,
+    title: 'Verify Before You Trust',
+    desc: 'Take your time getting to know someone. Ask questions, meet their family, and do your own checks.',
+  },
+  {
+    icon: Phone,
+    title: 'Meet in Safe Places',
+    desc: 'Always meet in public places for the first time. Inform a friend or family member about your plans.',
+  },
+  {
+    icon: AlertTriangle,
+    title: 'Watch for Red Flags',
+    desc: 'Be cautious of people who refuse video calls, ask for money, or pressure you to move fast.',
+  },
+  {
+    icon: UserX,
+    title: 'Block & Report',
+    desc: 'If someone makes you uncomfortable, block them immediately and report the profile to our team.',
+  },
+  {
+    icon: Shield,
+    title: 'We Are Here to Help',
+    desc: 'Our support team reviews every report. Contact us anytime at support@matrimony.com.',
+  },
 ];
 
 export default function SafetyPage() {
@@ -23,7 +51,8 @@ export default function SafetyPage() {
             Safety Tips
           </h1>
           <p className="mt-4 text-muted-foreground leading-relaxed">
-            Your safety is our top priority. Follow these guidelines to protect yourself while finding your life partner.
+            Your safety is our top priority. Follow these guidelines to protect yourself while
+            finding your life partner.
           </p>
         </AnimatedSection>
 

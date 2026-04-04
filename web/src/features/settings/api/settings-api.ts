@@ -39,7 +39,9 @@ export const settingsApi = {
   getBlocked: () =>
     apiClient.get<ApiResponse<{ items: BlockItem[] }>>('/blocks').then((r) => r.data),
   blockUser: (blockedUserId: string) =>
-    apiClient.post<ApiResponse<{ status: string }>>('/blocks', { blockedUserId }).then((r) => r.data),
+    apiClient
+      .post<ApiResponse<{ status: string }>>('/blocks', { blockedUserId })
+      .then((r) => r.data),
   unblockUser: (userId: string) =>
     apiClient.delete<ApiResponse<{ status: string }>>(`/blocks/${userId}`).then((r) => r.data),
 
@@ -53,11 +55,15 @@ export const settingsApi = {
 
   // Notifications
   getNotifications: () =>
-    apiClient.get<ApiResponse<{ items: NotificationItem[]; unreadCount: number }>>('/notifications').then((r) => r.data),
+    apiClient
+      .get<ApiResponse<{ items: NotificationItem[]; unreadCount: number }>>('/notifications')
+      .then((r) => r.data),
   markNotificationRead: (sk: string) =>
     apiClient.patch<ApiResponse<{ status: string }>>('/notifications', { sk }).then((r) => r.data),
   markAllRead: () =>
-    apiClient.patch<ApiResponse<{ status: string }>>('/notifications', { markAllRead: true }).then((r) => r.data),
+    apiClient
+      .patch<ApiResponse<{ status: string }>>('/notifications', { markAllRead: true })
+      .then((r) => r.data),
 
   // Privacy
   getPrivacy: () =>

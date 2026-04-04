@@ -34,7 +34,8 @@ export function Footer() {
           <div className="space-y-4">
             <Logo size="md" showText className="[&_span]:text-white" />
             <p className="text-sm leading-relaxed text-white/60 max-w-xs">
-              {CONFIG.APP_TAGLINE}. Connecting Tamil hearts across the world with trust and tradition.
+              {CONFIG.APP_TAGLINE}. Connecting Tamil hearts across the world with trust and
+              tradition.
             </p>
           </div>
 

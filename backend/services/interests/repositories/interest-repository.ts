@@ -99,12 +99,18 @@ export class InterestRepository extends BaseRepository {
   }
 
   async getMyInbox(userId: string, limit = 20): Promise<InterestRecord[]> {
-    const result = await this.query<InterestRecord>(`USER#${userId}`, { limit, scanForward: false });
+    const result = await this.query<InterestRecord>(`USER#${userId}`, {
+      limit,
+      scanForward: false,
+    });
     return result.items.filter((i) => i.SK.startsWith('INTEREST#IN#'));
   }
 
   async getMyOutbox(userId: string, limit = 20): Promise<InterestRecord[]> {
-    const result = await this.query<InterestRecord>(`USER#${userId}`, { limit, scanForward: false });
+    const result = await this.query<InterestRecord>(`USER#${userId}`, {
+      limit,
+      scanForward: false,
+    });
     return result.items.filter((i) => i.SK.startsWith('INTEREST#OUT#'));
   }
 

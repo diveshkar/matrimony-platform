@@ -1,5 +1,9 @@
 import { AuthRepository, type AccountRecord } from '../repositories/auth-repository.js';
-import { ValidationError, UnauthorizedError, RateLimitError } from '../../shared/errors/app-errors.js';
+import {
+  ValidationError,
+  UnauthorizedError,
+  RateLimitError,
+} from '../../shared/errors/app-errors.js';
 import { logger } from '../../shared/utils/logger.js';
 
 /**
@@ -26,7 +30,10 @@ export class AuthService {
     this.repo = new AuthRepository();
   }
 
-  async startAuth(phone?: string, email?: string): Promise<{ message: string; identifier: string }> {
+  async startAuth(
+    phone?: string,
+    email?: string,
+  ): Promise<{ message: string; identifier: string }> {
     const identifier = phone || email;
     if (!identifier) {
       throw new ValidationError('Phone or email is required');

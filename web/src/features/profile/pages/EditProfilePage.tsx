@@ -9,13 +9,25 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { useMyProfile, useUpdateProfile } from '../hooks/useProfile';
 import { ROUTES } from '@/lib/constants/routes';
 import {
-  RELIGION_OPTIONS, CASTE_OPTIONS, DENOMINATION_OPTIONS, MOTHER_TONGUE_OPTIONS,
-  EDUCATION_OPTIONS, EDUCATION_FIELD_OPTIONS, OCCUPATION_OPTIONS, INCOME_OPTIONS,
-  COUNTRY_OPTIONS, FAMILY_TYPE_OPTIONS, FAMILY_STATUS_OPTIONS, FAMILY_VALUES_OPTIONS,
-  HEIGHT_OPTIONS, MARITAL_STATUS_OPTIONS, GENDER_OPTIONS,
+  RELIGION_OPTIONS,
+  CASTE_OPTIONS,
+  DENOMINATION_OPTIONS,
+  MOTHER_TONGUE_OPTIONS,
+  EDUCATION_OPTIONS,
+  EDUCATION_FIELD_OPTIONS,
+  OCCUPATION_OPTIONS,
+  INCOME_OPTIONS,
+  COUNTRY_OPTIONS,
+  FAMILY_TYPE_OPTIONS,
+  FAMILY_STATUS_OPTIONS,
+  FAMILY_VALUES_OPTIONS,
+  HEIGHT_OPTIONS,
+  MARITAL_STATUS_OPTIONS,
+  GENDER_OPTIONS,
 } from '@/lib/constants/enums';
 
-const selectClass = 'flex h-10 w-full rounded-lg border border-input bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring';
+const selectClass =
+  'flex h-10 w-full rounded-lg border border-input bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring';
 
 export default function EditProfilePage() {
   const { data: response, isLoading } = useMyProfile();
@@ -39,7 +51,16 @@ export default function EditProfilePage() {
   const handleSave = async () => {
     // Remove DynamoDB keys from update
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { PK: _pk, SK: _sk, userId: _uid, schemaVersion: _sv, createdAt: _ca, updatedAt: _ua, profileCompletion: _pc, ...updates } = form;
+    const {
+      PK: _pk,
+      SK: _sk,
+      userId: _uid,
+      schemaVersion: _sv,
+      createdAt: _ca,
+      updatedAt: _ua,
+      profileCompletion: _pc,
+      ...updates
+    } = form;
     await updateProfile.mutateAsync(updates);
     setHasChanges(false);
   };
@@ -70,9 +91,15 @@ export default function EditProfilePage() {
         action={
           <Button onClick={handleSave} disabled={!hasChanges || updateProfile.isPending}>
             {updateProfile.isPending ? (
-              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
             ) : (
-              <><Save className="mr-2 h-4 w-4" />Save Changes</>
+              <>
+                <Save className="mr-2 h-4 w-4" />
+                Save Changes
+              </>
             )}
           </Button>
         }
@@ -80,28 +107,61 @@ export default function EditProfilePage() {
 
       {/* Basic Info */}
       <Card>
-        <CardHeader><CardTitle>Basic Information</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Basic Information</CardTitle>
+        </CardHeader>
         <CardContent className="space-y-4">
           <Field label="Name">
-            <Input value={(form.name as string) || ''} onChange={(e) => update('name', e.target.value)} />
+            <Input
+              value={(form.name as string) || ''}
+              onChange={(e) => update('name', e.target.value)}
+            />
           </Field>
           <Field label="Date of Birth">
-            <Input type="date" value={(form.dateOfBirth as string) || ''} onChange={(e) => update('dateOfBirth', e.target.value)} />
+            <Input
+              type="date"
+              value={(form.dateOfBirth as string) || ''}
+              onChange={(e) => update('dateOfBirth', e.target.value)}
+            />
           </Field>
           <Field label="Gender">
-            <select value={(form.gender as string) || ''} onChange={(e) => update('gender', e.target.value)} className={selectClass}>
-              {GENDER_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            <select
+              value={(form.gender as string) || ''}
+              onChange={(e) => update('gender', e.target.value)}
+              className={selectClass}
+            >
+              {GENDER_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
             </select>
           </Field>
           <Field label="Height">
-            <select value={String(form.height || '')} onChange={(e) => update('height', Number(e.target.value))} className={selectClass}>
+            <select
+              value={String(form.height || '')}
+              onChange={(e) => update('height', Number(e.target.value))}
+              className={selectClass}
+            >
               <option value="">Select</option>
-              {HEIGHT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              {HEIGHT_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
             </select>
           </Field>
           <Field label="Marital Status">
-            <select value={(form.maritalStatus as string) || ''} onChange={(e) => update('maritalStatus', e.target.value)} className={selectClass}>
-              {MARITAL_STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            <select
+              value={(form.maritalStatus as string) || ''}
+              onChange={(e) => update('maritalStatus', e.target.value)}
+              className={selectClass}
+            >
+              {MARITAL_STATUS_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
             </select>
           </Field>
         </CardContent>
@@ -109,9 +169,13 @@ export default function EditProfilePage() {
 
       {/* Contact Info */}
       <Card>
-        <CardHeader><CardTitle>Contact Information</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Contact Information</CardTitle>
+        </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-xs text-muted-foreground">These are visible only to Gold and Platinum members.</p>
+          <p className="text-xs text-muted-foreground">
+            These are visible only to Gold and Platinum members.
+          </p>
           <Field label="WhatsApp Number">
             <Input
               value={(form.whatsappNumber as string) || ''}
@@ -132,69 +196,145 @@ export default function EditProfilePage() {
 
       {/* Cultural */}
       <Card>
-        <CardHeader><CardTitle>Cultural Background</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Cultural Background</CardTitle>
+        </CardHeader>
         <CardContent className="space-y-4">
           <Field label="Religion">
-            <select value={(form.religion as string) || ''} onChange={(e) => update('religion', e.target.value)} className={selectClass}>
-              {RELIGION_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            <select
+              value={(form.religion as string) || ''}
+              onChange={(e) => update('religion', e.target.value)}
+              className={selectClass}
+            >
+              {RELIGION_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
             </select>
           </Field>
           {casteOptions.length > 0 && (
             <Field label="Caste">
-              <select value={(form.caste as string) || ''} onChange={(e) => update('caste', e.target.value)} className={selectClass}>
+              <select
+                value={(form.caste as string) || ''}
+                onChange={(e) => update('caste', e.target.value)}
+                className={selectClass}
+              >
                 <option value="">Select</option>
-                {casteOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                {casteOptions.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
               </select>
             </Field>
           )}
           {denomOptions.length > 0 && (
             <Field label="Denomination">
-              <select value={(form.denomination as string) || ''} onChange={(e) => update('denomination', e.target.value)} className={selectClass}>
+              <select
+                value={(form.denomination as string) || ''}
+                onChange={(e) => update('denomination', e.target.value)}
+                className={selectClass}
+              >
                 <option value="">Select</option>
-                {denomOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                {denomOptions.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
               </select>
             </Field>
           )}
           <Field label="Mother Tongue">
-            <select value={(form.motherTongue as string) || ''} onChange={(e) => update('motherTongue', e.target.value)} className={selectClass}>
-              {MOTHER_TONGUE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            <select
+              value={(form.motherTongue as string) || ''}
+              onChange={(e) => update('motherTongue', e.target.value)}
+              className={selectClass}
+            >
+              {MOTHER_TONGUE_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
             </select>
           </Field>
           <Field label="Gothram">
-            <Input value={(form.gothram as string) || ''} onChange={(e) => update('gothram', e.target.value)} placeholder="Optional" />
+            <Input
+              value={(form.gothram as string) || ''}
+              onChange={(e) => update('gothram', e.target.value)}
+              placeholder="Optional"
+            />
           </Field>
         </CardContent>
       </Card>
 
       {/* Education & Career */}
       <Card>
-        <CardHeader><CardTitle>Education & Career</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Education & Career</CardTitle>
+        </CardHeader>
         <CardContent className="space-y-4">
           <Field label="Education">
-            <select value={(form.education as string) || ''} onChange={(e) => update('education', e.target.value)} className={selectClass}>
+            <select
+              value={(form.education as string) || ''}
+              onChange={(e) => update('education', e.target.value)}
+              className={selectClass}
+            >
               <option value="">Select</option>
-              {EDUCATION_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              {EDUCATION_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
             </select>
           </Field>
           <Field label="Field of Study">
-            <select value={(form.educationField as string) || ''} onChange={(e) => update('educationField', e.target.value)} className={selectClass}>
+            <select
+              value={(form.educationField as string) || ''}
+              onChange={(e) => update('educationField', e.target.value)}
+              className={selectClass}
+            >
               <option value="">Select</option>
-              {EDUCATION_FIELD_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              {EDUCATION_FIELD_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
             </select>
           </Field>
           <Field label="Occupation">
-            <select value={(form.occupation as string) || ''} onChange={(e) => update('occupation', e.target.value)} className={selectClass}>
+            <select
+              value={(form.occupation as string) || ''}
+              onChange={(e) => update('occupation', e.target.value)}
+              className={selectClass}
+            >
               <option value="">Select</option>
-              {OCCUPATION_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              {OCCUPATION_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
             </select>
           </Field>
           <Field label="Employer">
-            <Input value={(form.employer as string) || ''} onChange={(e) => update('employer', e.target.value)} placeholder="Company name" />
+            <Input
+              value={(form.employer as string) || ''}
+              onChange={(e) => update('employer', e.target.value)}
+              placeholder="Company name"
+            />
           </Field>
           <Field label="Income">
-            <select value={(form.incomeRange as string) || ''} onChange={(e) => update('incomeRange', e.target.value)} className={selectClass}>
+            <select
+              value={(form.incomeRange as string) || ''}
+              onChange={(e) => update('incomeRange', e.target.value)}
+              className={selectClass}
+            >
               <option value="">Prefer not to say</option>
-              {INCOME_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              {INCOME_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
             </select>
           </Field>
         </CardContent>
@@ -202,57 +342,117 @@ export default function EditProfilePage() {
 
       {/* Location */}
       <Card>
-        <CardHeader><CardTitle>Location</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Location</CardTitle>
+        </CardHeader>
         <CardContent className="space-y-4">
           <Field label="Country">
-            <select value={(form.country as string) || ''} onChange={(e) => update('country', e.target.value)} className={selectClass}>
+            <select
+              value={(form.country as string) || ''}
+              onChange={(e) => update('country', e.target.value)}
+              className={selectClass}
+            >
               <option value="">Select</option>
-              {COUNTRY_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              {COUNTRY_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
             </select>
           </Field>
           <Field label="State / Province">
-            <Input value={(form.state as string) || ''} onChange={(e) => update('state', e.target.value)} />
+            <Input
+              value={(form.state as string) || ''}
+              onChange={(e) => update('state', e.target.value)}
+            />
           </Field>
           <Field label="City">
-            <Input value={(form.city as string) || ''} onChange={(e) => update('city', e.target.value)} />
+            <Input
+              value={(form.city as string) || ''}
+              onChange={(e) => update('city', e.target.value)}
+            />
           </Field>
         </CardContent>
       </Card>
 
       {/* Family */}
       <Card>
-        <CardHeader><CardTitle>Family</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Family</CardTitle>
+        </CardHeader>
         <CardContent className="space-y-4">
           <Field label="Father's Occupation">
-            <Input value={(form.fatherOccupation as string) || ''} onChange={(e) => update('fatherOccupation', e.target.value)} />
+            <Input
+              value={(form.fatherOccupation as string) || ''}
+              onChange={(e) => update('fatherOccupation', e.target.value)}
+            />
           </Field>
           <Field label="Mother's Occupation">
-            <Input value={(form.motherOccupation as string) || ''} onChange={(e) => update('motherOccupation', e.target.value)} />
+            <Input
+              value={(form.motherOccupation as string) || ''}
+              onChange={(e) => update('motherOccupation', e.target.value)}
+            />
           </Field>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Brothers">
-              <Input type="number" min={0} max={15} value={(form.brothersCount as number) ?? ''} onChange={(e) => update('brothersCount', Number(e.target.value))} />
+              <Input
+                type="number"
+                min={0}
+                max={15}
+                value={(form.brothersCount as number) ?? ''}
+                onChange={(e) => update('brothersCount', Number(e.target.value))}
+              />
             </Field>
             <Field label="Sisters">
-              <Input type="number" min={0} max={15} value={(form.sistersCount as number) ?? ''} onChange={(e) => update('sistersCount', Number(e.target.value))} />
+              <Input
+                type="number"
+                min={0}
+                max={15}
+                value={(form.sistersCount as number) ?? ''}
+                onChange={(e) => update('sistersCount', Number(e.target.value))}
+              />
             </Field>
           </div>
           <Field label="Family Type">
-            <select value={(form.familyType as string) || ''} onChange={(e) => update('familyType', e.target.value)} className={selectClass}>
+            <select
+              value={(form.familyType as string) || ''}
+              onChange={(e) => update('familyType', e.target.value)}
+              className={selectClass}
+            >
               <option value="">Select</option>
-              {FAMILY_TYPE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              {FAMILY_TYPE_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
             </select>
           </Field>
           <Field label="Family Status">
-            <select value={(form.familyStatus as string) || ''} onChange={(e) => update('familyStatus', e.target.value)} className={selectClass}>
+            <select
+              value={(form.familyStatus as string) || ''}
+              onChange={(e) => update('familyStatus', e.target.value)}
+              className={selectClass}
+            >
               <option value="">Select</option>
-              {FAMILY_STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              {FAMILY_STATUS_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
             </select>
           </Field>
           <Field label="Family Values">
-            <select value={(form.familyValues as string) || ''} onChange={(e) => update('familyValues', e.target.value)} className={selectClass}>
+            <select
+              value={(form.familyValues as string) || ''}
+              onChange={(e) => update('familyValues', e.target.value)}
+              className={selectClass}
+            >
               <option value="">Select</option>
-              {FAMILY_VALUES_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              {FAMILY_VALUES_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
             </select>
           </Field>
         </CardContent>
@@ -260,7 +460,9 @@ export default function EditProfilePage() {
 
       {/* About Me */}
       <Card>
-        <CardHeader><CardTitle>About Me</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>About Me</CardTitle>
+        </CardHeader>
         <CardContent>
           <textarea
             value={(form.aboutMe as string) || ''}
@@ -279,9 +481,15 @@ export default function EditProfilePage() {
       <div className="flex justify-end pb-8">
         <Button onClick={handleSave} disabled={!hasChanges || updateProfile.isPending} size="lg">
           {updateProfile.isPending ? (
-            <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Saving...
+            </>
           ) : (
-            <><Save className="mr-2 h-4 w-4" />Save Changes</>
+            <>
+              <Save className="mr-2 h-4 w-4" />
+              Save Changes
+            </>
           )}
         </Button>
       </div>

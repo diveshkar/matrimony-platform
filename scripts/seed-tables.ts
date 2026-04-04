@@ -25,9 +25,7 @@ interface TableDef {
 const tables: TableDef[] = [
   {
     name: 'matrimony_core_dev',
-    gsis: [
-      { name: 'GSI1', hashKey: 'GSI1PK', rangeKey: 'GSI1SK' },
-    ],
+    gsis: [{ name: 'GSI1', hashKey: 'GSI1PK', rangeKey: 'GSI1SK' }],
   },
   { name: 'matrimony_messages_dev' },
   {

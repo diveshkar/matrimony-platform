@@ -3,7 +3,11 @@ import Cropper, { type Area } from 'react-easy-crop';
 import { ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
 } from '@/components/ui/dialog';
 
 interface ImageCropDialogProps {
@@ -129,11 +133,7 @@ async function getCroppedImg(
   ctx.rotate((rotation * Math.PI) / 180);
   ctx.translate(-safeArea / 2, -safeArea / 2);
 
-  ctx.drawImage(
-    image,
-    safeArea / 2 - image.width / 2,
-    safeArea / 2 - image.height / 2,
-  );
+  ctx.drawImage(image, safeArea / 2 - image.width / 2, safeArea / 2 - image.height / 2);
 
   const data = ctx.getImageData(0, 0, safeArea, safeArea);
 
@@ -147,11 +147,7 @@ async function getCroppedImg(
   );
 
   return new Promise((resolve) => {
-    canvas.toBlob(
-      (blob) => resolve(blob),
-      'image/jpeg',
-      0.9,
-    );
+    canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.9);
   });
 }
 

@@ -58,17 +58,21 @@ async function seed() {
   console.log('Seeding plan entitlements...\n');
 
   for (const plan of plans) {
-    await client.send(new PutCommand({
-      TableName: TABLE,
-      Item: {
-        PK: `PLAN#${plan.planId}`,
-        SK: 'ENTITLEMENT#v1',
-        ...plan,
-        schemaVersion: 1,
-      },
-    }));
+    await client.send(
+      new PutCommand({
+        TableName: TABLE,
+        Item: {
+          PK: `PLAN#${plan.planId}`,
+          SK: 'ENTITLEMENT#v1',
+          ...plan,
+          schemaVersion: 1,
+        },
+      }),
+    );
 
-    console.log(`  ✓ ${plan.planId}: views=${plan.profileViewsPerDay}, interests=${plan.interestsPerDay}, chat=${plan.chatAccess}`);
+    console.log(
+      `  ✓ ${plan.planId}: views=${plan.profileViewsPerDay}, interests=${plan.interestsPerDay}, chat=${plan.chatAccess}`,
+    );
   }
 
   console.log('\nDone. 4 plan entitlements seeded.');

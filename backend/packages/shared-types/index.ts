@@ -178,7 +178,13 @@ export interface Notification {
   SK: string; // NOTIFICATION#<timestamp>#<notificationId>
   userId: string;
   notificationId: string;
-  type: 'interest_received' | 'interest_accepted' | 'new_message' | 'plan_purchased' | 'plan_expiry' | 'welcome';
+  type:
+    | 'interest_received'
+    | 'interest_accepted'
+    | 'new_message'
+    | 'plan_purchased'
+    | 'plan_expiry'
+    | 'welcome';
   title: string;
   message: string;
   actionUrl?: string;

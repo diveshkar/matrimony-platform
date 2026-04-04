@@ -19,7 +19,8 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
   if (method === 'POST') {
     const body = event.body ? JSON.parse(event.body) : {};
     if (!body.blockedUserId) throw new ValidationError('blockedUserId is required');
-    if (body.blockedUserId === authedEvent.auth.userId) throw new ValidationError('Cannot block yourself');
+    if (body.blockedUserId === authedEvent.auth.userId)
+      throw new ValidationError('Cannot block yourself');
     await repo.blockUser(authedEvent.auth.userId, body.blockedUserId);
     return success({ status: 'blocked' }, requestId, 201);
   }

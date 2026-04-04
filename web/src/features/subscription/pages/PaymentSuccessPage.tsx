@@ -18,7 +18,8 @@ export default function PaymentSuccessPage() {
   useEffect(() => {
     if (!sessionId) return;
 
-    subscriptionApi.verifySession(sessionId)
+    subscriptionApi
+      .verifySession(sessionId)
       .then((res) => {
         if (res.success) {
           setVerified(true);
@@ -49,7 +50,9 @@ export default function PaymentSuccessPage() {
         animate={{ scale: 1 }}
         transition={{ type: 'spring', stiffness: 200, damping: 15 }}
       >
-        <div className={`mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full ${verified ? 'bg-emerald-50' : 'bg-amber-50'}`}>
+        <div
+          className={`mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full ${verified ? 'bg-emerald-50' : 'bg-amber-50'}`}
+        >
           {verified ? (
             <CheckCircle2 className="h-10 w-10 text-emerald-600" />
           ) : (

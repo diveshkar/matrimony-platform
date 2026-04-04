@@ -2,7 +2,12 @@ import { useState } from 'react';
 import { Flag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import { REPORT_REASONS } from '@/lib/constants/enums';
 import { useReportUser } from '../hooks/useSettings';
@@ -22,7 +27,13 @@ export function ReportDialog({ open, onOpenChange, reportedUserId }: ReportDialo
     if (!reason) return;
     report.mutate(
       { reportedUserId, reason, description: description || undefined },
-      { onSuccess: () => { onOpenChange(false); setReason(''); setDescription(''); } },
+      {
+        onSuccess: () => {
+          onOpenChange(false);
+          setReason('');
+          setDescription('');
+        },
+      },
     );
   };
 
@@ -34,7 +45,9 @@ export function ReportDialog({ open, onOpenChange, reportedUserId }: ReportDialo
             <Flag className="h-5 w-5 text-destructive" />
           </div>
           <DialogTitle>Report Profile</DialogTitle>
-          <DialogDescription>Help us keep the community safe. Select a reason below.</DialogDescription>
+          <DialogDescription>
+            Help us keep the community safe. Select a reason below.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
@@ -64,8 +77,14 @@ export function ReportDialog({ open, onOpenChange, reportedUserId }: ReportDialo
         </div>
 
         <DialogFooter className="gap-2">
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button variant="destructive" onClick={handleSubmit} disabled={!reason || report.isPending}>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={handleSubmit}
+            disabled={!reason || report.isPending}
+          >
             {report.isPending ? 'Submitting...' : 'Submit Report'}
           </Button>
         </DialogFooter>

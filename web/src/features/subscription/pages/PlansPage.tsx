@@ -5,7 +5,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/common/AnimatedSection';
+import {
+  AnimatedSection,
+  StaggerContainer,
+  StaggerItem,
+} from '@/components/common/AnimatedSection';
 import { cn } from '@/lib/utils/cn';
 import { usePlans, useMySubscription, useCreateCheckout } from '../hooks/useSubscription';
 
@@ -16,11 +20,23 @@ const planMeta: Record<string, { popular: boolean; features: string[] }> = {
   },
   gold: {
     popular: true,
-    features: ['Unlimited profile views', 'Unlimited interests', 'Full chat access', 'View contact info', '1 profile boost/month'],
+    features: [
+      'Unlimited profile views',
+      'Unlimited interests',
+      'Full chat access',
+      'View contact info',
+      '1 profile boost/month',
+    ],
   },
   platinum: {
     popular: false,
-    features: ['Everything in Gold', 'Priority support', '3 boosts/month', 'Premium badge', 'Top search placement'],
+    features: [
+      'Everything in Gold',
+      'Priority support',
+      '3 boosts/month',
+      'Premium badge',
+      'Top search placement',
+    ],
   },
 };
 
@@ -38,7 +54,9 @@ export default function PlansPage() {
       <div className="space-y-6">
         <Skeleton className="h-8 w-48" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-96 rounded-xl" />)}
+          {[...Array(3)].map((_, i) => (
+            <Skeleton key={i} className="h-96 rounded-xl" />
+          ))}
         </div>
       </div>
     );
@@ -69,13 +87,17 @@ export default function PlansPage() {
 
           return (
             <StaggerItem key={plan.id}>
-              <Card className={cn(
-                'h-full relative',
-                meta.popular ? 'border-2 border-primary-700 shadow-glow' : 'border-0 shadow-soft',
-              )}>
+              <Card
+                className={cn(
+                  'h-full relative',
+                  meta.popular ? 'border-2 border-primary-700 shadow-glow' : 'border-0 shadow-soft',
+                )}
+              >
                 {meta.popular && (
                   <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                    <Badge variant="default" className="px-4 py-1 shadow-glow">Most Popular</Badge>
+                    <Badge variant="default" className="px-4 py-1 shadow-glow">
+                      Most Popular
+                    </Badge>
                   </div>
                 )}
 
@@ -83,7 +105,9 @@ export default function PlansPage() {
                   <h3 className="font-heading font-bold text-xl">{plan.name}</h3>
 
                   <div className="mt-4">
-                    <span className="font-heading text-4xl font-bold text-primary-800">{priceDisplay}</span>
+                    <span className="font-heading text-4xl font-bold text-primary-800">
+                      {priceDisplay}
+                    </span>
                     <span className="text-sm text-muted-foreground">/month</span>
                   </div>
 
@@ -109,7 +133,9 @@ export default function PlansPage() {
                     disabled={isCurrentPlan || checkout.isPending}
                   >
                     {checkout.isPending && selectedPlanId === plan.id ? (
-                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Redirecting to payment...</>
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Redirecting to payment...
+                      </>
                     ) : isCurrentPlan ? (
                       'Current Plan'
                     ) : (
@@ -125,8 +151,8 @@ export default function PlansPage() {
 
       <AnimatedSection delay={0.3} className="text-center">
         <p className="text-sm text-muted-foreground">
-          All plans auto-renew monthly. Cancel anytime from your account settings.
-          Payments processed securely by Stripe.
+          All plans auto-renew monthly. Cancel anytime from your account settings. Payments
+          processed securely by Stripe.
         </p>
       </AnimatedSection>
     </div>

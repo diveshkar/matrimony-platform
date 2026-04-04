@@ -38,7 +38,9 @@ export const subscriptionApi = {
 
   createCheckout: (planId: string) =>
     apiClient
-      .post<ApiResponse<{ checkoutUrl: string; sessionId: string }>>('/subscriptions/checkout', { planId })
+      .post<
+        ApiResponse<{ checkoutUrl: string; sessionId: string }>
+      >('/subscriptions/checkout', { planId })
       .then((r) => r.data),
 
   getMySubscription: () =>
@@ -46,6 +48,8 @@ export const subscriptionApi = {
 
   verifySession: (sessionId: string) =>
     apiClient
-      .post<ApiResponse<{ status: string; planId: string }>>('/subscriptions/verify-session', { sessionId })
+      .post<
+        ApiResponse<{ status: string; planId: string }>
+      >('/subscriptions/verify-session', { sessionId })
       .then((r) => r.data),
 };

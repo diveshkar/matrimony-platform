@@ -1,6 +1,10 @@
 import { BaseRepository } from '../../shared/repositories/base-repository.js';
 import { nowISO } from '../../shared/utils/date.js';
-import type { UserProfile, UserPreference, UserPrivacy } from '../../../packages/shared-types/index.js';
+import type {
+  UserProfile,
+  UserPreference,
+  UserPrivacy,
+} from '../../../packages/shared-types/index.js';
 
 export class ProfileRepository extends BaseRepository {
   constructor() {
@@ -11,7 +15,10 @@ export class ProfileRepository extends BaseRepository {
     return this.get<UserProfile>(`USER#${userId}`, 'PROFILE#v1');
   }
 
-  async createProfile(userId: string, data: Omit<UserProfile, 'PK' | 'SK' | 'userId' | 'schemaVersion' | 'createdAt' | 'updatedAt'>): Promise<UserProfile> {
+  async createProfile(
+    userId: string,
+    data: Omit<UserProfile, 'PK' | 'SK' | 'userId' | 'schemaVersion' | 'createdAt' | 'updatedAt'>,
+  ): Promise<UserProfile> {
     const now = nowISO();
     const profile: UserProfile = {
       PK: `USER#${userId}`,
@@ -26,7 +33,10 @@ export class ProfileRepository extends BaseRepository {
     return profile;
   }
 
-  async updateProfile(userId: string, updates: Partial<UserProfile>): Promise<Record<string, unknown>> {
+  async updateProfile(
+    userId: string,
+    updates: Partial<UserProfile>,
+  ): Promise<Record<string, unknown>> {
     return this.update(`USER#${userId}`, 'PROFILE#v1', {
       ...updates,
       updatedAt: nowISO(),
@@ -37,7 +47,13 @@ export class ProfileRepository extends BaseRepository {
     return this.get<UserPreference>(`USER#${userId}`, 'PREFERENCE#v1');
   }
 
-  async savePreferences(userId: string, data: Omit<UserPreference, 'PK' | 'SK' | 'userId' | 'schemaVersion' | 'createdAt' | 'updatedAt'>): Promise<void> {
+  async savePreferences(
+    userId: string,
+    data: Omit<
+      UserPreference,
+      'PK' | 'SK' | 'userId' | 'schemaVersion' | 'createdAt' | 'updatedAt'
+    >,
+  ): Promise<void> {
     const now = nowISO();
     await this.put({
       PK: `USER#${userId}`,
@@ -54,7 +70,10 @@ export class ProfileRepository extends BaseRepository {
     return this.get<UserPrivacy>(`USER#${userId}`, 'PRIVACY#v1');
   }
 
-  async savePrivacy(userId: string, data: Omit<UserPrivacy, 'PK' | 'SK' | 'userId' | 'schemaVersion' | 'updatedAt'>): Promise<void> {
+  async savePrivacy(
+    userId: string,
+    data: Omit<UserPrivacy, 'PK' | 'SK' | 'userId' | 'schemaVersion' | 'updatedAt'>,
+  ): Promise<void> {
     await this.put({
       PK: `USER#${userId}`,
       SK: 'PRIVACY#v1',

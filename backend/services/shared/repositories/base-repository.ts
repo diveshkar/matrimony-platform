@@ -74,7 +74,10 @@ export class BaseRepository {
 
   async putIfNotExists(item: Record<string, unknown>): Promise<boolean> {
     if (USE_MEMORY) {
-      return memoryStore.putIfNotExists(this.tableName, item as { PK: string; SK: string; [key: string]: unknown });
+      return memoryStore.putIfNotExists(
+        this.tableName,
+        item as { PK: string; SK: string; [key: string]: unknown },
+      );
     }
 
     try {
@@ -154,20 +157,24 @@ export class BaseRepository {
     const gsiKeyMap: Record<string, string> = { GSI1: 'GSI1PK', GSI2: 'GSI2PK' };
     const hashKeyName = options.indexName ? gsiKeyMap[options.indexName] || 'PK' : 'PK';
 
-    const result = await this.client.send(new QueryCommand({
-      TableName: this.tableName,
-      KeyConditionExpression: `${hashKeyName} = :pk`,
-      ExpressionAttributeValues: {
-        ':pk': pk,
-        ...options.expressionAttributeValues,
-      },
-      ScanIndexForward: options.scanForward ?? true,
-      ...(options.limit ? { Limit: options.limit } : {}),
-      ...(options.indexName ? { IndexName: options.indexName } : {}),
-      ...(options.exclusiveStartKey ? { ExclusiveStartKey: options.exclusiveStartKey } : {}),
-      ...(options.filterExpression ? { FilterExpression: options.filterExpression } : {}),
-      ...(options.expressionAttributeNames ? { ExpressionAttributeNames: options.expressionAttributeNames } : {}),
-    }));
+    const result = await this.client.send(
+      new QueryCommand({
+        TableName: this.tableName,
+        KeyConditionExpression: `${hashKeyName} = :pk`,
+        ExpressionAttributeValues: {
+          ':pk': pk,
+          ...options.expressionAttributeValues,
+        },
+        ScanIndexForward: options.scanForward ?? true,
+        ...(options.limit ? { Limit: options.limit } : {}),
+        ...(options.indexName ? { IndexName: options.indexName } : {}),
+        ...(options.exclusiveStartKey ? { ExclusiveStartKey: options.exclusiveStartKey } : {}),
+        ...(options.filterExpression ? { FilterExpression: options.filterExpression } : {}),
+        ...(options.expressionAttributeNames
+          ? { ExpressionAttributeNames: options.expressionAttributeNames }
+          : {}),
+      }),
+    );
 
     return {
       items: (result.Items || []) as T[],

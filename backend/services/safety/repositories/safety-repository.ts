@@ -81,7 +81,12 @@ export class SafetyRepository extends BaseRepository {
 
   // ── Report ────────────────────────────────
 
-  async reportUser(reporterId: string, reportedUserId: string, reason: string, description?: string): Promise<void> {
+  async reportUser(
+    reporterId: string,
+    reportedUserId: string,
+    reason: string,
+    description?: string,
+  ): Promise<void> {
     const now = nowISO();
     const reportId = generateId('RPT');
     await this.put({
@@ -98,10 +103,16 @@ export class SafetyRepository extends BaseRepository {
 
   // ── Profile Views ─────────────────────────
 
-  async recordView(viewedUserId: string, viewerId: string, viewerProfile?: Record<string, unknown>): Promise<void> {
+  async recordView(
+    viewedUserId: string,
+    viewerId: string,
+    viewerProfile?: Record<string, unknown>,
+  ): Promise<void> {
     const now = nowISO();
     const age = viewerProfile?.dateOfBirth
-      ? Math.floor((Date.now() - new Date(viewerProfile.dateOfBirth as string).getTime()) / 31557600000)
+      ? Math.floor(
+          (Date.now() - new Date(viewerProfile.dateOfBirth as string).getTime()) / 31557600000,
+        )
       : undefined;
 
     await this.put({
@@ -119,18 +130,24 @@ export class SafetyRepository extends BaseRepository {
   }
 
   async getProfileViews(userId: string, limit = 30): Promise<ViewRecord[]> {
-    const result = await this.query<ViewRecord>(`USER#${userId}`, { limit: limit + 20, scanForward: false });
+    const result = await this.query<ViewRecord>(`USER#${userId}`, {
+      limit: limit + 20,
+      scanForward: false,
+    });
     return result.items.filter((i) => i.SK.startsWith('VIEW#')).slice(0, limit);
   }
 
   // ── Notifications ─────────────────────────
 
-  async createNotification(userId: string, data: {
-    type: string;
-    title: string;
-    message: string;
-    actionUrl?: string;
-  }): Promise<void> {
+  async createNotification(
+    userId: string,
+    data: {
+      type: string;
+      title: string;
+      message: string;
+      actionUrl?: string;
+    },
+  ): Promise<void> {
     const now = nowISO();
     const notifId = generateId('NTF');
     await this.put({
@@ -148,7 +165,10 @@ export class SafetyRepository extends BaseRepository {
   }
 
   async getNotifications(userId: string, limit = 30): Promise<NotificationRecord[]> {
-    const result = await this.query<NotificationRecord>(`USER#${userId}`, { limit: limit + 50, scanForward: false });
+    const result = await this.query<NotificationRecord>(`USER#${userId}`, {
+      limit: limit + 50,
+      scanForward: false,
+    });
     return result.items.filter((i) => i.SK.startsWith('NOTIFICATION#')).slice(0, limit);
   }
 

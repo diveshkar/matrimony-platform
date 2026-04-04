@@ -2,8 +2,21 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import {
-  ArrowLeft, MapPin, GraduationCap, Heart, Users, User, Calendar, Star, Loader2, Ban, Flag,
-  Phone, Mail, MessageCircle, Lock,
+  ArrowLeft,
+  MapPin,
+  GraduationCap,
+  Heart,
+  Users,
+  User,
+  Calendar,
+  Star,
+  Loader2,
+  Ban,
+  Flag,
+  Phone,
+  Mail,
+  MessageCircle,
+  Lock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,7 +38,11 @@ function formatEnum(str?: string): string {
 export default function ProfileDetailPage() {
   const { id } = useParams<{ id: string }>();
 
-  const { data: response, isLoading, isError } = useQuery({
+  const {
+    data: response,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ['profile', id],
     queryFn: () => profileApi.getProfile(id!),
     enabled: !!id,
@@ -199,7 +216,9 @@ export default function ProfileDetailPage() {
             {raw.fatherOccupation && <InfoRow label="Father" value={s('fatherOccupation')} />}
             {raw.motherOccupation && <InfoRow label="Mother" value={s('motherOccupation')} />}
             {raw.familyType && <InfoRow label="Family Type" value={formatEnum(s('familyType'))} />}
-            {raw.familyValues && <InfoRow label="Family Values" value={formatEnum(s('familyValues'))} />}
+            {raw.familyValues && (
+              <InfoRow label="Family Values" value={formatEnum(s('familyValues'))} />
+            )}
           </CardContent>
         </Card>
       )}
@@ -234,7 +253,9 @@ function ProfileActions({ profileId }: { profileId: string }) {
           onClick={() => addToShortlist.mutate(profileId)}
           disabled={addToShortlist.isPending || addToShortlist.isSuccess}
         >
-          <Star className={`h-4 w-4 ${addToShortlist.isSuccess ? 'fill-accent-400 text-accent-400' : ''}`} />
+          <Star
+            className={`h-4 w-4 ${addToShortlist.isSuccess ? 'fill-accent-400 text-accent-400' : ''}`}
+          />
           {addToShortlist.isSuccess ? 'Saved' : 'Shortlist'}
         </Button>
         <Button
@@ -246,12 +267,7 @@ function ProfileActions({ profileId }: { profileId: string }) {
         >
           <Ban className="h-4 w-4 text-muted-foreground" />
         </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setShowReport(true)}
-          title="Report user"
-        >
+        <Button variant="ghost" size="icon" onClick={() => setShowReport(true)} title="Report user">
           <Flag className="h-4 w-4 text-muted-foreground" />
         </Button>
       </div>
@@ -271,7 +287,12 @@ function maskEmail(email: string): string {
   return name.slice(0, 2) + '●●●@' + domain;
 }
 
-function ContactInfoCard({ phone, email, whatsapp, canView }: {
+function ContactInfoCard({
+  phone,
+  email,
+  whatsapp,
+  canView,
+}: {
   phone: string;
   email: string;
   whatsapp: string;
@@ -298,30 +319,27 @@ function ContactInfoCard({ phone, email, whatsapp, canView }: {
         {phone && (
           <div className="flex items-center gap-3">
             <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
-            <span className="text-sm font-medium">
-              {canView ? phone : maskPhone(phone)}
-            </span>
+            <span className="text-sm font-medium">{canView ? phone : maskPhone(phone)}</span>
           </div>
         )}
         {email && (
           <div className="flex items-center gap-3">
             <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
-            <span className="text-sm font-medium">
-              {canView ? email : maskEmail(email)}
-            </span>
+            <span className="text-sm font-medium">{canView ? email : maskEmail(email)}</span>
           </div>
         )}
         {whatsapp && (
           <div className="flex items-center gap-3">
             <MessageCircle className="h-4 w-4 text-muted-foreground shrink-0" />
-            <span className="text-sm font-medium">
-              {canView ? whatsapp : maskPhone(whatsapp)}
-            </span>
+            <span className="text-sm font-medium">{canView ? whatsapp : maskPhone(whatsapp)}</span>
             <span className="text-xs text-muted-foreground">WhatsApp</span>
           </div>
         )}
         {!canView && (
-          <Link to={ROUTES.PLANS} className="flex items-center gap-2 mt-3 text-xs text-primary-700 hover:underline font-medium">
+          <Link
+            to={ROUTES.PLANS}
+            className="flex items-center gap-2 mt-3 text-xs text-primary-700 hover:underline font-medium"
+          >
             <Lock className="h-3 w-3" />
             Upgrade to Gold to see full contact details
           </Link>

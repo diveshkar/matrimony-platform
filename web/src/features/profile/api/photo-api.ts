@@ -18,11 +18,14 @@ export interface PhotoData {
 export const photoApi = {
   getUploadUrl: (fileName: string, mimeType: string, fileSize: number) =>
     apiClient
-      .post<ApiResponse<{ uploadUrl: string; photoId: string; s3Key: string }>>('/uploads/photo-url', {
-        fileName,
-        mimeType,
-        fileSize,
-      })
+      .post<ApiResponse<{ uploadUrl: string; photoId: string; s3Key: string }>>(
+        '/uploads/photo-url',
+        {
+          fileName,
+          mimeType,
+          fileSize,
+        },
+      )
       .then((r) => r.data),
 
   uploadFile: async (uploadUrl: string, file: File): Promise<string> => {
@@ -32,13 +35,15 @@ export const photoApi = {
     return response.data?.data?.url || uploadUrl;
   },
 
-  confirmUpload: (data: { s3Key: string; url: string; fileSize: number; mimeType: string; visibility?: string }) =>
-    apiClient
-      .post<ApiResponse<PhotoData>>('/uploads/photo-confirm', data)
-      .then((r) => r.data),
+  confirmUpload: (data: {
+    s3Key: string;
+    url: string;
+    fileSize: number;
+    mimeType: string;
+    visibility?: string;
+  }) => apiClient.post<ApiResponse<PhotoData>>('/uploads/photo-confirm', data).then((r) => r.data),
 
-  getPhotos: () =>
-    apiClient.get<ApiResponse<PhotoData[]>>('/uploads/photos').then((r) => r.data),
+  getPhotos: () => apiClient.get<ApiResponse<PhotoData[]>>('/uploads/photos').then((r) => r.data),
 
   setPrimary: (photoId: string) =>
     apiClient

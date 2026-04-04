@@ -38,7 +38,10 @@ export function useAuthVerify() {
           onboardingComplete: user.onboardingComplete,
         });
 
-        toast.success('Welcome!', user.onboardingComplete ? 'Good to see you again' : 'Let\'s set up your profile');
+        toast.success(
+          'Welcome!',
+          user.onboardingComplete ? 'Good to see you again' : "Let's set up your profile",
+        );
 
         if (!user.onboardingComplete) {
           navigate(ROUTES.ONBOARDING, { replace: true });
@@ -57,12 +60,17 @@ export function useAuthVerify() {
               const views = viewsRes.success ? viewsRes.data.items.length : 0;
 
               if (unread > 0) {
-                toast.info(`${unread} new notification${unread > 1 ? 's' : ''}`, 'Check your notifications');
+                toast.info(
+                  `${unread} new notification${unread > 1 ? 's' : ''}`,
+                  'Check your notifications',
+                );
               }
               if (views > 0) {
                 toast.info(`${views} people viewed your profile`, 'See who viewed you');
               }
-            } catch { /* non-critical */ }
+            } catch {
+              /* non-critical */
+            }
           }, 1500);
         }
       }

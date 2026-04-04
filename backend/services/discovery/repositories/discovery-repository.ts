@@ -69,7 +69,9 @@ export class DiscoveryRepository extends BaseRepository {
     });
   }
 
-  async getAllProfiles(limit = 50): Promise<{ items: DiscoveryProfile[]; lastKey?: Record<string, unknown> }> {
+  async getAllProfiles(
+    limit = 50,
+  ): Promise<{ items: DiscoveryProfile[]; lastKey?: Record<string, unknown> }> {
     // For MVP: scan-like approach using a known PK prefix
     // In production, always query via GSI
     return this.query<DiscoveryProfile>('DISCOVERY#ALL', {

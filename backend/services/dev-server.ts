@@ -13,7 +13,9 @@ try {
     const [key, ...vals] = line.split('=');
     if (key?.trim() && vals.length) process.env[key.trim()] = vals.join('=').trim();
   }
-} catch { /* .env file not found — use defaults */ }
+} catch {
+  /* .env file not found — use defaults */
+}
 
 // Set env vars before any imports so DynamoDB client picks them up
 process.env.DYNAMODB_ENDPOINT = process.env.DYNAMODB_ENDPOINT || 'http://localhost:8000';
@@ -29,7 +31,11 @@ process.env.FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
 import express from 'express';
 import cors from 'cors';
-import { type APIGatewayProxyEventV2, type APIGatewayProxyResultV2, type Context } from 'aws-lambda';
+import {
+  type APIGatewayProxyEventV2,
+  type APIGatewayProxyResultV2,
+  type Context,
+} from 'aws-lambda';
 
 // Force reset DynamoDB client so it picks up the env vars above
 import { resetClient } from './shared/repositories/dynamodb-client.js';
@@ -86,20 +92,29 @@ const PORT = Number(process.env.PORT) || 4000;
 app.use(cors({ origin: process.env.CORS_ALLOWED_ORIGINS || 'http://localhost:3000' }));
 
 // Stripe webhook needs raw body for signature verification — must be before express.json()
-app.post('/subscriptions/webhook', express.raw({ type: 'application/json' }), async (req: express.Request, res: express.Response) => {
-  try {
-    const event = buildEvent(req);
-    // Pass raw body as string for Stripe signature verification
-    event.body = req.body.toString();
-    const result = await webhookHandler(event, { ...fakeContext, awsRequestId: `local-${Date.now()}` });
-    const statusCode = typeof result === 'string' ? 200 : (result.statusCode || 200);
-    const body = typeof result === 'string' ? result : (result.body ? JSON.parse(result.body) : {});
-    res.status(statusCode).json(body);
-  } catch (err) {
-    console.error('Webhook error:', err);
-    res.status(500).json({ success: false, error: { code: 'WEBHOOK_ERROR', message: 'Webhook failed' } });
-  }
-});
+app.post(
+  '/subscriptions/webhook',
+  express.raw({ type: 'application/json' }),
+  async (req: express.Request, res: express.Response) => {
+    try {
+      const event = buildEvent(req);
+      // Pass raw body as string for Stripe signature verification
+      event.body = req.body.toString();
+      const result = await webhookHandler(event, {
+        ...fakeContext,
+        awsRequestId: `local-${Date.now()}`,
+      });
+      const statusCode = typeof result === 'string' ? 200 : result.statusCode || 200;
+      const body = typeof result === 'string' ? result : result.body ? JSON.parse(result.body) : {};
+      res.status(statusCode).json(body);
+    } catch (err) {
+      console.error('Webhook error:', err);
+      res
+        .status(500)
+        .json({ success: false, error: { code: 'WEBHOOK_ERROR', message: 'Webhook failed' } });
+    }
+  },
+);
 
 app.use(express.json());
 
@@ -174,7 +189,10 @@ const fakeContext: Context = {
   succeed: () => {},
 };
 
-type LambdaHandler = (event: APIGatewayProxyEventV2, context: Context) => Promise<APIGatewayProxyResultV2>;
+type LambdaHandler = (
+  event: APIGatewayProxyEventV2,
+  context: Context,
+) => Promise<APIGatewayProxyResultV2>;
 
 function route(method: 'get' | 'post' | 'patch' | 'delete', path: string, handler: LambdaHandler) {
   app[method](path, async (req: express.Request, res: express.Response) => {
@@ -200,7 +218,10 @@ function route(method: 'get' | 'post' | 'patch' | 'delete', path: string, handle
       res.status(statusCode).json(body);
     } catch (err) {
       console.error('Handler error:', err);
-      res.status(500).json({ success: false, error: { code: 'SERVER_ERROR', message: 'Internal server error' } });
+      res.status(500).json({
+        success: false,
+        error: { code: 'SERVER_ERROR', message: 'Internal server error' },
+      });
     }
   });
 }
@@ -274,5 +295,7 @@ route('get', '/subscriptions/usage', getUsageHandler);
 
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
-  console.log(`\n  🚀 Backend dev server running at http://localhost:${PORT}\n  📋 Health check: http://localhost:${PORT}/health\n`);
+  console.log(
+    `\n  🚀 Backend dev server running at http://localhost:${PORT}\n  📋 Health check: http://localhost:${PORT}/health\n`,
+  );
 });

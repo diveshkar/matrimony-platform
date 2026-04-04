@@ -30,7 +30,10 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
       const { BaseRepository } = await import('../../shared/repositories/base-repository.js');
       const repo = new SafetyRepository();
       const coreRepo = new BaseRepository('core');
-      const viewerProfile = await coreRepo.get<Record<string, unknown>>(`USER#${authedEvent.auth.userId}`, 'PROFILE#v1');
+      const viewerProfile = await coreRepo.get<Record<string, unknown>>(
+        `USER#${authedEvent.auth.userId}`,
+        'PROFILE#v1',
+      );
       await repo.recordView(profileId, authedEvent.auth.userId, viewerProfile || undefined);
 
       // Create notification for the viewed user
@@ -47,7 +50,9 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
           : `Someone viewed your profile. Upgrade to see who!`,
         actionUrl: viewedUserUsage.whoViewedMeAccess ? '/who-viewed-me' : '/plans',
       });
-    } catch { /* non-critical */ }
+    } catch {
+      /* non-critical */
+    }
   }
 
   return success(profile, requestId);

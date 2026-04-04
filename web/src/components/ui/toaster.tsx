@@ -91,9 +91,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 <Icon className={cn('h-5 w-5 shrink-0 mt-0.5', iconStyles[t.type])} />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold">{t.title}</p>
-                  {t.description && (
-                    <p className="text-xs mt-0.5 opacity-80">{t.description}</p>
-                  )}
+                  {t.description && <p className="text-xs mt-0.5 opacity-80">{t.description}</p>}
                 </div>
                 <button
                   onClick={() => removeToast(t.id)}

@@ -93,7 +93,12 @@ export default function PrivacySettingsPage() {
   );
 }
 
-function ToggleRow({ label, description, checked, onChange }: {
+function ToggleRow({
+  label,
+  description,
+  checked,
+  onChange,
+}: {
   label: string;
   description: string;
   checked: boolean;
@@ -114,9 +119,11 @@ function ToggleRow({ label, description, checked, onChange }: {
           checked ? 'bg-primary-700' : 'bg-muted'
         }`}
       >
-        <span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
-          checked ? 'translate-x-5' : 'translate-x-0'
-        }`} />
+        <span
+          className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
+            checked ? 'translate-x-5' : 'translate-x-0'
+          }`}
+        />
       </button>
     </div>
   );

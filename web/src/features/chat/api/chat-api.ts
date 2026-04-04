@@ -24,15 +24,17 @@ export const chatApi = {
     apiClient.get<ApiResponse<{ items: ConversationItem[] }>>('/chats').then((r) => r.data),
 
   createConversation: (otherUserId: string) =>
-    apiClient.post<ApiResponse<{ conversationId: string }>>('/chats', { otherUserId }).then((r) => r.data),
+    apiClient
+      .post<ApiResponse<{ conversationId: string }>>('/chats', { otherUserId })
+      .then((r) => r.data),
 
   getMessages: (conversationId: string, limit = 50, cursor?: string) => {
     const params = new URLSearchParams({ limit: String(limit) });
     if (cursor) params.set('cursor', cursor);
     return apiClient
-      .get<ApiResponse<{ items: MessageItem[]; nextCursor?: string }>>(
-        `/chats/${conversationId}/messages?${params}`,
-      )
+      .get<
+        ApiResponse<{ items: MessageItem[]; nextCursor?: string }>
+      >(`/chats/${conversationId}/messages?${params}`)
       .then((r) => r.data);
   },
 

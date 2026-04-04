@@ -123,12 +123,14 @@ export async function getRemainingUsage(userId: string): Promise<{
   ]);
 
   return {
-    profileViewsRemaining: entitlement.profileViewsPerDay === -1
-      ? -1
-      : Math.max(0, entitlement.profileViewsPerDay - viewsUsed),
-    interestsRemaining: entitlement.interestsPerDay === -1
-      ? -1
-      : Math.max(0, entitlement.interestsPerDay - interestsUsed),
+    profileViewsRemaining:
+      entitlement.profileViewsPerDay === -1
+        ? -1
+        : Math.max(0, entitlement.profileViewsPerDay - viewsUsed),
+    interestsRemaining:
+      entitlement.interestsPerDay === -1
+        ? -1
+        : Math.max(0, entitlement.interestsPerDay - interestsUsed),
     chatAccess: entitlement.chatAccess,
     whoViewedMeAccess: entitlement.whoViewedMeAccess,
     contactInfoAccess: entitlement.contactInfoAccess,

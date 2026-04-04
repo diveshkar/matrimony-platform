@@ -62,8 +62,7 @@ export const profileApi = {
   create: (data: ProfileData) =>
     apiClient.post<ApiResponse<ProfileResponse['profile']>>('/profiles', data).then((r) => r.data),
 
-  getMyProfile: () =>
-    apiClient.get<ApiResponse<ProfileResponse>>('/me').then((r) => r.data),
+  getMyProfile: () => apiClient.get<ApiResponse<ProfileResponse>>('/me').then((r) => r.data),
 
   updateProfile: (data: Partial<ProfileData>) =>
     apiClient.patch<ApiResponse<Record<string, unknown>>>('/me', data).then((r) => r.data),

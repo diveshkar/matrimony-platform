@@ -20,7 +20,9 @@ export default function ShortlistPage() {
       <div className="space-y-6 max-w-3xl">
         <Skeleton className="h-8 w-48" />
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-40 rounded-xl" />)}
+          {[...Array(6)].map((_, i) => (
+            <Skeleton key={i} className="h-40 rounded-xl" />
+          ))}
         </div>
       </div>
     );
@@ -55,7 +57,11 @@ export default function ShortlistPage() {
                     <Link to={profileDetailPath(item.targetUserId)}>
                       <div className="h-16 w-16 rounded-xl overflow-hidden bg-primary-50 shrink-0">
                         {item.targetPhoto ? (
-                          <img src={item.targetPhoto} alt={item.targetName} className="h-full w-full object-cover" />
+                          <img
+                            src={item.targetPhoto}
+                            alt={item.targetName}
+                            className="h-full w-full object-cover"
+                          />
                         ) : (
                           <div className="h-full w-full flex items-center justify-center">
                             <User className="h-8 w-8 text-primary-300" />
@@ -76,7 +82,8 @@ export default function ShortlistPage() {
                       {(item.targetCity || item.targetCountry) && (
                         <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                           <MapPin className="h-3 w-3" />
-                          {item.targetCity ? `${item.targetCity}, ` : ''}{item.targetCountry}
+                          {item.targetCity ? `${item.targetCity}, ` : ''}
+                          {item.targetCountry}
                         </p>
                       )}
                     </div>

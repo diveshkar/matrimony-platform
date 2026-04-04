@@ -54,8 +54,6 @@ const BlockedUsersPage = lazy(() => import('@/features/settings/pages/BlockedUse
 const WhoViewedMePage = lazy(() => import('@/features/settings/pages/WhoViewedMePage'));
 const NotificationsPage = lazy(() => import('@/features/settings/pages/NotificationsPage'));
 
-
-
 function SuspenseWrapper({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<LoadingScreen message="Loading..." />}>{children}</Suspense>;
 }

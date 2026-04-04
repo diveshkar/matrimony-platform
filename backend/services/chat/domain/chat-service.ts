@@ -89,10 +89,18 @@ export class ChatService {
 
     await Promise.all([
       this.chatRepo.updateUserConversationLastMessage(
-        userId, conversationId, content.trim(), message.createdAt, false,
+        userId,
+        conversationId,
+        content.trim(),
+        message.createdAt,
+        false,
       ),
       this.chatRepo.updateUserConversationLastMessage(
-        otherUserId, conversationId, content.trim(), message.createdAt, true,
+        otherUserId,
+        conversationId,
+        content.trim(),
+        message.createdAt,
+        true,
       ),
     ]);
 

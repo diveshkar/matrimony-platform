@@ -66,7 +66,7 @@ jobs:
       # Terraform apply
       - uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.6"
+          terraform_version: '1.6'
 
       - name: Terraform apply
         working-directory: infra/environments/prod

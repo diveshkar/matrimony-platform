@@ -8,12 +8,9 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default:
-          'bg-primary-800 text-white shadow-soft hover:bg-primary-700 active:bg-primary-900',
-        secondary:
-          'bg-secondary text-secondary-foreground shadow-soft-sm hover:bg-secondary/80',
-        outline:
-          'border-2 border-primary-800 text-primary-800 bg-transparent hover:bg-primary-50',
+        default: 'bg-primary-800 text-white shadow-soft hover:bg-primary-700 active:bg-primary-900',
+        secondary: 'bg-secondary text-secondary-foreground shadow-soft-sm hover:bg-secondary/80',
+        outline: 'border-2 border-primary-800 text-primary-800 bg-transparent hover:bg-primary-50',
         ghost: 'text-foreground hover:bg-muted',
         link: 'text-primary-800 underline-offset-4 hover:underline',
         destructive:
@@ -36,8 +33,7 @@ const buttonVariants = cva(
 );
 
 export interface ButtonProps
-  extends ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+  extends ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
   asChild?: boolean;
 }
 

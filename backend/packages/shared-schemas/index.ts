@@ -13,12 +13,14 @@ export const phoneSchema = z
 export const emailSchema = z.string().email('Invalid email address');
 
 // Auth
-export const authStartSchema = z.object({
-  phone: phoneSchema.optional(),
-  email: emailSchema.optional(),
-}).refine((data) => data.phone || data.email, {
-  message: 'Either phone or email is required',
-});
+export const authStartSchema = z
+  .object({
+    phone: phoneSchema.optional(),
+    email: emailSchema.optional(),
+  })
+  .refine((data) => data.phone || data.email, {
+    message: 'Either phone or email is required',
+  });
 
 export const authVerifySchema = z.object({
   phone: phoneSchema.optional(),

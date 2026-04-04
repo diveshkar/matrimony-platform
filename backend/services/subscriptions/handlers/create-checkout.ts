@@ -13,10 +13,7 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
   const body = event.body ? JSON.parse(event.body) : {};
   if (!body.planId) throw new ValidationError('planId is required');
 
-  const result = await subscriptionService.createCheckout(
-    authedEvent.auth.userId,
-    body.planId,
-  );
+  const result = await subscriptionService.createCheckout(authedEvent.auth.userId, body.planId);
 
   return success(result, requestId);
 }

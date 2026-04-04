@@ -1,16 +1,33 @@
 import { ProfileRepository } from '../repositories/profile-repository.js';
 import { ConflictError, NotFoundError } from '../../shared/errors/app-errors.js';
-import type { UserProfile, UserPreference, UserPrivacy } from '../../../packages/shared-types/index.js';
+import type {
+  UserProfile,
+  UserPreference,
+  UserPrivacy,
+} from '../../../packages/shared-types/index.js';
 
 function calculateCompletion(profile: Partial<UserProfile>): number {
   const fields = [
-    'name', 'dateOfBirth', 'gender', 'height', 'maritalStatus',
-    'religion', 'motherTongue', 'education', 'country',
-    'aboutMe', 'primaryPhotoUrl',
+    'name',
+    'dateOfBirth',
+    'gender',
+    'height',
+    'maritalStatus',
+    'religion',
+    'motherTongue',
+    'education',
+    'country',
+    'aboutMe',
+    'primaryPhotoUrl',
   ];
   const optional = [
-    'caste', 'occupation', 'city', 'fatherOccupation',
-    'motherOccupation', 'familyType', 'familyValues',
+    'caste',
+    'occupation',
+    'city',
+    'fatherOccupation',
+    'motherOccupation',
+    'familyType',
+    'familyValues',
   ];
 
   let filled = 0;
@@ -33,10 +50,7 @@ export class ProfileService {
     this.repo = new ProfileRepository();
   }
 
-  async createProfile(
-    userId: string,
-    data: Record<string, unknown>,
-  ): Promise<UserProfile> {
+  async createProfile(userId: string, data: Record<string, unknown>): Promise<UserProfile> {
     const existing = await this.repo.getProfile(userId);
     if (existing) {
       throw new ConflictError('Profile already exists. Use update instead.');

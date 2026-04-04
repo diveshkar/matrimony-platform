@@ -1,5 +1,15 @@
 import { Link } from 'react-router-dom';
-import { Edit, MapPin, GraduationCap, Briefcase, Users, Heart, Calendar, Camera, Crown } from 'lucide-react';
+import {
+  Edit,
+  MapPin,
+  GraduationCap,
+  Briefcase,
+  Users,
+  Heart,
+  Calendar,
+  Camera,
+  Crown,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -80,7 +90,9 @@ export default function MyProfilePage() {
           <CardContent className="pt-4 pb-4">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm font-medium">Profile Completion</p>
-              <span className="text-sm font-bold text-primary-800">{profile.profileCompletion}%</span>
+              <span className="text-sm font-bold text-primary-800">
+                {profile.profileCompletion}%
+              </span>
             </div>
             <Progress value={profile.profileCompletion} />
           </CardContent>
@@ -129,7 +141,10 @@ export default function MyProfilePage() {
         </CardHeader>
         <CardContent className="space-y-3">
           <InfoRow label="Name" value={profile.name} />
-          <InfoRow label="Age" value={profile.dateOfBirth ? `${calculateAge(profile.dateOfBirth)} years` : '-'} />
+          <InfoRow
+            label="Age"
+            value={profile.dateOfBirth ? `${calculateAge(profile.dateOfBirth)} years` : '-'}
+          />
           <InfoRow label="Height" value={profile.height ? formatHeight(profile.height) : '-'} />
           <InfoRow label="Gender" value={capitalize(profile.gender)} />
           <InfoRow label="Marital Status" value={formatEnum(profile.maritalStatus)} />
@@ -196,10 +211,18 @@ export default function MyProfilePage() {
         <CardContent className="space-y-3">
           {profile.fatherOccupation && <InfoRow label="Father" value={profile.fatherOccupation} />}
           {profile.motherOccupation && <InfoRow label="Mother" value={profile.motherOccupation} />}
-          {profile.brothersCount !== undefined && <InfoRow label="Brothers" value={String(profile.brothersCount)} />}
-          {profile.sistersCount !== undefined && <InfoRow label="Sisters" value={String(profile.sistersCount)} />}
-          {profile.familyType && <InfoRow label="Family Type" value={formatEnum(profile.familyType)} />}
-          {profile.familyValues && <InfoRow label="Family Values" value={capitalize(profile.familyValues)} />}
+          {profile.brothersCount !== undefined && (
+            <InfoRow label="Brothers" value={String(profile.brothersCount)} />
+          )}
+          {profile.sistersCount !== undefined && (
+            <InfoRow label="Sisters" value={String(profile.sistersCount)} />
+          )}
+          {profile.familyType && (
+            <InfoRow label="Family Type" value={formatEnum(profile.familyType)} />
+          )}
+          {profile.familyValues && (
+            <InfoRow label="Family Values" value={capitalize(profile.familyValues)} />
+          )}
         </CardContent>
       </Card>
 
@@ -236,9 +259,21 @@ export default function MyProfilePage() {
                 const countries = p.countries as string[] | undefined;
                 return (
                   <>
-                    {ageMin && <Badge variant="outline">Age: {ageMin}-{ageMax}</Badge>}
-                    {religions?.map((r) => <Badge key={r} variant="outline">{capitalize(r)}</Badge>)}
-                    {countries?.map((c) => <Badge key={c} variant="outline">{c}</Badge>)}
+                    {ageMin && (
+                      <Badge variant="outline">
+                        Age: {ageMin}-{ageMax}
+                      </Badge>
+                    )}
+                    {religions?.map((r) => (
+                      <Badge key={r} variant="outline">
+                        {capitalize(r)}
+                      </Badge>
+                    ))}
+                    {countries?.map((c) => (
+                      <Badge key={c} variant="outline">
+                        {c}
+                      </Badge>
+                    ))}
                   </>
                 );
               })()}

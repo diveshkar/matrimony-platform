@@ -123,9 +123,7 @@ export default function VerifyOtpPage() {
 
     try {
       const payload =
-        state.type === 'phone'
-          ? { phone: state.identifier }
-          : { email: state.identifier };
+        state.type === 'phone' ? { phone: state.identifier } : { email: state.identifier };
 
       await authStart.mutateAsync(payload);
       const expiryMs = Date.now() + CONFIG.OTP_RESEND_COOLDOWN_SECONDS * 1000;
@@ -177,7 +175,9 @@ export default function VerifyOtpPage() {
           {otp.map((digit, index) => (
             <input
               key={index}
-              ref={(el) => { inputRefs.current[index] = el; }}
+              ref={(el) => {
+                inputRefs.current[index] = el;
+              }}
               type="text"
               inputMode="numeric"
               autoComplete="one-time-code"
@@ -221,8 +221,7 @@ export default function VerifyOtpPage() {
         <div className="mb-8">
           {cooldown > 0 ? (
             <p className="text-sm text-muted-foreground">
-              Resend code in{' '}
-              <span className="font-medium text-foreground">{cooldown}s</span>
+              Resend code in <span className="font-medium text-foreground">{cooldown}s</span>
             </p>
           ) : (
             <Button
@@ -239,7 +238,11 @@ export default function VerifyOtpPage() {
         </div>
 
         {/* Back */}
-        <Button variant="ghost" onClick={() => navigate(ROUTES.LOGIN)} className="text-muted-foreground">
+        <Button
+          variant="ghost"
+          onClick={() => navigate(ROUTES.LOGIN)}
+          className="text-muted-foreground"
+        >
           <ArrowLeft className="mr-1.5 h-4 w-4" />
           Change {state?.type === 'phone' ? 'phone number' : 'email'}
         </Button>

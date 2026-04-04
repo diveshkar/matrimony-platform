@@ -13,7 +13,12 @@ export class UploadService {
     this.repo = new PhotoRepository();
   }
 
-  async getUploadUrl(userId: string, fileName: string, mimeType: string, fileSize: number): Promise<{
+  async getUploadUrl(
+    userId: string,
+    fileName: string,
+    mimeType: string,
+    fileSize: number,
+  ): Promise<{
     uploadUrl: string;
     photoId: string;
     s3Key: string;
@@ -48,13 +53,16 @@ export class UploadService {
     };
   }
 
-  async confirmUpload(userId: string, data: {
-    s3Key: string;
-    url: string;
-    fileSize: number;
-    mimeType: string;
-    visibility?: 'all' | 'contacts' | 'hidden';
-  }): Promise<PhotoMetadata> {
+  async confirmUpload(
+    userId: string,
+    data: {
+      s3Key: string;
+      url: string;
+      fileSize: number;
+      mimeType: string;
+      visibility?: 'all' | 'contacts' | 'hidden';
+    },
+  ): Promise<PhotoMetadata> {
     const photo = await this.repo.savePhoto(userId, {
       s3Key: data.s3Key,
       url: data.url,
@@ -83,7 +91,11 @@ export class UploadService {
     await this.updateProfilePhoto(userId, photo.url);
   }
 
-  async updateVisibility(userId: string, photoId: string, visibility: 'all' | 'contacts' | 'hidden'): Promise<void> {
+  async updateVisibility(
+    userId: string,
+    photoId: string,
+    visibility: 'all' | 'contacts' | 'hidden',
+  ): Promise<void> {
     const photo = await this.repo.getPhoto(userId, photoId);
     if (!photo) throw new NotFoundError('Photo');
 

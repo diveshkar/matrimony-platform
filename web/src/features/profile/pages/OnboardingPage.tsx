@@ -183,14 +183,30 @@ export default function OnboardingPage() {
             exit={{ opacity: 0, x: -30 }}
             transition={{ duration: 0.25 }}
           >
-            {currentStep === 0 && <StepProfileFor data={draft} onChange={updateDraft} errors={stepErrors} />}
-            {currentStep === 1 && <StepBasicInfo data={draft} onChange={updateDraft} errors={stepErrors} />}
-            {currentStep === 2 && <StepCulturalRoots data={draft} onChange={updateDraft} errors={stepErrors} />}
-            {currentStep === 3 && <StepEducationCareer data={draft} onChange={updateDraft} errors={stepErrors} />}
-            {currentStep === 4 && <StepLocation data={draft} onChange={updateDraft} errors={stepErrors} />}
-            {currentStep === 5 && <StepFamily data={draft} onChange={updateDraft} errors={stepErrors} />}
-            {currentStep === 6 && <StepPreferences data={draft} onChange={updateDraft} errors={stepErrors} />}
-            {currentStep === 7 && <StepAboutMe data={draft} onChange={updateDraft} errors={stepErrors} />}
+            {currentStep === 0 && (
+              <StepProfileFor data={draft} onChange={updateDraft} errors={stepErrors} />
+            )}
+            {currentStep === 1 && (
+              <StepBasicInfo data={draft} onChange={updateDraft} errors={stepErrors} />
+            )}
+            {currentStep === 2 && (
+              <StepCulturalRoots data={draft} onChange={updateDraft} errors={stepErrors} />
+            )}
+            {currentStep === 3 && (
+              <StepEducationCareer data={draft} onChange={updateDraft} errors={stepErrors} />
+            )}
+            {currentStep === 4 && (
+              <StepLocation data={draft} onChange={updateDraft} errors={stepErrors} />
+            )}
+            {currentStep === 5 && (
+              <StepFamily data={draft} onChange={updateDraft} errors={stepErrors} />
+            )}
+            {currentStep === 6 && (
+              <StepPreferences data={draft} onChange={updateDraft} errors={stepErrors} />
+            )}
+            {currentStep === 7 && (
+              <StepAboutMe data={draft} onChange={updateDraft} errors={stepErrors} />
+            )}
           </motion.div>
         </AnimatePresence>
 
