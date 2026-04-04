@@ -84,9 +84,9 @@ resource "aws_cognito_user_pool_client" "this" {
   allowed_oauth_scopes                 = ["phone", "email", "openid", "profile"]
   allowed_oauth_flows_user_pool_client = true
 
-  access_token_validity  = 60   # minutes
-  id_token_validity      = 60   # minutes
-  refresh_token_validity = 30   # days
+  access_token_validity  = 60 # minutes
+  id_token_validity      = 60 # minutes
+  refresh_token_validity = 30 # days
 
   token_validity_units {
     access_token  = "minutes"

@@ -273,6 +273,6 @@ route('get', '/subscriptions/usage', getUsageHandler);
 // ── Start ───────────────────────────────────
 
 app.listen(PORT, () => {
-  console.log(`\n  🚀 Backend dev server running at http://localhost:${PORT}`);
-  console.log(`  📋 Health check: http://localhost:${PORT}/health\n`);
+  // eslint-disable-next-line no-console
+  console.log(`\n  🚀 Backend dev server running at http://localhost:${PORT}\n  📋 Health check: http://localhost:${PORT}/health\n`);
 });

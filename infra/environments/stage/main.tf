@@ -21,8 +21,8 @@ module "dynamodb_core" {
 
   global_secondary_indexes = [
     {
-      name     = "GSI1"
-      hash_key = "GSI1PK"
+      name      = "GSI1"
+      hash_key  = "GSI1PK"
       range_key = "GSI1SK"
     },
   ]

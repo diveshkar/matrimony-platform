@@ -27,13 +27,13 @@ resource "aws_iam_role_policy" "custom" {
 }
 
 resource "aws_lambda_function" "this" {
-  function_name = var.function_name
-  role          = aws_iam_role.lambda.arn
-  handler       = var.handler
-  runtime       = var.runtime
-  memory_size   = var.memory_size
-  timeout       = var.timeout
-  filename      = var.filename
+  function_name    = var.function_name
+  role             = aws_iam_role.lambda.arn
+  handler          = var.handler
+  runtime          = var.runtime
+  memory_size      = var.memory_size
+  timeout          = var.timeout
+  filename         = var.filename
   source_code_hash = var.source_code_hash
 
   environment {

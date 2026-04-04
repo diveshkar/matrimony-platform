@@ -1,8 +1,8 @@
 # SNS SMS configuration for OTP delivery
 resource "aws_sns_sms_preferences" "this" {
-  monthly_spend_limit             = var.monthly_spend_limit
-  default_sms_type                = "Transactional"
-  delivery_status_iam_role_arn    = aws_iam_role.sns_delivery_status.arn
+  monthly_spend_limit                   = var.monthly_spend_limit
+  default_sms_type                      = "Transactional"
+  delivery_status_iam_role_arn          = aws_iam_role.sns_delivery_status.arn
   delivery_status_success_sampling_rate = 100
 }
 
