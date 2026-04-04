@@ -14,7 +14,7 @@ function calculateCompletion(profile: Partial<UserProfile>): number {
   ];
 
   let filled = 0;
-  let total = fields.length + optional.length;
+  const total = fields.length + optional.length;
 
   for (const f of fields) {
     if (profile[f as keyof UserProfile]) filled++;
