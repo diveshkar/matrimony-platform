@@ -131,6 +131,8 @@ locals {
     module.dynamodb_events.table_arn,
     "${module.dynamodb_events.table_arn}/index/*",
   ]
+
+  lambda_packages_dir = "${path.module}/../../lambda-packages"
 }
 
 data "aws_iam_policy_document" "lambda_service" {
@@ -162,9 +164,11 @@ data "aws_iam_policy_document" "lambda_service" {
 module "lambda_health" {
   source                = "../../modules/lambda_function"
   function_name         = "${local.prefix}-health"
-  handler               = "health-check.main"
+  handler               = "services/health/index.main"
   memory_size           = 128
   timeout               = 10
+  filename              = "${local.lambda_packages_dir}/health.zip"
+  source_code_hash      = filebase64sha256("${local.lambda_packages_dir}/health.zip")
   environment_variables = local.lambda_env
   tags                  = local.common_tags
 }
@@ -172,9 +176,11 @@ module "lambda_health" {
 module "lambda_auth" {
   source                = "../../modules/lambda_function"
   function_name         = "${local.prefix}-auth"
-  handler               = "index.main"
+  handler               = "services/auth/index.main"
   memory_size           = 256
   timeout               = 30
+  filename              = "${local.lambda_packages_dir}/auth.zip"
+  source_code_hash      = filebase64sha256("${local.lambda_packages_dir}/auth.zip")
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
   tags                  = local.common_tags
@@ -183,9 +189,11 @@ module "lambda_auth" {
 module "lambda_profile" {
   source                = "../../modules/lambda_function"
   function_name         = "${local.prefix}-profile"
-  handler               = "index.main"
+  handler               = "services/profile/index.main"
   memory_size           = 256
   timeout               = 30
+  filename              = "${local.lambda_packages_dir}/profile.zip"
+  source_code_hash      = filebase64sha256("${local.lambda_packages_dir}/profile.zip")
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
   tags                  = local.common_tags
@@ -194,9 +202,11 @@ module "lambda_profile" {
 module "lambda_uploads" {
   source                = "../../modules/lambda_function"
   function_name         = "${local.prefix}-uploads"
-  handler               = "index.main"
+  handler               = "services/uploads/index.main"
   memory_size           = 256
   timeout               = 30
+  filename              = "${local.lambda_packages_dir}/uploads.zip"
+  source_code_hash      = filebase64sha256("${local.lambda_packages_dir}/uploads.zip")
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
   tags                  = local.common_tags
@@ -205,9 +215,11 @@ module "lambda_uploads" {
 module "lambda_discovery" {
   source                = "../../modules/lambda_function"
   function_name         = "${local.prefix}-discovery"
-  handler               = "index.main"
+  handler               = "services/discovery/index.main"
   memory_size           = 256
   timeout               = 30
+  filename              = "${local.lambda_packages_dir}/discovery.zip"
+  source_code_hash      = filebase64sha256("${local.lambda_packages_dir}/discovery.zip")
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
   tags                  = local.common_tags
@@ -216,9 +228,11 @@ module "lambda_discovery" {
 module "lambda_interests" {
   source                = "../../modules/lambda_function"
   function_name         = "${local.prefix}-interests"
-  handler               = "index.main"
+  handler               = "services/interests/index.main"
   memory_size           = 256
   timeout               = 30
+  filename              = "${local.lambda_packages_dir}/interests.zip"
+  source_code_hash      = filebase64sha256("${local.lambda_packages_dir}/interests.zip")
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
   tags                  = local.common_tags
@@ -227,9 +241,11 @@ module "lambda_interests" {
 module "lambda_chat" {
   source                = "../../modules/lambda_function"
   function_name         = "${local.prefix}-chat"
-  handler               = "index.main"
+  handler               = "services/chat/index.main"
   memory_size           = 256
   timeout               = 30
+  filename              = "${local.lambda_packages_dir}/chat.zip"
+  source_code_hash      = filebase64sha256("${local.lambda_packages_dir}/chat.zip")
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
   tags                  = local.common_tags
@@ -238,9 +254,11 @@ module "lambda_chat" {
 module "lambda_subscriptions" {
   source                = "../../modules/lambda_function"
   function_name         = "${local.prefix}-subscriptions"
-  handler               = "index.main"
+  handler               = "services/subscriptions/index.main"
   memory_size           = 256
   timeout               = 30
+  filename              = "${local.lambda_packages_dir}/subscriptions.zip"
+  source_code_hash      = filebase64sha256("${local.lambda_packages_dir}/subscriptions.zip")
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
   tags                  = local.common_tags
@@ -249,9 +267,11 @@ module "lambda_subscriptions" {
 module "lambda_safety" {
   source                = "../../modules/lambda_function"
   function_name         = "${local.prefix}-safety"
-  handler               = "index.main"
+  handler               = "services/safety/index.main"
   memory_size           = 256
   timeout               = 30
+  filename              = "${local.lambda_packages_dir}/safety.zip"
+  source_code_hash      = filebase64sha256("${local.lambda_packages_dir}/safety.zip")
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
   tags                  = local.common_tags

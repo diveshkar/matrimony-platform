@@ -52,24 +52,33 @@ jobs:
 
       - run: pnpm run build:backend
 
+      # Package Lambda functions into ZIPs
+      - name: Package Lambda functions
+        run: bash scripts/package-lambdas.sh
+
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # Deploy frontend to S3
-      - name: Deploy frontend
-        run: |
-          aws s3 sync web/dist/ s3://matrimony-prod-frontend --delete
-          aws cloudfront create-invalidation --distribution-id ${{ vars.CLOUDFRONT_DIST_ID }} --paths "/*"
-
-      # Terraform apply
+      # Terraform apply (deploys infra + Lambda code)
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: '1.6'
 
       - name: Terraform apply
         working-directory: infra/environments/prod
+        env:
+          TF_VAR_stripe_secret_key: ${{ secrets.STRIPE_SECRET_KEY }}
+          TF_VAR_stripe_webhook_secret: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+          TF_VAR_certificate_arn: ${{ secrets.CERTIFICATE_ARN }}
+          TF_VAR_alarm_email: ${{ vars.ALARM_EMAIL }}
         run: |
           terraform init
           terraform apply -auto-approve
+
+      # Deploy frontend to S3
+      - name: Deploy frontend
+        run: |
+          aws s3 sync web/dist/ s3://matrimony-prod-frontend --delete
+          aws cloudfront create-invalidation --distribution-id ${{ vars.CLOUDFRONT_DIST_ID }} --paths "/*"
