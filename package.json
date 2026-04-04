@@ -18,12 +18,20 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "clean": "pnpm -r run clean",
+    "seed:tables": "npx tsx scripts/seed-tables.ts",
+    "seed:plans": "npx tsx scripts/seed-plans.ts",
+    "seed:profiles": "npx tsx scripts/seed-profiles.ts",
+    "seed:all": "npx tsx scripts/seed-tables.ts && npx tsx scripts/seed-plans.ts && npx tsx scripts/seed-profiles.ts",
     "prepare": "husky"
   },
   "devDependencies": {
     "husky": "^9.1.0",
     "lint-staged": "^15.2.0",
     "prettier": "^3.3.0",
+    "@aws-sdk/client-dynamodb": "^3.654.0",
+    "@aws-sdk/lib-dynamodb": "^3.654.0",
+    "@types/node": "^20.16.0",
+    "tsx": "^4.19.0",
     "typescript": "^5.5.0"
   },
   "lint-staged": {

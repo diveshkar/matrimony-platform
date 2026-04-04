@@ -1,15 +1,20 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
 
+const env = process.argv[2] || 'dev';
+const isLocal = env === 'dev';
+
 const client = DynamoDBDocumentClient.from(
   new DynamoDBClient({
     region: 'ap-south-1',
-    endpoint: 'http://localhost:8000',
-    credentials: { accessKeyId: 'fakeMyKeyId', secretAccessKey: 'fakeSecretAccessKey' },
+    ...(isLocal && {
+      endpoint: 'http://localhost:8000',
+      credentials: { accessKeyId: 'fakeMyKeyId', secretAccessKey: 'fakeSecretAccessKey' },
+    }),
   }),
 );
 
-const TABLE = 'matrimony_core_dev';
+const TABLE = `matrimony_core_${env}`;
 
 const plans = [
   {
@@ -51,7 +56,7 @@ const plans = [
 ];
 
 async function seed() {
-  console.log('Seeding plan entitlements...\n');
+  console.log(`Seeding plan entitlements into ${TABLE} (${env})...\n`);
 
   for (const plan of plans) {
     await client.send(

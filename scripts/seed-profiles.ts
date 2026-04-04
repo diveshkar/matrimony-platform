@@ -1,16 +1,21 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
 
+const env = process.argv[2] || 'dev';
+const isLocal = env === 'dev';
+
 const client = DynamoDBDocumentClient.from(
   new DynamoDBClient({
     region: 'ap-south-1',
-    endpoint: 'http://localhost:8000',
-    credentials: { accessKeyId: 'fakeMyKeyId', secretAccessKey: 'fakeSecretAccessKey' },
+    ...(isLocal && {
+      endpoint: 'http://localhost:8000',
+      credentials: { accessKeyId: 'fakeMyKeyId', secretAccessKey: 'fakeSecretAccessKey' },
+    }),
   }),
 );
 
-const CORE_TABLE = 'matrimony_core_dev';
-const DISCOVERY_TABLE = 'matrimony_discovery_dev';
+const CORE_TABLE = `matrimony_core_${env}`;
+const DISCOVERY_TABLE = `matrimony_discovery_${env}`;
 
 interface DemoProfile {
   name: string;

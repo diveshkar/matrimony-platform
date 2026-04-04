@@ -1,12 +1,14 @@
 import { DynamoDBClient, CreateTableCommand, ListTablesCommand } from '@aws-sdk/client-dynamodb';
 
+const env = process.argv[2] || 'dev';
+const isLocal = env === 'dev';
+
 const client = new DynamoDBClient({
   region: 'ap-south-1',
-  endpoint: 'http://localhost:8000',
-  credentials: {
-    accessKeyId: 'local',
-    secretAccessKey: 'local',
-  },
+  ...(isLocal && {
+    endpoint: 'http://localhost:8000',
+    credentials: { accessKeyId: 'local', secretAccessKey: 'local' },
+  }),
 });
 
 interface TableDef {
@@ -20,18 +22,18 @@ interface TableDef {
 
 const tables: TableDef[] = [
   {
-    name: 'matrimony_core_dev',
+    name: `matrimony_core_${env}`,
     gsis: [{ name: 'GSI1', hashKey: 'GSI1PK', rangeKey: 'GSI1SK' }],
   },
-  { name: 'matrimony_messages_dev' },
+  { name: `matrimony_messages_${env}` },
   {
-    name: 'matrimony_discovery_dev',
+    name: `matrimony_discovery_${env}`,
     gsis: [
       { name: 'GSI1', hashKey: 'GSI1PK', rangeKey: 'GSI1SK' },
       { name: 'GSI2', hashKey: 'GSI2PK', rangeKey: 'GSI2SK' },
     ],
   },
-  { name: 'matrimony_events_dev' },
+  { name: `matrimony_events_${env}` },
 ];
 
 async function seedTables() {
@@ -87,7 +89,7 @@ async function seedTables() {
     console.log(`Created table: ${table.name}`);
   }
 
-  console.log('Done. All tables ready.');
+  console.log(`Done. All ${env} tables ready.`);
 }
 
 seedTables().catch(console.error);
