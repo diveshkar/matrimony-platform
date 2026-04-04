@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Search, Sparkles, Heart, Users, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { UsageBar } from '@/features/subscription/components/UsageBar';
 import { EmptyState } from '@/components/common/EmptyState';
 import { ProfileCard } from '../components/ProfileCard';
 import { useRecommendations } from '../hooks/useDiscovery';
@@ -48,6 +49,9 @@ export default function DiscoverPage() {
           </Button>
         </div>
       </motion.div>
+
+      {/* Usage */}
+      <UsageBar />
 
       {/* Results */}
       {isLoading && (

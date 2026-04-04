@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { UsageBar } from '@/features/subscription/components/UsageBar';
 import {
   Search,
   Heart,
@@ -197,6 +198,9 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Usage tracker */}
+      <UsageBar />
 
       {/* Quick actions grid */}
       <div>

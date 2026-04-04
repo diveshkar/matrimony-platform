@@ -32,6 +32,14 @@ export interface MySubscription {
   };
 }
 
+export interface UsageData {
+  profileViewsRemaining: number;
+  interestsRemaining: number;
+  chatAccess: boolean;
+  whoViewedMeAccess: boolean;
+  contactInfoAccess: boolean;
+}
+
 export const subscriptionApi = {
   getPlans: () =>
     apiClient.get<ApiResponse<PlanInfo[]>>('/subscriptions/plans').then((r) => r.data),
@@ -45,6 +53,9 @@ export const subscriptionApi = {
 
   getMySubscription: () =>
     apiClient.get<ApiResponse<MySubscription>>('/subscriptions/me').then((r) => r.data),
+
+  getUsage: () =>
+    apiClient.get<ApiResponse<UsageData>>('/subscriptions/usage').then((r) => r.data),
 
   verifySession: (sessionId: string) =>
     apiClient

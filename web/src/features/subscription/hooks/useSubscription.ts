@@ -15,6 +15,15 @@ export function useMySubscription() {
   });
 }
 
+export function useUsage() {
+  return useQuery({
+    queryKey: ['usage'],
+    queryFn: () => subscriptionApi.getUsage(),
+    staleTime: 1000 * 30,
+    refetchOnWindowFocus: true,
+  });
+}
+
 export function useCreateCheckout() {
   return useMutation({
     mutationFn: (planId: string) => subscriptionApi.createCheckout(planId),
