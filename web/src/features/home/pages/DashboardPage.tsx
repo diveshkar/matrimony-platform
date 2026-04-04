@@ -68,7 +68,7 @@ const quickActions = [
 ];
 
 export default function DashboardPage() {
-  useAuth(); // ensure authenticated
+  useAuth();
   const { data: subResponse } = useMySubscription();
   const { data: profileResponse } = useMyProfile();
 

@@ -48,7 +48,6 @@ export function useAuthVerify() {
         } else {
           navigate(ROUTES.DASHBOARD, { replace: true });
 
-          // Show login summary toasts (non-blocking)
           setTimeout(async () => {
             try {
               const [notifRes, viewsRes] = await Promise.all([
@@ -90,7 +89,7 @@ export function useLogout() {
   return useMutation({
     mutationFn: () => authApi.logout(),
     onSettled: () => {
-      queryClient.clear(); // Clear all cached data
+      queryClient.clear();
       localStorage.removeItem('matrimony_onboarding_draft');
       localStorage.removeItem('otp_cooldown_until');
       logout();

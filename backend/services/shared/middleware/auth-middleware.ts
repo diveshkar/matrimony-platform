@@ -27,8 +27,6 @@ export function withAuth(handler: AuthenticatedHandler): LambdaHandler {
       throw new UnauthorizedError('Missing or invalid authorization header');
     }
 
-    // In production, this validates the JWT via Cognito JWKS.
-    // For local dev, we extract claims from the API Gateway authorizer context.
     const authorizer = (event.requestContext as unknown as Record<string, unknown>)?.authorizer as
       | { jwt?: { claims?: Record<string, unknown> } }
       | undefined;

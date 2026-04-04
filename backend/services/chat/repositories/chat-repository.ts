@@ -64,7 +64,6 @@ export class ChatRepository extends BaseRepository {
 
     await this.put(conversation as unknown as Record<string, unknown>);
 
-    // Create user conversation projections for both users
     await this.put({
       PK: `USERCONV#${user1Id}`,
       SK: `CONV#${now}#${conversationId}`,
@@ -95,7 +94,6 @@ export class ChatRepository extends BaseRepository {
   }
 
   async findConversationBetween(user1Id: string, user2Id: string): Promise<string | null> {
-    // Check user1's conversations for user2
     const result = await this.query<UserConversationRecord>(`USERCONV#${user1Id}`, {
       scanForward: false,
       limit: 50,
@@ -139,7 +137,6 @@ export class ChatRepository extends BaseRepository {
 
     await this.put(message as unknown as Record<string, unknown>);
 
-    // Update conversation meta
     await this.update(`CONV#${conversationId}`, 'META#v1', {
       lastMessage: content.slice(0, 100),
       lastMessageAt: now,
@@ -159,7 +156,6 @@ export class ChatRepository extends BaseRepository {
       exclusiveStartKey,
     });
 
-    // Filter to only message items (not META)
     const messages = result.items.filter((i) => i.SK.startsWith('MSG#'));
 
     return { items: messages.reverse(), lastKey: result.lastKey };
@@ -172,7 +168,6 @@ export class ChatRepository extends BaseRepository {
     lastMessageAt: string,
     incrementUnread: boolean,
   ): Promise<void> {
-    // Find the user's conversation projection
     const convs = await this.getUserConversations(userId, 50);
     const conv = convs.find((c) => c.conversationId === conversationId);
     if (!conv) return;

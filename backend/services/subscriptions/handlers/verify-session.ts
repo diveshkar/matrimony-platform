@@ -26,7 +26,6 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
   const body = event.body ? JSON.parse(event.body) : {};
   if (!body.sessionId) throw new ValidationError('sessionId is required');
 
-  // Retrieve the checkout session from Stripe
   const session = await getStripe().checkout.sessions.retrieve(body.sessionId);
 
   if (session.payment_status !== 'paid') {
@@ -40,14 +39,12 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
     throw new ValidationError('Session does not belong to this user');
   }
 
-  // Check if already activated (idempotent)
   const existing = await repo.getSubscription(userId);
   if (existing?.stripeSubscriptionId === session.subscription) {
     logger.info('Subscription already activated', { userId, planId });
     return success({ status: 'already_active', planId }, requestId);
   }
 
-  // Activate subscription
   const now = nowISO();
   const endDate = new Date();
   endDate.setMonth(endDate.getMonth() + 1);

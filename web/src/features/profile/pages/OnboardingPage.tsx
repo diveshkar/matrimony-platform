@@ -70,7 +70,6 @@ export default function OnboardingPage() {
       case 4:
         if (!draft.country) errors.country = 'Country is required';
         break;
-      // Steps 5, 6, 7 are optional
     }
 
     setStepErrors(errors);
@@ -134,13 +133,12 @@ export default function OnboardingPage() {
       await createProfile.mutateAsync(profileData);
       localStorage.removeItem(DRAFT_KEY);
     } catch {
-      // Error handled by mutation
+      /* handled by mutation */
     }
   }, [draft, validateStep, createProfile]);
 
   const isLastStep = currentStep === STEPS.length - 1;
 
-  // If profile already complete, redirect to dashboard
   if (user?.onboardingComplete) {
     return <Navigate to={ROUTES.DASHBOARD} replace />;
   }

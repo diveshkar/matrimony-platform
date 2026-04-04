@@ -37,7 +37,6 @@ export function usePageTitle() {
   const location = useLocation();
 
   useEffect(() => {
-    // Exact match first, then try without dynamic segments
     const path = location.pathname;
     const title = pageTitles[path] || defaultTitle;
     document.title = title;

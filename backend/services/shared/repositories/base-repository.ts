@@ -35,7 +35,6 @@ export class BaseRepository {
     this._tableBaseName = tableBaseName;
   }
 
-  /** Lazy — created on first use, after env vars are set */
   protected get client(): DynamoDBDocumentClient {
     if (!this._client) this._client = getDynamoClient();
     return this._client;
@@ -153,7 +152,6 @@ export class BaseRepository {
       return { items: result.items as T[], lastKey: undefined };
     }
 
-    // When querying a GSI, use the GSI's hash key name instead of PK
     const gsiKeyMap: Record<string, string> = { GSI1: 'GSI1PK', GSI2: 'GSI2PK' };
     const hashKeyName = options.indexName ? gsiKeyMap[options.indexName] || 'PK' : 'PK';
 

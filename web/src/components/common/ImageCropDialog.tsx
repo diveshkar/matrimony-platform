@@ -110,9 +110,6 @@ export function ImageCropDialog({
   );
 }
 
-/**
- * Creates a cropped image blob from the source image and crop area.
- */
 async function getCroppedImg(
   imageSrc: string,
   pixelCrop: Area,

@@ -1,7 +1,3 @@
-/**
- * Seeds DynamoDB with demo profiles for testing discovery.
- * Run: cd backend && pnpm exec tsx ../scripts/seed-profiles.ts
- */
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
 
@@ -283,7 +279,6 @@ async function seed() {
     const now = new Date().toISOString();
     const photoUrl = avatarUrl(p.name, p.gender);
 
-    // 1. Account
     await client.send(
       new PutCommand({
         TableName: CORE_TABLE,
@@ -303,7 +298,6 @@ async function seed() {
       }),
     );
 
-    // 2. Profile
     await client.send(
       new PutCommand({
         TableName: CORE_TABLE,
@@ -335,7 +329,6 @@ async function seed() {
       }),
     );
 
-    // 3. Discovery projection
     await client.send(
       new PutCommand({
         TableName: DISCOVERY_TABLE,
@@ -367,7 +360,6 @@ async function seed() {
       }),
     );
 
-    // 4. ALL index entry
     await client.send(
       new PutCommand({
         TableName: DISCOVERY_TABLE,

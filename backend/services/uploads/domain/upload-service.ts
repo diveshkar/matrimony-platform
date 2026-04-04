@@ -39,8 +39,6 @@ export class UploadService {
     const ext = fileName.split('.').pop() || 'jpg';
     const s3Key = `photos/${userId}/${Date.now()}.${ext}`;
 
-    // In production: generate pre-signed S3 URL
-    // For local dev: use the local upload endpoint
     const isLocal = !process.env.S3_MEDIA_BUCKET || process.env.ENVIRONMENT === 'dev';
     const uploadUrl = isLocal
       ? `http://localhost:4000/uploads/file`
@@ -71,7 +69,6 @@ export class UploadService {
       visibility: data.visibility || 'all',
     });
 
-    // Update primary photo URL on profile if this is the primary
     if (photo.isPrimary) {
       await this.updateProfilePhoto(userId, photo.url);
     }
@@ -108,7 +105,6 @@ export class UploadService {
 
     await this.repo.deletePhoto(userId, photoId);
 
-    // Update profile photo if needed
     const remaining = await this.repo.getPhotos(userId);
     const primary = remaining.find((p) => p.isPrimary);
     await this.updateProfilePhoto(userId, primary?.url || '');
@@ -118,16 +114,14 @@ export class UploadService {
     const { BaseRepository } = await import('../../shared/repositories/base-repository.js');
     const coreRepo = new BaseRepository('core');
     try {
-      // Update core profile
       await coreRepo.update(`USER#${userId}`, 'PROFILE#v1', {
         primaryPhotoUrl: url,
       });
 
-      // Sync to discovery table so profile cards show the photo
       const { DiscoveryService } = await import('../../discovery/domain/discovery-service.js');
       await new DiscoveryService().syncProfileToDiscovery(userId);
     } catch {
-      // Profile might not exist yet (during onboarding)
+      // Profile may not exist yet during onboarding
     }
   }
 }

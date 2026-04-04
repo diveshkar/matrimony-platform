@@ -65,10 +65,9 @@ export class InterestRepository extends BaseRepository {
       updatedAt: now,
     };
 
-    // Dual write — outbox for sender
     await this.put(interest as unknown as Record<string, unknown>);
 
-    // Inbox for receiver
+
     await this.put({
       ...interest,
       PK: `USER#${data.receiverId}`,
@@ -85,13 +84,12 @@ export class InterestRepository extends BaseRepository {
   ): Promise<void> {
     const now = nowISO();
 
-    // Update outbox (sender's view)
     await this.update(`USER#${senderId}`, `INTEREST#OUT#${receiverId}`, {
       status,
       updatedAt: now,
     });
 
-    // Update inbox (receiver's view)
+
     await this.update(`USER#${receiverId}`, `INTEREST#IN#${senderId}`, {
       status,
       updatedAt: now,

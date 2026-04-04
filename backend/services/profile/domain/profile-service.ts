@@ -97,7 +97,6 @@ export class ProfileService {
 
     const profile = await this.repo.createProfile(userId, profileData);
 
-    // Save preferences if provided
     if (data.preferences) {
       const prefs = data.preferences as Record<string, unknown>;
       await this.repo.savePreferences(userId, {
@@ -114,7 +113,6 @@ export class ProfileService {
       });
     }
 
-    // Create default privacy settings
     await this.repo.savePrivacy(userId, {
       hidePhone: true,
       hideDob: false,
@@ -123,15 +121,13 @@ export class ProfileService {
       showInSearch: true,
     });
 
-    // Mark onboarding complete
     await this.repo.markOnboardingComplete(userId);
 
-    // Sync to discovery table
     try {
       const { DiscoveryService } = await import('../../discovery/domain/discovery-service.js');
       await new DiscoveryService().syncProfileToDiscovery(userId);
     } catch {
-      // Non-critical — discovery sync can happen later
+      /* non-critical */
     }
 
     return profile;
@@ -164,7 +160,6 @@ export class ProfileService {
       throw new NotFoundError('Profile');
     }
 
-    // Separate preferences from profile updates
     const { preferences, ...profileUpdates } = updates;
 
     let result = {};
@@ -201,7 +196,6 @@ export class ProfileService {
 
     const privacy = await this.repo.getPrivacy(userId);
 
-    // Strip private fields
     const publicProfile: Record<string, unknown> = { ...profile };
     delete publicProfile.PK;
     delete publicProfile.SK;
@@ -211,7 +205,6 @@ export class ProfileService {
       delete publicProfile.dateOfBirth;
     }
 
-    // Check if viewer has contact info access (Gold+ plan)
     if (viewerId && viewerId !== userId) {
       try {
         const { getRemainingUsage } = await import('../../shared/middleware/entitlement-check.js');
@@ -226,35 +219,30 @@ export class ProfileService {
       }
     }
 
-    // Check interest status between viewer and profile owner
     if (viewerId && viewerId !== userId) {
       try {
         const { BaseRepository } = await import('../../shared/repositories/base-repository.js');
         const coreRepo = new BaseRepository('core');
 
-        // Check if viewer sent interest to this profile
         const sentInterest = await coreRepo.get<{ status: string }>(
           `USER#${viewerId}`,
           `INTEREST#OUT#${userId}`,
         );
 
-        // Check if this profile sent interest to viewer
         const receivedInterest = await coreRepo.get<{ status: string }>(
           `USER#${viewerId}`,
           `INTEREST#IN#${userId}`,
         );
 
         if (sentInterest) {
-          // I sent interest to them
-          publicProfile.interestStatus = sentInterest.status; // pending, accepted, declined
+          publicProfile.interestStatus = sentInterest.status;
         } else if (receivedInterest) {
-          // They sent interest to me
           if (receivedInterest.status === 'accepted') {
-            publicProfile.interestStatus = 'accepted'; // mutual — show Chat Now
+            publicProfile.interestStatus = 'accepted';
           } else if (receivedInterest.status === 'declined') {
-            publicProfile.interestStatus = 'none'; // I declined them — allow re-interaction
+            publicProfile.interestStatus = 'none';
           } else {
-            publicProfile.interestStatus = 'received'; // pending — show Accept/Decline
+            publicProfile.interestStatus = 'received';
           }
         } else {
           publicProfile.interestStatus = 'none';

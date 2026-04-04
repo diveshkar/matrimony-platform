@@ -15,7 +15,7 @@ interface UsageRecord {
 }
 
 function todayKey(): string {
-  return new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+  return new Date().toISOString().split('T')[0];
 }
 
 async function getDailyUsage(userId: string, action: string): Promise<number> {
@@ -30,7 +30,7 @@ async function incrementDailyUsage(userId: string, action: string): Promise<void
   const sk = `${action}#${date}`;
   const existing = await coreRepo.get<UsageRecord>(pk, sk);
 
-  const ttl = Math.floor(Date.now() / 1000) + 86400 * 2; // auto-delete after 2 days
+  const ttl = Math.floor(Date.now() / 1000) + 86400 * 2;
 
   if (existing) {
     await coreRepo.update(pk, sk, { count: (existing.count || 0) + 1 });
@@ -39,10 +39,6 @@ async function incrementDailyUsage(userId: string, action: string): Promise<void
   }
 }
 
-/**
- * Check if user can perform an action based on their plan entitlements.
- * Throws ForbiddenError with upgrade message if limit reached.
- */
 export async function checkEntitlement(
   userId: string,
   action: 'profile_view' | 'send_interest' | 'chat_access' | 'who_viewed_me' | 'contact_info',
@@ -52,7 +48,7 @@ export async function checkEntitlement(
   switch (action) {
     case 'profile_view': {
       const limit = entitlement.profileViewsPerDay;
-      if (limit === -1) return; // unlimited
+      if (limit === -1) return;
       const used = await getDailyUsage(userId, 'profile_view');
       if (used >= limit) {
         throw new ForbiddenError(
@@ -105,9 +101,6 @@ export async function checkEntitlement(
   }
 }
 
-/**
- * Get remaining usage for a user (for frontend display).
- */
 export async function getRemainingUsage(userId: string): Promise<{
   profileViewsRemaining: number;
   interestsRemaining: number;

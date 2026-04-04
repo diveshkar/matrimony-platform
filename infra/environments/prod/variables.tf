@@ -29,3 +29,15 @@ variable "alarm_email" {
   default     = ""
   description = "Email for CloudWatch alarm notifications"
 }
+
+variable "stripe_secret_key" {
+  type      = string
+  default   = ""
+  sensitive = true
+}
+
+variable "stripe_webhook_secret" {
+  type      = string
+  default   = ""
+  sensitive = true
+}

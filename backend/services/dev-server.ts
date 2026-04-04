@@ -1,9 +1,3 @@
-/**
- * Local development server — wraps Lambda handlers as Express routes.
- * Run: pnpm dev:backend (or: npx tsx watch services/dev-server.ts)
- */
-
-// Load .env file for local secrets (Stripe keys, etc.)
 try {
   const { readFileSync: readF } = await import('fs');
   const { resolve: res, dirname: dir } = await import('path');
@@ -17,14 +11,12 @@ try {
   /* .env file not found — use defaults */
 }
 
-// Set env vars before any imports so DynamoDB client picks them up
 process.env.DYNAMODB_ENDPOINT = process.env.DYNAMODB_ENDPOINT || 'http://localhost:8000';
 process.env.AWS_REGION = process.env.AWS_REGION || 'ap-south-1';
 process.env.AWS_ACCESS_KEY_ID = 'fakeMyKeyId';
 process.env.AWS_SECRET_ACCESS_KEY = 'fakeSecretAccessKey';
 process.env.AWS_SESSION_TOKEN = '';
 process.env.ENVIRONMENT = process.env.ENVIRONMENT || 'dev';
-// Set STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET in .env file
 process.env.STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
 process.env.STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
 process.env.FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
@@ -37,11 +29,9 @@ import {
   type Context,
 } from 'aws-lambda';
 
-// Force reset DynamoDB client so it picks up the env vars above
 import { resetClient } from './shared/repositories/dynamodb-client.js';
 resetClient();
 
-// Handlers
 import { main as healthHandler } from './health/handlers/health-check.js';
 import { main as authStartHandler } from './auth/handlers/auth-start.js';
 import { main as authVerifyHandler } from './auth/handlers/auth-verify.js';
@@ -92,14 +82,13 @@ const PORT = Number(process.env.PORT) || 4000;
 
 app.use(cors({ origin: process.env.CORS_ALLOWED_ORIGINS || 'http://localhost:3000' }));
 
-// Stripe webhook needs raw body for signature verification — must be before express.json()
+// Raw body required before express.json() for Stripe signature verification
 app.post(
   '/subscriptions/webhook',
   express.raw({ type: 'application/json' }),
   async (req: express.Request, res: express.Response) => {
     try {
       const event = buildEvent(req);
-      // Pass raw body as string for Stripe signature verification
       event.body = req.body.toString();
       const result = await webhookHandler(event, {
         ...fakeContext,
@@ -119,7 +108,6 @@ app.post(
 
 app.use(express.json());
 
-// Build a fake API Gateway event from an Express request
 function buildEvent(req: express.Request): APIGatewayProxyEventV2 {
   const authHeader = req.headers.authorization || '';
   return {
@@ -148,7 +136,6 @@ function buildEvent(req: express.Request): APIGatewayProxyEventV2 {
       stage: '$default',
       time: new Date().toISOString(),
       timeEpoch: Date.now(),
-      // Simulate JWT authorizer if Bearer token is present
       ...(authHeader.startsWith('Bearer ') && {
         authorizer: {
           jwt: {
@@ -162,10 +149,6 @@ function buildEvent(req: express.Request): APIGatewayProxyEventV2 {
   } as unknown as APIGatewayProxyEventV2;
 }
 
-/**
- * In dev mode, the token IS the JSON claims (base64-encoded).
- * This lets us skip real Cognito validation locally.
- */
 function parseDevToken(token: string): Record<string, string> {
   try {
     const decoded = Buffer.from(token, 'base64').toString('utf-8');
@@ -247,7 +230,6 @@ route('get', '/uploads/photos', getPhotosHandler);
 route('patch', '/uploads/photos/:photoId', updatePhotoHandler);
 route('delete', '/uploads/photos/:photoId', deletePhotoHandler);
 
-// Local file upload — saves to disk, returns URL (replaces S3 in dev)
 app.post('/uploads/file', express.raw({ type: ['image/*'], limit: '5mb' }), (req, res) => {
   const ext = (req.headers['content-type'] || 'image/jpeg').split('/')[1] || 'jpg';
   const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
@@ -257,7 +239,6 @@ app.post('/uploads/file', express.raw({ type: ['image/*'], limit: '5mb' }), (req
   res.json({ success: true, data: { url, fileName } });
 });
 
-// Serve local uploaded files
 app.use('/uploads/local', express.static(UPLOADS_DIR));
 
 route('get', '/discover', getRecommendationsHandler);
@@ -278,7 +259,6 @@ route('post', '/chats/:conversationId/messages', sendMessageHandler);
 
 route('get', '/subscriptions/plans', getPlansHandler);
 route('post', '/subscriptions/checkout', createCheckoutHandler);
-// webhook route is defined above with express.raw() for Stripe signature
 route('get', '/subscriptions/me', getMySubscriptionHandler);
 route('post', '/subscriptions/verify-session', verifySessionHandler);
 

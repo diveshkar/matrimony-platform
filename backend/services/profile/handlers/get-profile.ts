@@ -16,14 +16,12 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
     throw new ValidationError('Profile ID is required');
   }
 
-  // Check profile view limit (skip for own profile)
   if (profileId !== authedEvent.auth.userId) {
     await checkEntitlement(authedEvent.auth.userId, 'profile_view');
   }
 
   const profile = await profileService.getPublicProfile(profileId, authedEvent.auth.userId);
 
-  // Record profile view + notification (non-blocking, don't view yourself)
   if (profileId !== authedEvent.auth.userId) {
     try {
       const { SafetyRepository } = await import('../../safety/repositories/safety-repository.js');
@@ -36,9 +34,7 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
       );
       await repo.recordView(profileId, authedEvent.auth.userId, viewerProfile || undefined);
 
-      // Create notification for the viewed user
       const viewerName = (viewerProfile?.name as string) || 'Someone';
-      // Check if the viewed user has who-viewed-me access
       const { getRemainingUsage } = await import('../../shared/middleware/entitlement-check.js');
       const viewedUserUsage = await getRemainingUsage(profileId);
 

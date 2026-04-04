@@ -27,7 +27,6 @@ export default function VerifyOtpPage() {
   const authVerify = useAuthVerify();
   const authStart = useAuthStart();
 
-  // Set initial cooldown expiry if not already stored
   useEffect(() => {
     const stored = localStorage.getItem('otp_cooldown_until');
     if (!stored || Number(stored) < Date.now()) {
@@ -36,14 +35,12 @@ export default function VerifyOtpPage() {
     }
   }, []);
 
-  // Redirect if no identifier
   useEffect(() => {
     if (!state?.identifier) {
       navigate(ROUTES.LOGIN, { replace: true });
     }
   }, [state, navigate]);
 
-  // Cooldown timer
   useEffect(() => {
     if (cooldown <= 0) return;
     const timer = setInterval(() => setCooldown((c) => c - 1), 1000);
@@ -59,12 +56,10 @@ export default function VerifyOtpPage() {
       setOtp(newOtp);
       setError('');
 
-      // Auto-advance to next input
       if (value && index < CONFIG.OTP_LENGTH - 1) {
         inputRefs.current[index + 1]?.focus();
       }
 
-      // Auto-submit when all digits filled
       if (newOtp.every((d) => d !== '') && value) {
         submitOtp(newOtp.join(''));
       }

@@ -12,7 +12,6 @@ import { AxiosError } from 'axios';
 export default function WhoViewedMePage() {
   const { data: response, isLoading, error } = useWhoViewedMe();
 
-  // Check if blocked by plan (403)
   const isForbidden = error instanceof AxiosError && error.response?.status === 403;
   if (isForbidden) {
     return (

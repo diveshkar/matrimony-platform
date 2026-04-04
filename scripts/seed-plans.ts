@@ -1,7 +1,3 @@
-/**
- * Seeds plan entitlements into DynamoDB.
- * Run: cd backend && pnpm exec tsx ../scripts/seed-plans.ts
- */
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
 
@@ -36,7 +32,7 @@ const plans = [
   },
   {
     planId: 'gold',
-    profileViewsPerDay: -1, // unlimited
+    profileViewsPerDay: -1,
     interestsPerDay: -1,
     chatAccess: true,
     contactInfoAccess: true,

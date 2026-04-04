@@ -35,7 +35,6 @@ export interface PrivacySettings {
 }
 
 export const settingsApi = {
-  // Blocks
   getBlocked: () =>
     apiClient.get<ApiResponse<{ items: BlockItem[] }>>('/blocks').then((r) => r.data),
   blockUser: (blockedUserId: string) =>
@@ -45,15 +44,12 @@ export const settingsApi = {
   unblockUser: (userId: string) =>
     apiClient.delete<ApiResponse<{ status: string }>>(`/blocks/${userId}`).then((r) => r.data),
 
-  // Reports
   reportUser: (data: { reportedUserId: string; reason: string; description?: string }) =>
     apiClient.post<ApiResponse<{ status: string }>>('/reports', data).then((r) => r.data),
 
-  // Who Viewed Me
   getWhoViewedMe: () =>
     apiClient.get<ApiResponse<{ items: ViewItem[] }>>('/who-viewed-me').then((r) => r.data),
 
-  // Notifications
   getNotifications: () =>
     apiClient
       .get<ApiResponse<{ items: NotificationItem[]; unreadCount: number }>>('/notifications')
@@ -65,7 +61,6 @@ export const settingsApi = {
       .patch<ApiResponse<{ status: string }>>('/notifications', { markAllRead: true })
       .then((r) => r.data),
 
-  // Privacy
   getPrivacy: () =>
     apiClient.get<ApiResponse<PrivacySettings>>('/settings/privacy').then((r) => r.data),
   updatePrivacy: (data: Partial<PrivacySettings>) =>

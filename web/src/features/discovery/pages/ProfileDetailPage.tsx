@@ -261,7 +261,6 @@ function ProfileActions({
   const blockUser = useBlockUser();
   const [showReport, setShowReport] = useState(false);
 
-  // Determine effective status (API status or mutation result)
   const effectiveStatus = withdrawInterest.isSuccess
     ? 'none'
     : sendInterest.isSuccess

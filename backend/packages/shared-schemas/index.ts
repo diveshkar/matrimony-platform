@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-// Common
 export const paginationSchema = z.object({
   limit: z.coerce.number().min(1).max(50).default(20),
   cursor: z.string().optional(),
@@ -12,7 +11,6 @@ export const phoneSchema = z
 
 export const emailSchema = z.string().email('Invalid email address');
 
-// Auth
 export const authStartSchema = z
   .object({
     phone: phoneSchema.optional(),
@@ -28,7 +26,6 @@ export const authVerifySchema = z.object({
   otp: z.string().length(6, 'OTP must be 6 digits'),
 });
 
-// Profile
 export const createProfileSchema = z.object({
   profileFor: z.enum(['self', 'son', 'daughter', 'brother', 'sister', 'relative', 'friend']),
   name: z.string().min(2).max(100),
@@ -68,7 +65,6 @@ export const createProfileSchema = z.object({
 
 export const updateProfileSchema = createProfileSchema.partial();
 
-// Preferences
 export const preferencesSchema = z.object({
   ageMin: z.number().min(18).max(70),
   ageMax: z.number().min(18).max(70),
@@ -82,7 +78,6 @@ export const preferencesSchema = z.object({
   maritalStatuses: z.array(z.string()).optional(),
 });
 
-// Privacy
 export const privacySettingsSchema = z.object({
   hidePhone: z.boolean(),
   hideDob: z.boolean(),
@@ -91,25 +86,21 @@ export const privacySettingsSchema = z.object({
   showInSearch: z.boolean(),
 });
 
-// Interest
 export const sendInterestSchema = z.object({
   receiverId: z.string().min(1),
   message: z.string().max(500).optional(),
 });
 
-// Chat
 export const sendMessageSchema = z.object({
   content: z.string().min(1).max(2000),
 });
 
-// Report
 export const reportSchema = z.object({
   reportedUserId: z.string().min(1),
   reason: z.enum(['fake_profile', 'harassment', 'inappropriate_content', 'spam', 'other']),
   description: z.string().max(1000).optional(),
 });
 
-// Search / Discovery
 export const searchFiltersSchema = z.object({
   gender: z.enum(['male', 'female']).optional(),
   ageMin: z.coerce.number().min(18).max(70).optional(),

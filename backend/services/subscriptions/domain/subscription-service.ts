@@ -20,8 +20,6 @@ interface PlanConfig {
   monthlyPriceGBP: number;
 }
 
-// In production, these would come from Stripe Products/Prices
-// For now, we'll create prices dynamically or use existing ones
 const PLANS: Record<string, PlanConfig> = {
   silver: { name: 'Silver', monthlyPriceGBP: 999 },
   gold: { name: 'Gold', monthlyPriceGBP: 1999 },
@@ -59,7 +57,6 @@ export class SubscriptionService {
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 
-    // Create Stripe Checkout Session
     const session = await getStripe().checkout.sessions.create({
       mode: 'subscription',
       payment_method_types: ['card'],
@@ -103,7 +100,6 @@ export class SubscriptionService {
     if (webhookSecret && webhookSecret !== 'whsec_placeholder') {
       event = getStripe().webhooks.constructEvent(payload, signature, webhookSecret);
     } else {
-      // In dev without webhook secret, parse directly
       event = JSON.parse(payload) as Stripe.Event;
       logger.warn('Webhook signature verification skipped (dev mode)');
     }
@@ -146,8 +142,6 @@ export class SubscriptionService {
         const invoice = event.data.object as Stripe.Invoice;
         const subId = invoice.subscription as string;
 
-        // Find user by stripe subscription ID (simplified for MVP)
-        // In production, look up by stripeSubscriptionId via GSI
         logger.info('Invoice paid', { subscriptionId: subId });
         break;
       }

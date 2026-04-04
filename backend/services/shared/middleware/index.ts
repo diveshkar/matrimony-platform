@@ -8,13 +8,8 @@ type LambdaHandler = (
   context: Context,
 ) => Promise<APIGatewayProxyResultV2>;
 
-/**
- * Composes standard middleware around a Lambda handler.
- * Applied in order: logger -> errorHandler -> handler
- */
 export function createHandler(handler: LambdaHandler): LambdaHandler {
   return async (event, context) => {
-    // Handle CORS preflight
     if (event.requestContext?.http?.method === 'OPTIONS') {
       return cors();
     }

@@ -34,7 +34,6 @@ export default function EditProfilePage() {
   const [form, setForm] = useState<Record<string, unknown>>({});
   const [hasChanges, setHasChanges] = useState(false);
 
-  // Load profile data into form
   useEffect(() => {
     if (response?.success) {
       const p = response.data.profile;
@@ -48,7 +47,6 @@ export default function EditProfilePage() {
   };
 
   const handleSave = async () => {
-    // Remove DynamoDB internal keys from update payload
     const updates = { ...form };
     delete updates.PK;
     delete updates.SK;

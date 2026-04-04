@@ -25,19 +25,16 @@ export class InterestService {
       throw new ValidationError('Cannot send interest to yourself');
     }
 
-    // Check if blocked
     const blocked = await this.repo.isBlocked(senderId, receiverId);
     if (blocked) {
       throw new ForbiddenError('Cannot send interest to this user');
     }
 
-    // Check duplicate
     const existing = await this.repo.getOutboxInterest(senderId, receiverId);
     if (existing) {
       throw new ConflictError('Interest already sent to this user');
     }
 
-    // Get sender and receiver profiles for denormalized data
     const [senderProfile, receiverProfile] = await Promise.all([
       this.coreRepo.get<Record<string, unknown>>(`USER#${senderId}`, 'PROFILE#v1'),
       this.coreRepo.get<Record<string, unknown>>(`USER#${receiverId}`, 'PROFILE#v1'),
@@ -57,7 +54,6 @@ export class InterestService {
       message,
     });
 
-    // Notify receiver
     try {
       const { SafetyRepository } = await import('../../safety/repositories/safety-repository.js');
       const repo = new SafetyRepository();
@@ -86,16 +82,14 @@ export class InterestService {
 
     await this.repo.updateInterestStatus(senderId, receiverId, 'accepted');
 
-    // Auto-create chat conversation
     try {
       const { ChatService } = await import('../../chat/domain/chat-service.js');
       const chatService = new ChatService();
       await chatService.createConversation(senderId, receiverId);
     } catch {
-      // Non-critical — conversation can be created later
+      /* non-critical */
     }
 
-    // Notify sender that interest was accepted
     try {
       const { SafetyRepository } = await import('../../safety/repositories/safety-repository.js');
       const repo = new SafetyRepository();
@@ -135,7 +129,6 @@ export class InterestService {
       throw new ConflictError(`Cannot withdraw — interest already ${interest.status}`);
     }
 
-    // Delete both outbox and inbox records
     await this.repo.deleteInterest(senderId, receiverId);
     return { status: 'interest_withdrawn' };
   }

@@ -1,9 +1,8 @@
-// User & Account
 export interface UserAccount {
-  PK: string; // USER#<userId>
-  SK: string; // ACCOUNT#v1
+  PK: string;
+  SK: string;
   userId: string;
-  phone: string; // E.164 format
+  phone: string;
   email?: string;
   matrimonyId: string;
   accountStatus: 'active' | 'suspended' | 'deleted';
@@ -14,16 +13,15 @@ export interface UserAccount {
   updatedAt: string;
 }
 
-// Profile
 export interface UserProfile {
-  PK: string; // USER#<userId>
-  SK: string; // PROFILE#v1
+  PK: string;
+  SK: string;
   userId: string;
   profileFor: 'self' | 'son' | 'daughter' | 'brother' | 'sister' | 'relative' | 'friend';
   name: string;
   dateOfBirth: string;
   gender: 'male' | 'female';
-  height: number; // in cm
+  height: number;
   maritalStatus: 'never_married' | 'divorced' | 'widowed' | 'separated';
   hasChildren: boolean;
   childrenCount?: number;
@@ -60,10 +58,9 @@ export interface UserProfile {
   updatedAt: string;
 }
 
-// Partner Preferences
 export interface UserPreference {
-  PK: string; // USER#<userId>
-  SK: string; // PREFERENCE#v1
+  PK: string;
+  SK: string;
   userId: string;
   ageMin: number;
   ageMax: number;
@@ -80,10 +77,9 @@ export interface UserPreference {
   updatedAt: string;
 }
 
-// Privacy
 export interface UserPrivacy {
-  PK: string; // USER#<userId>
-  SK: string; // PRIVACY#v1
+  PK: string;
+  SK: string;
   userId: string;
   hidePhone: boolean;
   hideDob: boolean;
@@ -94,10 +90,9 @@ export interface UserPrivacy {
   updatedAt: string;
 }
 
-// Photo
 export interface PhotoMetadata {
-  PK: string; // USER#<userId>
-  SK: string; // PHOTO#<photoId>
+  PK: string;
+  SK: string;
   userId: string;
   photoId: string;
   s3Key: string;
@@ -109,7 +104,6 @@ export interface PhotoMetadata {
   createdAt: string;
 }
 
-// Interest
 export interface Interest {
   PK: string;
   SK: string;
@@ -121,10 +115,9 @@ export interface Interest {
   updatedAt: string;
 }
 
-// Chat
 export interface Conversation {
-  PK: string; // CONV#<conversationId>
-  SK: string; // META#v1
+  PK: string;
+  SK: string;
   conversationId: string;
   participantIds: [string, string];
   lastMessage?: string;
@@ -133,8 +126,8 @@ export interface Conversation {
 }
 
 export interface ChatMessage {
-  PK: string; // CONV#<conversationId>
-  SK: string; // MSG#<timestamp>#<messageId>
+  PK: string;
+  SK: string;
   conversationId: string;
   messageId: string;
   senderId: string;
@@ -143,10 +136,9 @@ export interface ChatMessage {
   createdAt: string;
 }
 
-// Subscription
 export interface UserSubscription {
-  PK: string; // USER#<userId>
-  SK: string; // SUBSCRIPTION#ACTIVE
+  PK: string;
+  SK: string;
   userId: string;
   planId: 'free' | 'silver' | 'gold' | 'platinum';
   stripeSubscriptionId?: string;
@@ -160,8 +152,8 @@ export interface UserSubscription {
 }
 
 export interface PlanEntitlement {
-  PK: string; // PLAN#<planId>
-  SK: string; // ENTITLEMENT#v1
+  PK: string;
+  SK: string;
   planId: string;
   profileViewsPerDay: number;
   interestsPerDay: number;
@@ -172,10 +164,9 @@ export interface PlanEntitlement {
   schemaVersion: number;
 }
 
-// Notification
 export interface Notification {
-  PK: string; // USER#<userId>
-  SK: string; // NOTIFICATION#<timestamp>#<notificationId>
+  PK: string;
+  SK: string;
   userId: string;
   notificationId: string;
   type:

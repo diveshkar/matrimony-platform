@@ -21,11 +21,10 @@ export interface DiscoveryProfile {
   profileCompletion: number;
   aboutMe?: string;
   lastActiveAt: string;
-  // GSI keys for filtered queries
-  GSI1PK?: string; // COUNTRY#<country>#GENDER#<gender>
-  GSI1SK?: string; // AGE#<age>#<userId>
-  GSI2PK?: string; // RELIGION#<religion>#GENDER#<gender>
-  GSI2SK?: string; // AGE#<age>#<userId>
+  GSI1PK?: string;
+  GSI1SK?: string;
+  GSI2PK?: string;
+  GSI2SK?: string;
 }
 
 export class DiscoveryRepository extends BaseRepository {
@@ -72,8 +71,6 @@ export class DiscoveryRepository extends BaseRepository {
   async getAllProfiles(
     limit = 50,
   ): Promise<{ items: DiscoveryProfile[]; lastKey?: Record<string, unknown> }> {
-    // For MVP: scan-like approach using a known PK prefix
-    // In production, always query via GSI
     return this.query<DiscoveryProfile>('DISCOVERY#ALL', {
       limit,
       scanForward: false,

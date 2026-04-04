@@ -38,9 +38,6 @@ export class DiscoveryService {
     this.coreRepo = new BaseRepository('core');
   }
 
-  /**
-   * Write/update the discovery projection when a profile changes.
-   */
   async syncProfileToDiscovery(userId: string): Promise<void> {
     const profile = await this.coreRepo.get<Record<string, unknown>>(
       `USER#${userId}`,
@@ -84,7 +81,6 @@ export class DiscoveryService {
       profileCompletion: profile.profileCompletion as number,
       aboutMe: profile.aboutMe as string | undefined,
       lastActiveAt: new Date().toISOString(),
-      // GSI keys
       GSI1PK: `COUNTRY#${country}#GENDER#${gender}`,
       GSI1SK: `AGE#${String(age).padStart(3, '0')}#${userId}`,
       GSI2PK: `RELIGION#${religion}#GENDER#${gender}`,
@@ -93,7 +89,6 @@ export class DiscoveryService {
 
     await this.discoveryRepo.upsertProjection(projection);
 
-    // Also write to the ALL index for general browsing
     await this.discoveryRepo.put({
       ...projection,
       PK: 'DISCOVERY#ALL',
@@ -101,22 +96,17 @@ export class DiscoveryService {
     } as unknown as Record<string, unknown>);
   }
 
-  /**
-   * Get recommended matches for a user.
-   */
   async getRecommendations(
     userId: string,
     limit = 20,
     cursor?: string,
   ): Promise<{ items: DiscoveryProfile[]; nextCursor?: string }> {
-    // Get user's preferences, profile, and blocked users
     const [prefs, myProfile, blockedResult] = await Promise.all([
       this.coreRepo.get<UserPreferences>(`USER#${userId}`, 'PREFERENCE#v1'),
       this.coreRepo.get<Record<string, unknown>>(`USER#${userId}`, 'PROFILE#v1'),
       this.coreRepo.query<{ SK: string }>(`USER#${userId}`, { limit: 100 }),
     ]);
 
-    // Build blocked user set (users I blocked + users who blocked me)
     const blockedIds = new Set<string>();
     for (const item of blockedResult.items) {
       if (item.SK.startsWith('BLOCK#')) {
@@ -132,7 +122,6 @@ export class DiscoveryService {
     const startKey = cursor ? JSON.parse(Buffer.from(cursor, 'base64').toString()) : undefined;
     let lastKey: Record<string, unknown> | undefined;
 
-    // Strategy 1: Search by preferred countries (try all, not just first)
     if (prefs?.countries?.length && lookingForGender) {
       for (const country of prefs.countries) {
         const results = await this.discoveryRepo.searchByCountryAndGender(
@@ -146,7 +135,6 @@ export class DiscoveryService {
       }
     }
 
-    // Strategy 2: If not enough, search by preferred religions
     if (allResults.length < limit && prefs?.religions?.length && lookingForGender) {
       for (const religion of prefs.religions) {
         const results = await this.discoveryRepo.searchByReligionAndGender(
@@ -160,14 +148,12 @@ export class DiscoveryService {
       }
     }
 
-    // Strategy 3: Fallback — get all profiles
     if (allResults.length < limit) {
       const results = await this.discoveryRepo.getAllProfiles(limit + 20);
       allResults.push(...results.items);
       if (results.lastKey) lastKey = results.lastKey;
     }
 
-    // Deduplicate by userId
     const seen = new Set<string>();
     allResults = allResults.filter((p) => {
       if (seen.has(p.userId)) return false;
@@ -175,15 +161,12 @@ export class DiscoveryService {
       return true;
     });
 
-    // Filter out own profile and blocked users
     let filtered = allResults.filter((p) => p.userId !== userId && !blockedIds.has(p.userId));
 
-    // Filter by opposite gender (always, even in fallback)
     if (lookingForGender) {
       filtered = filtered.filter((p) => p.gender === lookingForGender);
     }
 
-    // Apply preference filters
     if (prefs) {
       filtered = filtered.filter((p) => {
         if (prefs.ageMin && p.age < prefs.ageMin) return false;
@@ -194,7 +177,6 @@ export class DiscoveryService {
       });
     }
 
-    // Score and sort by match quality
     filtered = scoreAndSort(filtered, myProfile, prefs);
 
     const items = filtered.slice(0, limit);
@@ -205,9 +187,6 @@ export class DiscoveryService {
     return { items, nextCursor };
   }
 
-  /**
-   * Search profiles with filters.
-   */
   async search(
     userId: string,
     filters: SearchFilters,
@@ -216,7 +195,6 @@ export class DiscoveryService {
   ): Promise<{ items: DiscoveryProfile[]; nextCursor?: string }> {
     const startKey = cursor ? JSON.parse(Buffer.from(cursor, 'base64').toString()) : undefined;
 
-    // Get blocked users
     const blockedResult = await this.coreRepo.query<{ SK: string }>(`USER#${userId}`, {
       limit: 100,
     });
@@ -246,7 +224,6 @@ export class DiscoveryService {
 
     let filtered = results.items.filter((p) => p.userId !== userId && !blockedIds.has(p.userId));
 
-    // Apply filters
     if (filters.gender) filtered = filtered.filter((p) => p.gender === filters.gender);
     if (filters.ageMin) filtered = filtered.filter((p) => p.age >= filters.ageMin!);
     if (filters.ageMax) filtered = filtered.filter((p) => p.age <= filters.ageMax!);
@@ -272,9 +249,6 @@ export class DiscoveryService {
   }
 }
 
-/**
- * Simple match scoring based on profile similarity and preferences.
- */
 function scoreAndSort(
   profiles: DiscoveryProfile[],
   myProfile: Record<string, unknown> | null,
@@ -286,23 +260,13 @@ function scoreAndSort(
     .map((p) => {
       let score = 0;
 
-      // Religion match
       if (prefs?.religions?.includes(p.religion)) score += 30;
       else if (p.religion === myProfile.religion) score += 20;
 
-      // Caste match
       if (p.caste && prefs?.castes?.includes(p.caste)) score += 20;
-
-      // Country match
       if (p.country === myProfile.country) score += 15;
-
-      // Education match
       if (prefs?.educations?.includes(p.education)) score += 10;
-
-      // Has photo bonus
       if (p.primaryPhotoUrl) score += 10;
-
-      // Profile completion bonus
       score += Math.floor(p.profileCompletion / 10);
 
       return { ...p, _matchScore: score };

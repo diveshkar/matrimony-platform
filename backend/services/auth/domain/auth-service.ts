@@ -6,10 +6,6 @@ import {
 } from '../../shared/errors/app-errors.js';
 import { logger } from '../../shared/utils/logger.js';
 
-/**
- * In production, tokens would be issued by Cognito.
- * For local dev, we create base64-encoded JSON tokens.
- */
 function createDevToken(claims: Record<string, string>, expiresInMinutes: number): string {
   const payload = {
     ...claims,
@@ -39,7 +35,6 @@ export class AuthService {
       throw new ValidationError('Phone or email is required');
     }
 
-    // Check rate limit — max 5 OTPs per identifier per hour
     const existing = await this.repo.getOtp(identifier);
     if (existing) {
       const now = Math.floor(Date.now() / 1000);
@@ -52,8 +47,6 @@ export class AuthService {
     const otp = generateOtp();
     await this.repo.storeOtp(identifier, phone ? 'phone' : 'email', otp);
 
-    // In production: send OTP via SNS (phone) or SES (email)
-    // For local dev: log the OTP
     logger.info('OTP generated (dev mode)', { identifier, otp });
 
     return {
@@ -105,10 +98,8 @@ export class AuthService {
       throw new ValidationError('Invalid OTP. Please try again.');
     }
 
-    // OTP verified — clean up
     await this.repo.deleteOtp(identifier);
 
-    // Find or create account
     let account: AccountRecord | null = null;
     let isNewUser = false;
 
@@ -124,15 +115,14 @@ export class AuthService {
       logger.info('New account created', { userId: account.userId });
     }
 
-    // Create tokens
     const tokenClaims = {
       sub: account.userId,
       phone_number: account.phone || '',
       email: account.email || '',
     };
 
-    const accessToken = createDevToken(tokenClaims, 60); // 1 hour
-    const refreshToken = createDevToken({ sub: account.userId, type: 'refresh' }, 43200); // 30 days
+    const accessToken = createDevToken(tokenClaims, 60);
+    const refreshToken = createDevToken({ sub: account.userId, type: 'refresh' }, 43200);
 
     await this.repo.updateRefreshToken(account.userId, refreshToken);
 
@@ -155,7 +145,6 @@ export class AuthService {
     accessToken: string;
     refreshToken: string;
   }> {
-    // Decode refresh token
     let claims: Record<string, string>;
     try {
       const decoded = Buffer.from(refreshToken, 'base64').toString('utf-8');

@@ -1,7 +1,3 @@
-/**
- * Seeds local DynamoDB with the 4 required tables.
- * Run: npx tsx scripts/seed-tables.ts
- */
 import { DynamoDBClient, CreateTableCommand, ListTablesCommand } from '@aws-sdk/client-dynamodb';
 
 const client = new DynamoDBClient({

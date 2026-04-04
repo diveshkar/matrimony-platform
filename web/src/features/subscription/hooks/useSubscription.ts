@@ -29,7 +29,6 @@ export function useCreateCheckout() {
     mutationFn: (planId: string) => subscriptionApi.createCheckout(planId),
     onSuccess: (response) => {
       if (response.success && response.data.checkoutUrl) {
-        // Redirect to Stripe Checkout
         window.location.href = response.data.checkoutUrl;
       }
     },

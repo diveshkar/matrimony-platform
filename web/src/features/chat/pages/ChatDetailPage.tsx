@@ -26,13 +26,11 @@ export default function ChatDetailPage() {
 
   const messages = msgResponse?.success ? msgResponse.data.items : [];
 
-  // Find conversation info
   const conversations = convsResponse?.success ? convsResponse.data.items : [];
   const currentConv = conversations.find((c) => c.conversationId === conversationId);
   const otherName = currentConv?.otherUserName || 'Chat';
   const otherPhoto = currentConv?.otherUserPhoto;
 
-  // Auto-scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages.length]);
@@ -47,8 +45,7 @@ export default function ChatDetailPage() {
     try {
       await sendMessage.mutateAsync(content);
     } catch (err) {
-      setNewMessage(content); // Restore on failure
-      // Check if it's a plan restriction
+      setNewMessage(content);
       const axiosErr = err as { response?: { status?: number } };
       if (axiosErr.response?.status === 403) {
         setChatBlocked(true);
@@ -63,7 +60,6 @@ export default function ChatDetailPage() {
     }
   };
 
-  // Group messages by date
   const groupedMessages = groupByDate(messages);
 
   return (

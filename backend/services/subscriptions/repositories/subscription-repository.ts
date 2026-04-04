@@ -63,7 +63,6 @@ export class SubscriptionRepository extends BaseRepository {
     const entitlement = await this.getEntitlement(planId);
 
     if (!entitlement) {
-      // Return free tier defaults
       return {
         PK: 'PLAN#free',
         SK: 'ENTITLEMENT#v1',

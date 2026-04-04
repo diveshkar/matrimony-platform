@@ -5,10 +5,6 @@ import { SubscriptionService } from '../domain/subscription-service.js';
 
 const subscriptionService = new SubscriptionService();
 
-/**
- * Stripe webhook handler — NO auth middleware (Stripe calls this directly).
- * Verification is done via webhook signature.
- */
 export async function main(event: APIGatewayProxyEventV2, context: Context) {
   const requestId = event.requestContext?.requestId || context.awsRequestId;
 

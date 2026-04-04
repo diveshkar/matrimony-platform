@@ -72,7 +72,6 @@ export default function PhotosPage() {
         return;
       }
 
-      // Open crop dialog instead of uploading directly
       const reader = new FileReader();
       reader.onload = () => {
         setCropImageSrc(reader.result as string);

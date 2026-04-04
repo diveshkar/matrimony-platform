@@ -1,9 +1,3 @@
-/**
- * In-memory DynamoDB-like store for local development.
- * No Docker or DynamoDB Local required.
- * Data resets when the dev server restarts.
- */
-
 interface Item {
   PK: string;
   SK: string;

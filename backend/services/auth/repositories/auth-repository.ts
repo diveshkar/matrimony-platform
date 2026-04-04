@@ -44,9 +44,9 @@ export class AuthRepository extends BaseRepository {
       identifier,
       type,
       attempts: 0,
-      expiresAt: now + 300, // 5 minutes
+      expiresAt: now + 300,
       createdAt: nowISO(),
-      ttl: now + 600, // cleanup after 10 minutes
+      ttl: now + 600,
     });
   }
 
@@ -65,7 +65,6 @@ export class AuthRepository extends BaseRepository {
   }
 
   async findAccountByPhone(phone: string): Promise<AccountRecord | null> {
-    // GSI1 returns the phone index item — extract userId, then fetch actual account
     const result = await this.query<{ userId: string }>(`PHONE#${phone}`, {
       indexName: 'GSI1',
       limit: 1,
@@ -111,7 +110,6 @@ export class AuthRepository extends BaseRepository {
 
     await this.put(account as unknown as Record<string, unknown>);
 
-    // Write GSI1 index entry for phone/email lookup
     if (phone) {
       await this.put({
         PK: `USER#${userId}`,

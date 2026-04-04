@@ -29,7 +29,7 @@ export class PhotoRepository extends BaseRepository {
   ): Promise<PhotoMetadata> {
     const photoId = generateId('PHT');
     const existingPhotos = await this.getPhotos(userId);
-    const isPrimary = existingPhotos.length === 0; // First photo is primary
+    const isPrimary = existingPhotos.length === 0;
 
     const photo: PhotoMetadata = {
       PK: `USER#${userId}`,
@@ -74,7 +74,6 @@ export class PhotoRepository extends BaseRepository {
     const photo = await this.getPhoto(userId, photoId);
     await this.delete(`USER#${userId}`, `PHOTO#${photoId}`);
 
-    // If deleted photo was primary, make first remaining photo primary
     if (photo?.isPrimary) {
       const remaining = await this.getPhotos(userId);
       if (remaining.length > 0) {
