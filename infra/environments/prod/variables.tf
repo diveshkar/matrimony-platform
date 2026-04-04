@@ -17,3 +17,15 @@ variable "cors_allowed_origins" {
   type    = list(string)
   default = ["https://matrimony.com", "https://www.matrimony.com"]
 }
+
+variable "certificate_arn" {
+  type        = string
+  default     = ""
+  description = "ACM certificate ARN for HTTPS"
+}
+
+variable "alarm_email" {
+  type        = string
+  default     = ""
+  description = "Email for CloudWatch alarm notifications"
+}

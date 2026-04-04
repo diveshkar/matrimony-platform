@@ -5,3 +5,7 @@ coverage
 .terraform
 *.tfstate
 pnpm-lock.yaml
+*.d.ts
+!src/**/*.d.ts
+web/vite.config.js
+web/vite.config.d.ts

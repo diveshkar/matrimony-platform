@@ -14,11 +14,27 @@ export default function VerifyOtpPage() {
 
   const [otp, setOtp] = useState<string[]>(Array(CONFIG.OTP_LENGTH).fill(''));
   const [error, setError] = useState('');
-  const [cooldown, setCooldown] = useState(CONFIG.OTP_RESEND_COOLDOWN_SECONDS);
+  const [cooldown, setCooldown] = useState<number>(() => {
+    const stored = localStorage.getItem('otp_cooldown_until');
+    if (stored) {
+      const remaining = Math.ceil((Number(stored) - Date.now()) / 1000);
+      return remaining > 0 ? remaining : 0;
+    }
+    return CONFIG.OTP_RESEND_COOLDOWN_SECONDS;
+  });
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const authVerify = useAuthVerify();
   const authStart = useAuthStart();
+
+  // Set initial cooldown expiry if not already stored
+  useEffect(() => {
+    const stored = localStorage.getItem('otp_cooldown_until');
+    if (!stored || Number(stored) < Date.now()) {
+      const expiryMs = Date.now() + CONFIG.OTP_RESEND_COOLDOWN_SECONDS * 1000;
+      localStorage.setItem('otp_cooldown_until', String(expiryMs));
+    }
+  }, []);
 
   // Redirect if no identifier
   useEffect(() => {
@@ -53,6 +69,7 @@ export default function VerifyOtpPage() {
         submitOtp(newOtp.join(''));
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [otp],
   );
 
@@ -65,16 +82,20 @@ export default function VerifyOtpPage() {
     [otp],
   );
 
-  const handlePaste = useCallback((e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, CONFIG.OTP_LENGTH);
-    if (pasted.length === CONFIG.OTP_LENGTH) {
-      const digits = pasted.split('');
-      setOtp(digits);
-      inputRefs.current[CONFIG.OTP_LENGTH - 1]?.focus();
-      submitOtp(pasted);
-    }
-  }, []);
+  const handlePaste = useCallback(
+    (e: React.ClipboardEvent) => {
+      e.preventDefault();
+      const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, CONFIG.OTP_LENGTH);
+      if (pasted.length === CONFIG.OTP_LENGTH) {
+        const digits = pasted.split('');
+        setOtp(digits);
+        inputRefs.current[CONFIG.OTP_LENGTH - 1]?.focus();
+        submitOtp(pasted);
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
 
   const submitOtp = async (otpString: string) => {
     if (!state?.identifier) return;
@@ -87,6 +108,7 @@ export default function VerifyOtpPage() {
           : { email: state.identifier, otp: otpString };
 
       await authVerify.mutateAsync(payload);
+      localStorage.removeItem('otp_cooldown_until');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Verification failed';
       setError(message);
@@ -101,11 +123,11 @@ export default function VerifyOtpPage() {
 
     try {
       const payload =
-        state.type === 'phone'
-          ? { phone: state.identifier }
-          : { email: state.identifier };
+        state.type === 'phone' ? { phone: state.identifier } : { email: state.identifier };
 
       await authStart.mutateAsync(payload);
+      const expiryMs = Date.now() + CONFIG.OTP_RESEND_COOLDOWN_SECONDS * 1000;
+      localStorage.setItem('otp_cooldown_until', String(expiryMs));
       setCooldown(CONFIG.OTP_RESEND_COOLDOWN_SECONDS);
       setOtp(Array(CONFIG.OTP_LENGTH).fill(''));
       inputRefs.current[0]?.focus();
@@ -122,7 +144,7 @@ export default function VerifyOtpPage() {
     : '';
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-16">
+    <div className="min-h-[85vh] flex items-center justify-center px-4 py-16">
       <motion.div
         className="w-full max-w-md text-center"
         initial={{ opacity: 0, y: 20 }}
@@ -130,25 +152,32 @@ export default function VerifyOtpPage() {
         transition={{ duration: 0.5 }}
       >
         {/* Header */}
-        <div className="mb-8">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50">
-            <ShieldCheck className="h-7 w-7 text-emerald-600" />
-          </div>
+        <div className="mb-10">
+          <motion.div
+            className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100 shadow-soft"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+          >
+            <ShieldCheck className="h-8 w-8 text-emerald-600" />
+          </motion.div>
           <h1 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">
-            Verify Your {state?.type === 'phone' ? 'Phone' : 'Email'}
+            Verification Code
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Enter the 6-digit code sent to{' '}
-            <span className="font-medium text-foreground">{maskedIdentifier}</span>
+          <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
+            We sent a 6-digit code to{' '}
+            <span className="font-semibold text-foreground">{maskedIdentifier}</span>
           </p>
         </div>
 
         {/* OTP Inputs */}
-        <div className="flex justify-center gap-3 mb-6" onPaste={handlePaste}>
+        <div className="flex justify-center gap-2.5 sm:gap-3 mb-8" onPaste={handlePaste}>
           {otp.map((digit, index) => (
             <input
               key={index}
-              ref={(el) => { inputRefs.current[index] = el; }}
+              ref={(el) => {
+                inputRefs.current[index] = el;
+              }}
               type="text"
               inputMode="numeric"
               autoComplete="one-time-code"
@@ -157,7 +186,8 @@ export default function VerifyOtpPage() {
               onChange={(e) => handleChange(index, e.target.value)}
               onKeyDown={(e) => handleKeyDown(index, e)}
               autoFocus={index === 0}
-              className={`h-14 w-12 rounded-xl border-2 text-center text-xl font-bold font-heading transition-all focus:outline-none focus:ring-2 focus:ring-offset-1 ${
+              aria-label={`OTP digit ${index + 1} of ${CONFIG.OTP_LENGTH}`}
+              className={`h-14 w-12 sm:h-16 sm:w-14 rounded-xl border-2 text-center text-xl sm:text-2xl font-bold font-heading transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                 error
                   ? 'border-destructive focus:ring-destructive'
                   : digit
@@ -191,8 +221,7 @@ export default function VerifyOtpPage() {
         <div className="mb-8">
           {cooldown > 0 ? (
             <p className="text-sm text-muted-foreground">
-              Resend code in{' '}
-              <span className="font-medium text-foreground">{cooldown}s</span>
+              Resend code in <span className="font-medium text-foreground">{cooldown}s</span>
             </p>
           ) : (
             <Button
@@ -209,7 +238,11 @@ export default function VerifyOtpPage() {
         </div>
 
         {/* Back */}
-        <Button variant="ghost" onClick={() => navigate(ROUTES.LOGIN)} className="text-muted-foreground">
+        <Button
+          variant="ghost"
+          onClick={() => navigate(ROUTES.LOGIN)}
+          className="text-muted-foreground"
+        >
           <ArrowLeft className="mr-1.5 h-4 w-4" />
           Change {state?.type === 'phone' ? 'phone number' : 'email'}
         </Button>

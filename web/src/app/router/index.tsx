@@ -20,8 +20,39 @@ const ContactPage = lazy(() => import('@/features/static/pages/ContactPage'));
 const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage'));
 const VerifyOtpPage = lazy(() => import('@/features/auth/pages/VerifyOtpPage'));
 
-// Placeholder for future phase pages
-const PlaceholderPage = lazy(() => import('@/features/home/pages/PlaceholderPage'));
+// Phase 1C — Profile pages
+const OnboardingPage = lazy(() => import('@/features/profile/pages/OnboardingPage'));
+const MyProfilePage = lazy(() => import('@/features/profile/pages/MyProfilePage'));
+const EditProfilePage = lazy(() => import('@/features/profile/pages/EditProfilePage'));
+const DashboardPage = lazy(() => import('@/features/home/pages/DashboardPage'));
+
+// Phase 1D — Photos
+const PhotosPage = lazy(() => import('@/features/profile/pages/PhotosPage'));
+
+// Phase 1E — Discovery
+const DiscoverPage = lazy(() => import('@/features/discovery/pages/DiscoverPage'));
+const SearchPage = lazy(() => import('@/features/discovery/pages/SearchPage'));
+const ProfileDetailPage = lazy(() => import('@/features/discovery/pages/ProfileDetailPage'));
+
+// Phase 1F — Interests & Shortlist
+const InterestsPage = lazy(() => import('@/features/interests/pages/InterestsPage'));
+const ShortlistPage = lazy(() => import('@/features/interests/pages/ShortlistPage'));
+
+// Phase 1G — Chat
+const ChatListPage = lazy(() => import('@/features/chat/pages/ChatListPage'));
+const ChatDetailPage = lazy(() => import('@/features/chat/pages/ChatDetailPage'));
+
+// Phase 1H — Subscription
+const PlansPage = lazy(() => import('@/features/subscription/pages/PlansPage'));
+const PaymentSuccessPage = lazy(() => import('@/features/subscription/pages/PaymentSuccessPage'));
+const PaymentCancelPage = lazy(() => import('@/features/subscription/pages/PaymentCancelPage'));
+
+// Phase 1I — Settings & Safety
+const SettingsPage = lazy(() => import('@/features/settings/pages/SettingsPage'));
+const PrivacySettingsPage = lazy(() => import('@/features/settings/pages/PrivacySettingsPage'));
+const BlockedUsersPage = lazy(() => import('@/features/settings/pages/BlockedUsersPage'));
+const WhoViewedMePage = lazy(() => import('@/features/settings/pages/WhoViewedMePage'));
+const NotificationsPage = lazy(() => import('@/features/settings/pages/NotificationsPage'));
 
 function SuspenseWrapper({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<LoadingScreen message="Loading..." />}>{children}</Suspense>;
@@ -44,10 +75,21 @@ export function AppRouter() {
           {/* Auth pages */}
           <Route path={ROUTES.LOGIN} element={<LoginPage />} />
           <Route path={ROUTES.VERIFY_OTP} element={<VerifyOtpPage />} />
-          <Route path={ROUTES.PLANS} element={<PlaceholderPage />} />
+          <Route path={ROUTES.PLANS} element={<PlansPage />} />
         </Route>
 
-        {/* Protected routes — all placeholder until future phases */}
+        {/* Onboarding — auth required but no profile required */}
+        <Route
+          element={
+            <ProtectedRoute requireOnboarding={false}>
+              <AppLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route path={ROUTES.ONBOARDING} element={<OnboardingPage />} />
+        </Route>
+
+        {/* Protected routes — require auth + completed onboarding */}
         <Route
           element={
             <ProtectedRoute>
@@ -55,23 +97,24 @@ export function AppRouter() {
             </ProtectedRoute>
           }
         >
-          <Route path={ROUTES.ONBOARDING} element={<PlaceholderPage />} />
-          <Route path={ROUTES.DASHBOARD} element={<PlaceholderPage />} />
-          <Route path={ROUTES.MY_PROFILE} element={<PlaceholderPage />} />
-          <Route path={ROUTES.DISCOVER} element={<PlaceholderPage />} />
-          <Route path={ROUTES.SEARCH} element={<PlaceholderPage />} />
-          <Route path={ROUTES.PROFILE_DETAIL} element={<PlaceholderPage />} />
-          <Route path={ROUTES.INTERESTS} element={<PlaceholderPage />} />
-          <Route path={ROUTES.SHORTLIST} element={<PlaceholderPage />} />
-          <Route path={ROUTES.WHO_VIEWED} element={<PlaceholderPage />} />
-          <Route path={ROUTES.CHATS} element={<PlaceholderPage />} />
-          <Route path={ROUTES.CHAT_DETAIL} element={<PlaceholderPage />} />
-          <Route path={ROUTES.SETTINGS} element={<PlaceholderPage />} />
-          <Route path={ROUTES.PRIVACY_SETTINGS} element={<PlaceholderPage />} />
-          <Route path={ROUTES.BLOCKED_USERS} element={<PlaceholderPage />} />
-          <Route path={ROUTES.NOTIFICATIONS} element={<PlaceholderPage />} />
-          <Route path={ROUTES.PAYMENT_SUCCESS} element={<PlaceholderPage />} />
-          <Route path={ROUTES.PAYMENT_CANCEL} element={<PlaceholderPage />} />
+          <Route path={ROUTES.DASHBOARD} element={<DashboardPage />} />
+          <Route path={ROUTES.MY_PROFILE} element={<MyProfilePage />} />
+          <Route path={ROUTES.EDIT_PROFILE} element={<EditProfilePage />} />
+          <Route path={ROUTES.MY_PHOTOS} element={<PhotosPage />} />
+          <Route path={ROUTES.DISCOVER} element={<DiscoverPage />} />
+          <Route path={ROUTES.SEARCH} element={<SearchPage />} />
+          <Route path={ROUTES.PROFILE_DETAIL} element={<ProfileDetailPage />} />
+          <Route path={ROUTES.INTERESTS} element={<InterestsPage />} />
+          <Route path={ROUTES.SHORTLIST} element={<ShortlistPage />} />
+          <Route path={ROUTES.WHO_VIEWED} element={<WhoViewedMePage />} />
+          <Route path={ROUTES.CHATS} element={<ChatListPage />} />
+          <Route path={ROUTES.CHAT_DETAIL} element={<ChatDetailPage />} />
+          <Route path={ROUTES.SETTINGS} element={<SettingsPage />} />
+          <Route path={ROUTES.PRIVACY_SETTINGS} element={<PrivacySettingsPage />} />
+          <Route path={ROUTES.BLOCKED_USERS} element={<BlockedUsersPage />} />
+          <Route path={ROUTES.NOTIFICATIONS} element={<NotificationsPage />} />
+          <Route path={ROUTES.PAYMENT_SUCCESS} element={<PaymentSuccessPage />} />
+          <Route path={ROUTES.PAYMENT_CANCEL} element={<PaymentCancelPage />} />
         </Route>
 
         {/* 404 */}

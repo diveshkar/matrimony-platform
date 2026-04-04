@@ -15,7 +15,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/common/AnimatedSection';
+import {
+  AnimatedSection,
+  StaggerContainer,
+  StaggerItem,
+} from '@/components/common/AnimatedSection';
 import { AnimatedCounter } from '@/components/common/AnimatedCounter';
 import { ROUTES } from '@/lib/constants/routes';
 import { CONFIG } from '@/lib/constants/config';
@@ -28,25 +32,29 @@ const features = [
   {
     icon: Shield,
     title: 'Privacy First',
-    description: 'Full control over who sees your profile, photos, and contact information. Your data stays yours.',
+    description:
+      'Full control over who sees your profile, photos, and contact information. Your data stays yours.',
     color: 'bg-emerald-50 text-emerald-600',
   },
   {
     icon: Sparkles,
     title: 'Smart Matching',
-    description: 'Compatibility scoring based on preferences, values, culture, and lifestyle for meaningful connections.',
+    description:
+      'Compatibility scoring based on preferences, values, culture, and lifestyle for meaningful connections.',
     color: 'bg-purple-50 text-purple-600',
   },
   {
     icon: Users,
     title: 'Verified Profiles',
-    description: 'Every profile is phone-verified. We review profiles to build a trusted, genuine community.',
+    description:
+      'Every profile is phone-verified. We review profiles to build a trusted, genuine community.',
     color: 'bg-blue-50 text-blue-600',
   },
   {
     icon: Globe,
     title: 'Global Tamil Community',
-    description: 'Connect with Tamil singles in the UK, Sri Lanka, India, Canada, Australia, and worldwide.',
+    description:
+      'Connect with Tamil singles in the UK, Sri Lanka, India, Canada, Australia, and worldwide.',
     color: 'bg-amber-50 text-amber-600',
   },
 ];
@@ -62,19 +70,22 @@ const successStories = [
   {
     names: 'Priya & Karthik',
     location: 'London, UK',
-    story: 'We both grew up in London but never crossed paths. Matrimony matched us based on our shared values and Tamil roots. Six months later, our families met and the rest is history.',
+    story:
+      'We both grew up in London but never crossed paths. Matrimony matched us based on our shared values and Tamil roots. Six months later, our families met and the rest is history.',
     initials: 'PK',
   },
   {
     names: 'Anitha & Raveen',
     location: 'Toronto, Canada',
-    story: 'Being in the diaspora, finding someone who understands our culture felt impossible. This platform brought us together across continents. We got married last spring.',
+    story:
+      'Being in the diaspora, finding someone who understands our culture felt impossible. This platform brought us together across continents. We got married last spring.',
     initials: 'AR',
   },
   {
     names: 'Meena & Suresh',
     location: 'Colombo, Sri Lanka',
-    story: 'My parents created my profile and found Suresh within weeks. The smart matching understood exactly what our family was looking for. We could not be happier.',
+    story:
+      'My parents created my profile and found Suresh within weeks. The smart matching understood exactly what our family was looking for. We could not be happier.',
     initials: 'MS',
   },
 ];
@@ -92,14 +103,26 @@ const plans = [
     price: '£19.99',
     period: '/month',
     popular: true,
-    features: ['Unlimited profile views', 'Unlimited interests', 'Full chat access', 'View contact info', '1 boost/month'],
+    features: [
+      'Unlimited profile views',
+      'Unlimited interests',
+      'Full chat access',
+      'View contact info',
+      '1 boost/month',
+    ],
   },
   {
     name: 'Platinum',
     price: '£29.99',
     period: '/month',
     popular: false,
-    features: ['Everything in Gold', 'Priority support', '3 boosts/month', 'Premium badge', 'Top search placement'],
+    features: [
+      'Everything in Gold',
+      'Priority support',
+      '3 boosts/month',
+      'Premium badge',
+      'Top search placement',
+    ],
   },
 ];
 
@@ -195,8 +218,8 @@ function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.35 }}
           >
-            A premium matrimony platform crafted for the global Tamil community.
-            Find your life partner with trust, tradition, and the care your journey deserves.
+            A premium matrimony platform crafted for the global Tamil community. Find your life
+            partner with trust, tradition, and the care your journey deserves.
           </motion.p>
 
           <motion.div
@@ -274,12 +297,15 @@ function FeaturesSection() {
     <section className="section-spacing bg-warm-50" id="features">
       <div className="page-container">
         <AnimatedSection className="text-center mb-14">
-          <Badge variant="outline" className="mb-4">Why Choose Us</Badge>
+          <Badge variant="outline" className="mb-4">
+            Why Choose Us
+          </Badge>
           <h2 className="font-heading text-3xl sm:text-4xl font-bold text-foreground">
             Built with Care for the Tamil Community
           </h2>
           <p className="mt-4 text-muted-foreground max-w-xl mx-auto leading-relaxed">
-            Every feature is thoughtfully designed to honour your traditions while making the search for your life partner effortless.
+            Every feature is thoughtfully designed to honour your traditions while making the search
+            for your life partner effortless.
           </p>
         </AnimatedSection>
 
@@ -337,7 +363,9 @@ function HowItWorksSection() {
     <section className="section-spacing bg-white" id="how-it-works">
       <div className="page-container">
         <AnimatedSection className="text-center mb-14">
-          <Badge variant="outline" className="mb-4">Simple Process</Badge>
+          <Badge variant="outline" className="mb-4">
+            Simple Process
+          </Badge>
           <h2 className="font-heading text-3xl sm:text-4xl font-bold text-foreground">
             Three Steps to Your Partner
           </h2>
@@ -446,12 +474,15 @@ function PlansSection() {
     <section className="section-spacing bg-white" id="plans">
       <div className="page-container">
         <AnimatedSection className="text-center mb-14">
-          <Badge variant="outline" className="mb-4">Pricing</Badge>
+          <Badge variant="outline" className="mb-4">
+            Pricing
+          </Badge>
           <h2 className="font-heading text-3xl sm:text-4xl font-bold text-foreground">
             Choose Your Plan
           </h2>
           <p className="mt-4 text-muted-foreground max-w-lg mx-auto leading-relaxed">
-            Start free and upgrade when you are ready. Every plan brings you closer to your perfect match.
+            Start free and upgrade when you are ready. Every plan brings you closer to your perfect
+            match.
           </p>
         </AnimatedSection>
 
@@ -460,9 +491,7 @@ function PlansSection() {
             <StaggerItem key={plan.name}>
               <Card
                 className={`h-full relative hover-lift ${
-                  plan.popular
-                    ? 'border-2 border-primary-700 shadow-glow'
-                    : 'border-0 shadow-soft'
+                  plan.popular ? 'border-2 border-primary-700 shadow-glow' : 'border-0 shadow-soft'
                 }`}
               >
                 {plan.popular && (
@@ -499,9 +528,7 @@ function PlansSection() {
                     size="lg"
                     asChild
                   >
-                    <Link to={ROUTES.LOGIN}>
-                      {plan.popular ? 'Get Started' : 'Choose Plan'}
-                    </Link>
+                    <Link to={ROUTES.LOGIN}>{plan.popular ? 'Get Started' : 'Choose Plan'}</Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -555,8 +582,8 @@ function CTASection() {
           </h2>
 
           <p className="mt-6 text-lg text-white/60 max-w-xl mx-auto leading-relaxed">
-            Join thousands of Tamil families who found their happily ever after.
-            Your story could be next.
+            Join thousands of Tamil families who found their happily ever after. Your story could be
+            next.
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">

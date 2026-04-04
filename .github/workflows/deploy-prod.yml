@@ -38,8 +38,6 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
-        with:
-          version: 9
 
       - uses: actions/setup-node@v4
         with:
@@ -68,7 +66,7 @@ jobs:
       # Terraform apply
       - uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.6"
+          terraform_version: '1.6'
 
       - name: Terraform apply
         working-directory: infra/environments/prod

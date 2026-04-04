@@ -1,12 +1,31 @@
 import { Mail, MapPin, Clock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/common/AnimatedSection';
+import {
+  AnimatedSection,
+  StaggerContainer,
+  StaggerItem,
+} from '@/components/common/AnimatedSection';
 import { CONFIG } from '@/lib/constants/config';
 
 const contactInfo = [
-  { icon: Mail, title: 'Email Us', detail: CONFIG.SUPPORT_EMAIL, desc: 'We respond within 24 hours' },
-  { icon: MapPin, title: 'Based In', detail: 'United Kingdom', desc: 'Serving Tamil families globally' },
-  { icon: Clock, title: 'Support Hours', detail: 'Mon - Sat, 9am - 6pm GMT', desc: 'Excluding public holidays' },
+  {
+    icon: Mail,
+    title: 'Email Us',
+    detail: CONFIG.SUPPORT_EMAIL,
+    desc: 'We respond within 24 hours',
+  },
+  {
+    icon: MapPin,
+    title: 'Based In',
+    detail: 'United Kingdom',
+    desc: 'Serving Tamil families globally',
+  },
+  {
+    icon: Clock,
+    title: 'Support Hours',
+    detail: 'Mon - Sat, 9am - 6pm GMT',
+    desc: 'Excluding public holidays',
+  },
 ];
 
 export default function ContactPage() {

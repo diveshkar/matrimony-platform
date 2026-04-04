@@ -25,3 +25,19 @@ output "dynamodb_discovery_table" {
 output "dynamodb_events_table" {
   value = module.dynamodb_events.table_name
 }
+
+output "cognito_user_pool_id" {
+  value = module.cognito.user_pool_id
+}
+
+output "cognito_client_id" {
+  value = module.cognito.client_id
+}
+
+output "cloudfront_distribution_id" {
+  value = module.cloudfront_frontend.distribution_id
+}
+
+output "cloudfront_domain" {
+  value = module.cloudfront_frontend.distribution_domain_name
+}

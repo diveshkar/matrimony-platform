@@ -18,9 +18,14 @@ export function withLogger(handler: LambdaHandler): LambdaHandler {
     const result = await handler(event, context);
 
     const duration = Date.now() - startTime;
-    const statusCode = typeof result === 'object' && 'statusCode' in result ? result.statusCode : 200;
+    const statusCode =
+      typeof result === 'object' && 'statusCode' in result ? result.statusCode : 200;
 
-    logger.info('Request completed', { method, path, statusCode, durationMs: duration }, { requestId });
+    logger.info(
+      'Request completed',
+      { method, path, statusCode, durationMs: duration },
+      { requestId },
+    );
 
     return result;
   };

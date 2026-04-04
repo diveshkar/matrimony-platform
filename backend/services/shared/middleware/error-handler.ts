@@ -16,11 +16,15 @@ export function withErrorHandler(handler: LambdaHandler): LambdaHandler {
       return await handler(event, context);
     } catch (err) {
       if (err instanceof AppError) {
-        logger.warn('Handled error', {
-          code: err.code,
-          message: err.message,
-          statusCode: err.statusCode,
-        }, { requestId });
+        logger.warn(
+          'Handled error',
+          {
+            code: err.code,
+            message: err.message,
+            statusCode: err.statusCode,
+          },
+          { requestId },
+        );
 
         return error(err.code, err.message, requestId, err.statusCode);
       }

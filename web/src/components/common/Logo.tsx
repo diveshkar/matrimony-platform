@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Heart } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
+import { useAuth } from '@/lib/auth/auth-context';
 import { ROUTES } from '@/lib/constants/routes';
 
 interface LogoProps {
@@ -22,8 +23,11 @@ const textSizes = {
 };
 
 export function Logo({ className, size = 'md', showText = true }: LogoProps) {
+  const { isAuthenticated } = useAuth();
+  const linkTo = isAuthenticated ? ROUTES.DASHBOARD : ROUTES.HOME;
+
   return (
-    <Link to={ROUTES.HOME} className={cn('flex items-center gap-2.5', className)}>
+    <Link to={linkTo} className={cn('flex items-center gap-2.5', className)}>
       <div
         className={cn(
           'flex items-center justify-center rounded-xl bg-gradient-primary text-white shadow-glow',

@@ -28,8 +28,11 @@ export function withAuth(handler: AuthenticatedHandler): LambdaHandler {
     }
 
     // In production, this validates the JWT via Cognito JWKS.
-    // For Phase 0, we extract claims from the API Gateway authorizer context.
-    const claims = event.requestContext?.authorizer?.jwt?.claims;
+    // For local dev, we extract claims from the API Gateway authorizer context.
+    const authorizer = (event.requestContext as unknown as Record<string, unknown>)?.authorizer as
+      | { jwt?: { claims?: Record<string, unknown> } }
+      | undefined;
+    const claims = authorizer?.jwt?.claims;
 
     if (!claims?.sub) {
       throw new UnauthorizedError('Invalid token claims');

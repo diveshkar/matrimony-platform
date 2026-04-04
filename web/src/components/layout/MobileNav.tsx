@@ -1,5 +1,15 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Heart, Search, MessageCircle, Bell, User, Settings, LogOut, Shield, HelpCircle } from 'lucide-react';
+import {
+  Heart,
+  Search,
+  MessageCircle,
+  Bell,
+  User,
+  Settings,
+  LogOut,
+  Shield,
+  HelpCircle,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/lib/auth/auth-context';

@@ -13,12 +13,14 @@ export const phoneSchema = z
 export const emailSchema = z.string().email('Invalid email address');
 
 // Auth
-export const authStartSchema = z.object({
-  phone: phoneSchema.optional(),
-  email: emailSchema.optional(),
-}).refine((data) => data.phone || data.email, {
-  message: 'Either phone or email is required',
-});
+export const authStartSchema = z
+  .object({
+    phone: phoneSchema.optional(),
+    email: emailSchema.optional(),
+  })
+  .refine((data) => data.phone || data.email, {
+    message: 'Either phone or email is required',
+  });
 
 export const authVerifySchema = z.object({
   phone: phoneSchema.optional(),
@@ -47,6 +49,8 @@ export const createProfileSchema = z.object({
   occupation: z.string().max(100).optional(),
   employer: z.string().max(100).optional(),
   incomeRange: z.string().max(50).optional(),
+  whatsappNumber: z.string().max(20).optional(),
+  personalEmail: z.string().email().optional().or(z.literal('')),
   country: z.string().min(1).max(100),
   state: z.string().max(100).optional(),
   city: z.string().max(100).optional(),

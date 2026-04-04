@@ -45,11 +45,12 @@ export const authApi = {
     apiClient.post<ApiResponse<AuthVerifyResponse>>('/auth/verify', data).then((r) => r.data),
 
   refresh: (refreshToken: string) =>
-    apiClient.post<ApiResponse<AuthRefreshResponse>>('/auth/refresh', { refreshToken }).then((r) => r.data),
+    apiClient
+      .post<ApiResponse<AuthRefreshResponse>>('/auth/refresh', { refreshToken })
+      .then((r) => r.data),
 
   logout: () =>
     apiClient.post<ApiResponse<{ message: string }>>('/auth/logout').then((r) => r.data),
 
-  me: () =>
-    apiClient.get<ApiResponse<AuthUser>>('/auth/me').then((r) => r.data),
+  me: () => apiClient.get<ApiResponse<AuthUser>>('/auth/me').then((r) => r.data),
 };

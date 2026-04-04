@@ -25,6 +25,11 @@ out/
 Thumbs.db
 desktop.ini
 
+# TSC build output (from tsc -b)
+web/vite.config.js
+web/vite.config.d.ts
+*.tsbuildinfo
+
 # Logs
 *.log
 npm-debug.log*
@@ -43,6 +48,9 @@ infra/**/.terraform.lock.hcl
 
 # Docker
 .docker/
+
+# Local uploads (dev only)
+backend/uploads-local/
 
 # Lambda build artifacts
 backend/services/**/dist/

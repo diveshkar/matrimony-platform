@@ -1,12 +1,32 @@
 import { Heart, Globe, Shield, Users } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { AnimatedSection, StaggerContainer, StaggerItem } from '@/components/common/AnimatedSection';
+import {
+  AnimatedSection,
+  StaggerContainer,
+  StaggerItem,
+} from '@/components/common/AnimatedSection';
 
 const values = [
-  { icon: Heart, title: 'Tradition with Care', desc: 'We honour the cultural values that matter to Tamil families while building a modern platform.' },
-  { icon: Shield, title: 'Trust & Privacy', desc: 'Your safety is our foundation. Every feature is built with your privacy in mind.' },
-  { icon: Globe, title: 'Global Reach', desc: 'Connecting Tamil hearts across the UK, Sri Lanka, India, Canada, Australia, and beyond.' },
-  { icon: Users, title: 'Community First', desc: 'Built by people who understand the Tamil community and the importance of family in finding a life partner.' },
+  {
+    icon: Heart,
+    title: 'Tradition with Care',
+    desc: 'We honour the cultural values that matter to Tamil families while building a modern platform.',
+  },
+  {
+    icon: Shield,
+    title: 'Trust & Privacy',
+    desc: 'Your safety is our foundation. Every feature is built with your privacy in mind.',
+  },
+  {
+    icon: Globe,
+    title: 'Global Reach',
+    desc: 'Connecting Tamil hearts across the UK, Sri Lanka, India, Canada, Australia, and beyond.',
+  },
+  {
+    icon: Users,
+    title: 'Community First',
+    desc: 'Built by people who understand the Tamil community and the importance of family in finding a life partner.',
+  },
 ];
 
 export default function AboutPage() {
@@ -19,8 +39,8 @@ export default function AboutPage() {
           </h1>
           <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
             We are a UK-based matrimony platform built exclusively for the global Tamil community.
-            Our mission is simple: help Tamil families find meaningful, lasting connections rooted in
-            shared values, culture, and tradition.
+            Our mission is simple: help Tamil families find meaningful, lasting connections rooted
+            in shared values, culture, and tradition.
           </p>
           <p className="mt-4 text-muted-foreground leading-relaxed">
             Whether you are in London, Colombo, Toronto, or Sydney — we bring Tamil hearts together
@@ -39,7 +59,9 @@ export default function AboutPage() {
         </AnimatedSection>
 
         <AnimatedSection className="text-center mb-10">
-          <h2 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">Our Values</h2>
+          <h2 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">
+            Our Values
+          </h2>
         </AnimatedSection>
 
         <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl mx-auto">

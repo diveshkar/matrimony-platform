@@ -80,10 +80,10 @@ const config: Config = {
       },
       fontSize: {
         'display-lg': ['3.5rem', { lineHeight: '1.1', letterSpacing: '-0.02em' }],
-        'display': ['3rem', { lineHeight: '1.15', letterSpacing: '-0.02em' }],
+        display: ['3rem', { lineHeight: '1.15', letterSpacing: '-0.02em' }],
         'display-sm': ['2.25rem', { lineHeight: '1.2', letterSpacing: '-0.01em' }],
         'heading-lg': ['1.875rem', { lineHeight: '1.3', letterSpacing: '-0.01em' }],
-        'heading': ['1.5rem', { lineHeight: '1.35' }],
+        heading: ['1.5rem', { lineHeight: '1.35' }],
         'heading-sm': ['1.25rem', { lineHeight: '1.4' }],
       },
       borderRadius: {
@@ -95,10 +95,10 @@ const config: Config = {
       },
       boxShadow: {
         'soft-sm': '0 1px 3px rgba(139, 26, 74, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03)',
-        'soft': '0 4px 6px -1px rgba(139, 26, 74, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04)',
+        soft: '0 4px 6px -1px rgba(139, 26, 74, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04)',
         'soft-lg': '0 10px 15px -3px rgba(139, 26, 74, 0.06), 0 4px 6px rgba(0, 0, 0, 0.03)',
         'soft-xl': '0 20px 25px -5px rgba(139, 26, 74, 0.07), 0 8px 10px rgba(0, 0, 0, 0.03)',
-        'glow': '0 0 20px rgba(139, 26, 74, 0.15)',
+        glow: '0 0 20px rgba(139, 26, 74, 0.15)',
         'gold-glow': '0 0 20px rgba(212, 168, 83, 0.2)',
       },
       keyframes: {
@@ -142,6 +142,7 @@ const config: Config = {
       },
     },
   },
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   plugins: [require('tailwindcss-animate')],
 };
 

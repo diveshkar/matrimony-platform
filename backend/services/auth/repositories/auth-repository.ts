@@ -65,20 +65,24 @@ export class AuthRepository extends BaseRepository {
   }
 
   async findAccountByPhone(phone: string): Promise<AccountRecord | null> {
-    // Use GSI1 to look up by phone
-    const result = await this.query<AccountRecord>(`PHONE#${phone}`, {
+    // GSI1 returns the phone index item — extract userId, then fetch actual account
+    const result = await this.query<{ userId: string }>(`PHONE#${phone}`, {
       indexName: 'GSI1',
       limit: 1,
     });
-    return result.items[0] || null;
+    const indexItem = result.items[0];
+    if (!indexItem?.userId) return null;
+    return this.getAccount(indexItem.userId);
   }
 
   async findAccountByEmail(email: string): Promise<AccountRecord | null> {
-    const result = await this.query<AccountRecord>(`EMAIL#${email}`, {
+    const result = await this.query<{ userId: string }>(`EMAIL#${email}`, {
       indexName: 'GSI1',
       limit: 1,
     });
-    return result.items[0] || null;
+    const indexItem = result.items[0];
+    if (!indexItem?.userId) return null;
+    return this.getAccount(indexItem.userId);
   }
 
   async getAccount(userId: string): Promise<AccountRecord | null> {
@@ -105,7 +109,7 @@ export class AuthRepository extends BaseRepository {
       updatedAt: now,
     };
 
-    await this.put(account);
+    await this.put(account as unknown as Record<string, unknown>);
 
     // Write GSI1 index entry for phone/email lookup
     if (phone) {
