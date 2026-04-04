@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/common/EmptyState';
-import { PageHeader } from '@/components/common/PageHeader';
 import { profileDetailPath } from '@/lib/constants/routes';
 import { useShortlist, useRemoveFromShortlist } from '../hooks/useInterests';
 
@@ -17,7 +16,7 @@ export default function ShortlistPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 max-w-3xl">
+      <div className="space-y-6 max-w-3xl mx-auto">
         <Skeleton className="h-8 w-48" />
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           {[...Array(6)].map((_, i) => (
@@ -29,11 +28,13 @@ export default function ShortlistPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-3xl">
-      <PageHeader
-        title="Shortlist"
-        description={`${items.length} profile${items.length !== 1 ? 's' : ''} saved`}
-      />
+    <div className="space-y-6 max-w-3xl mx-auto">
+      <div>
+        <h1 className="font-heading text-xl sm:text-2xl font-bold text-foreground">Shortlist</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">
+          {items.length} profile{items.length !== 1 ? 's' : ''} saved
+        </p>
+      </div>
 
       {items.length === 0 ? (
         <EmptyState
@@ -52,7 +53,7 @@ export default function ShortlistPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
               >
-                <Card className="border-0 shadow-soft hover-lift">
+                <Card className="border-0 shadow-soft-sm hover:shadow-soft transition-shadow rounded-xl">
                   <CardContent className="p-4 flex items-center gap-4">
                     <Link to={profileDetailPath(item.targetUserId)}>
                       <div className="h-16 w-16 rounded-xl overflow-hidden bg-primary-50 shrink-0">

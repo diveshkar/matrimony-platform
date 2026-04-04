@@ -67,16 +67,16 @@ export default function ChatDetailPage() {
   const groupedMessages = groupByDate(messages);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] sm:h-[calc(100vh-5rem)] max-w-2xl -my-6 sm:-my-8">
+    <div className="flex flex-col h-[calc(100vh-8rem)] sm:h-[calc(100vh-5rem)] max-w-2xl mx-auto -my-6 sm:-my-8">
       {/* Header */}
-      <div className="flex items-center gap-3 py-4 border-b shrink-0">
-        <Button variant="ghost" size="icon" asChild className="shrink-0">
+      <div className="flex items-center gap-3 py-3 px-1 border-b shrink-0 bg-white/80 backdrop-blur-sm">
+        <Button variant="outline" size="icon" className="h-9 w-9 shrink-0 rounded-xl" asChild>
           <Link to={ROUTES.CHATS}>
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
 
-        <div className="h-10 w-10 rounded-full overflow-hidden bg-primary-50 shrink-0">
+        <div className="h-10 w-10 rounded-xl overflow-hidden bg-primary-50 shrink-0">
           {otherPhoto ? (
             <img src={otherPhoto} alt={otherName} className="h-full w-full object-cover" />
           ) : (
@@ -86,9 +86,12 @@ export default function ChatDetailPage() {
           )}
         </div>
 
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h2 className="font-heading font-semibold text-sm truncate">{otherName}</h2>
-          <p className="text-[10px] text-muted-foreground">Online</p>
+          <div className="flex items-center gap-1.5">
+            <div className="h-2 w-2 rounded-full bg-emerald-500" />
+            <p className="text-[10px] text-emerald-600 font-medium">Online</p>
+          </div>
         </div>
       </div>
 
@@ -127,14 +130,14 @@ export default function ChatDetailPage() {
               return (
                 <div
                   key={msg.messageId}
-                  className={cn('flex mb-1.5 px-2', isMine ? 'justify-end' : 'justify-start')}
+                  className={cn('flex mb-2 px-2', isMine ? 'justify-end' : 'justify-start')}
                 >
                   <div
                     className={cn(
-                      'max-w-[75%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed',
+                      'max-w-[75%] px-4 py-3 text-sm leading-relaxed shadow-soft-sm',
                       isMine
-                        ? 'bg-primary-800 text-white rounded-br-md'
-                        : 'bg-muted text-foreground rounded-bl-md',
+                        ? 'bg-gradient-to-br from-primary-800 to-primary-900 text-white rounded-2xl rounded-br-md'
+                        : 'bg-white text-foreground rounded-2xl rounded-bl-md',
                     )}
                   >
                     <p className="whitespace-pre-wrap break-words">{msg.content}</p>
@@ -168,7 +171,7 @@ export default function ChatDetailPage() {
           />
         </div>
       ) : (
-        <div className="border-t py-3 shrink-0">
+        <div className="border-t py-3 shrink-0 bg-white/80 backdrop-blur-sm">
           <div className="flex items-center gap-2">
             <input
               ref={inputRef}
@@ -180,11 +183,11 @@ export default function ChatDetailPage() {
               maxLength={2000}
               autoFocus
               disabled={sendMessage.isPending}
-              className="flex-1 h-11 rounded-full border border-input bg-white px-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+              className="flex-1 h-12 rounded-2xl border border-input bg-white px-5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-300 disabled:opacity-50 shadow-soft-sm"
             />
             <Button
               size="icon"
-              className="h-11 w-11 rounded-full shrink-0"
+              className="h-12 w-12 rounded-2xl shrink-0 shadow-soft-sm"
               onClick={handleSend}
               disabled={!newMessage.trim() || sendMessage.isPending}
             >

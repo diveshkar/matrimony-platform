@@ -115,13 +115,17 @@ export class UploadService {
   }
 
   private async updateProfilePhoto(userId: string, url: string): Promise<void> {
-    // Update the profile's primaryPhotoUrl
     const { BaseRepository } = await import('../../shared/repositories/base-repository.js');
     const coreRepo = new BaseRepository('core');
     try {
+      // Update core profile
       await coreRepo.update(`USER#${userId}`, 'PROFILE#v1', {
         primaryPhotoUrl: url,
       });
+
+      // Sync to discovery table so profile cards show the photo
+      const { DiscoveryService } = await import('../../discovery/domain/discovery-service.js');
+      await new DiscoveryService().syncProfileToDiscovery(userId);
     } catch {
       // Profile might not exist yet (during onboarding)
     }

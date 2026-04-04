@@ -1,7 +1,10 @@
 import { useState, useCallback } from 'react';
+import { Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Loader2, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/lib/auth/auth-context';
+import { ROUTES } from '@/lib/constants/routes';
 import { useCreateProfile } from '../hooks/useProfile';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import type { ProfileData } from '../api/profile-api';
@@ -29,10 +32,10 @@ const STEPS = [
 const DRAFT_KEY = 'matrimony_onboarding_draft';
 
 export default function OnboardingPage() {
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [draft, setDraft] = useLocalStorage<Partial<ProfileData>>(DRAFT_KEY, {});
   const [stepErrors, setStepErrors] = useState<Record<string, string>>({});
-
   const createProfile = useCreateProfile();
 
   const updateDraft = useCallback(
@@ -137,26 +140,31 @@ export default function OnboardingPage() {
 
   const isLastStep = currentStep === STEPS.length - 1;
 
+  // If profile already complete, redirect to dashboard
+  if (user?.onboardingComplete) {
+    return <Navigate to={ROUTES.DASHBOARD} replace />;
+  }
+
   return (
     <div className="min-h-[80vh] py-6 sm:py-8">
-      <div className="max-w-2xl mx-auto px-4">
+      <div className="max-w-xl mx-auto px-4">
         {/* Step dots + progress */}
         <div className="mb-8">
-          <div className="flex items-center justify-center gap-1.5 mb-4">
+          <div className="flex items-center justify-center gap-1.5 mb-3">
             {STEPS.map((_, i) => (
               <div
                 key={i}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
+                className={`rounded-full transition-all duration-300 ${
                   i === currentStep
-                    ? 'w-8 bg-primary-700'
+                    ? 'h-2 w-8 bg-primary-700'
                     : i < currentStep
-                      ? 'w-4 bg-primary-300'
-                      : 'w-4 bg-muted'
+                      ? 'h-2 w-2 bg-primary-400'
+                      : 'h-2 w-2 bg-muted'
                 }`}
               />
             ))}
           </div>
-          <p className="text-center text-xs text-muted-foreground">
+          <p className="text-center text-[11px] text-muted-foreground">
             Step {currentStep + 1} of {STEPS.length}
           </p>
         </div>
@@ -164,24 +172,26 @@ export default function OnboardingPage() {
         {/* Step title */}
         <motion.div
           key={`title-${currentStep}`}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="mb-8 text-center"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 text-center"
         >
-          <h1 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">
+          <h1 className="font-heading text-xl sm:text-2xl font-bold text-foreground">
             {STEPS[currentStep].title}
           </h1>
-          <p className="mt-1 text-muted-foreground">{STEPS[currentStep].subtitle}</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {STEPS[currentStep].subtitle}
+          </p>
         </motion.div>
 
-        {/* Step content */}
+        {/* Step content wrapped in card */}
         <AnimatePresence mode="wait">
           <motion.div
             key={currentStep}
-            initial={{ opacity: 0, x: 30 }}
+            initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -30 }}
-            transition={{ duration: 0.25 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.2 }}
           >
             {currentStep === 0 && (
               <StepProfileFor data={draft} onChange={updateDraft} errors={stepErrors} />
@@ -211,12 +221,12 @@ export default function OnboardingPage() {
         </AnimatePresence>
 
         {/* Navigation */}
-        <div className="flex items-center justify-between mt-10 pt-6 border-t">
+        <div className="flex items-center justify-between mt-8 pt-5 border-t">
           <Button
-            variant="ghost"
+            variant="outline"
             onClick={handleBack}
             disabled={currentStep === 0}
-            className="gap-2"
+            className="gap-2 rounded-xl"
           >
             <ArrowLeft className="h-4 w-4" />
             Back
@@ -226,7 +236,7 @@ export default function OnboardingPage() {
             <Button
               onClick={handleSubmit}
               disabled={createProfile.isPending}
-              className="gap-2 min-w-[160px]"
+              className="gap-2 min-w-[160px] rounded-xl"
               size="lg"
             >
               {createProfile.isPending ? (
@@ -242,7 +252,7 @@ export default function OnboardingPage() {
               )}
             </Button>
           ) : (
-            <Button onClick={handleNext} className="gap-2" size="lg">
+            <Button onClick={handleNext} className="gap-2 rounded-xl" size="lg">
               Continue
               <ArrowRight className="h-4 w-4" />
             </Button>

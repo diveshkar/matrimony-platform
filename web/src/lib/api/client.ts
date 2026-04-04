@@ -101,8 +101,8 @@ apiClient.interceptors.response.use(
     const refreshToken = getStoredRefreshToken();
 
     if (!refreshToken) {
+      isRefreshing = false;
       clearTokens();
-      window.location.href = '/login';
       return Promise.reject(error);
     }
 
@@ -125,7 +125,6 @@ apiClient.interceptors.response.use(
     } catch (refreshError) {
       processQueue(refreshError, null);
       clearTokens();
-      window.location.href = '/login';
       return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;

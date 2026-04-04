@@ -3,7 +3,6 @@ import { Eye, User, MapPin } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/common/EmptyState';
-import { PageHeader } from '@/components/common/PageHeader';
 import { UpgradePrompt } from '@/features/subscription/components/UpgradePrompt';
 import { formatRelativeTime } from '@/lib/utils/format';
 import { profileDetailPath } from '@/lib/constants/routes';
@@ -17,8 +16,8 @@ export default function WhoViewedMePage() {
   const isForbidden = error instanceof AxiosError && error.response?.status === 403;
   if (isForbidden) {
     return (
-      <div className="space-y-4 max-w-2xl">
-        <PageHeader title="Who Viewed Me" />
+      <div className="space-y-4 max-w-2xl mx-auto">
+        <h1 className="font-heading text-xl sm:text-2xl font-bold text-foreground">Who Viewed Me</h1>
         <UpgradePrompt
           title="Upgrade to see who viewed you"
           description="Who Viewed Me is available on Silver plan and above."
@@ -31,7 +30,7 @@ export default function WhoViewedMePage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 max-w-2xl">
+      <div className="space-y-6 max-w-2xl mx-auto">
         <Skeleton className="h-8 w-48" />
         {[...Array(4)].map((_, i) => (
           <Skeleton key={i} className="h-20 rounded-xl" />
@@ -41,8 +40,11 @@ export default function WhoViewedMePage() {
   }
 
   return (
-    <div className="space-y-4 max-w-2xl">
-      <PageHeader title="Who Viewed Me" description={`${views.length} profile views`} />
+    <div className="space-y-5 max-w-2xl mx-auto">
+      <div>
+        <h1 className="font-heading text-xl sm:text-2xl font-bold text-foreground">Who Viewed Me</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">{views.length} profile view{views.length !== 1 ? 's' : ''}</p>
+      </div>
 
       {views.length === 0 ? (
         <EmptyState
@@ -54,7 +56,7 @@ export default function WhoViewedMePage() {
         <div className="space-y-2">
           {views.map((view, i) => (
             <Link key={`${view.viewerId}-${i}`} to={profileDetailPath(view.viewerId)}>
-              <Card className="border-0 shadow-soft-sm hover:shadow-soft transition-shadow">
+              <Card className="border-0 shadow-soft-sm hover:shadow-soft transition-shadow rounded-xl">
                 <CardContent className="p-4 flex items-center gap-4">
                   <div className="h-12 w-12 rounded-full overflow-hidden bg-primary-50 shrink-0">
                     {view.viewerPhoto ? (

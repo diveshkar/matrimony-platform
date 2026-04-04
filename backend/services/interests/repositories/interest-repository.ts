@@ -98,6 +98,11 @@ export class InterestRepository extends BaseRepository {
     });
   }
 
+  async deleteInterest(senderId: string, receiverId: string): Promise<void> {
+    await this.delete(`USER#${senderId}`, `INTEREST#OUT#${receiverId}`);
+    await this.delete(`USER#${receiverId}`, `INTEREST#IN#${senderId}`);
+  }
+
   async getMyInbox(userId: string, limit = 20): Promise<InterestRecord[]> {
     const result = await this.query<InterestRecord>(`USER#${userId}`, {
       limit,

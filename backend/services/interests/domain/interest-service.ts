@@ -126,6 +126,20 @@ export class InterestService {
     return { status: 'interest_declined' };
   }
 
+  async withdrawInterest(senderId: string, receiverId: string): Promise<{ status: string }> {
+    const interest = await this.repo.getOutboxInterest(senderId, receiverId);
+    if (!interest) {
+      throw new NotFoundError('Interest');
+    }
+    if (interest.status !== 'pending') {
+      throw new ConflictError(`Cannot withdraw — interest already ${interest.status}`);
+    }
+
+    // Delete both outbox and inbox records
+    await this.repo.deleteInterest(senderId, receiverId);
+    return { status: 'interest_withdrawn' };
+  }
+
   async getInbox(userId: string): Promise<{ items: unknown[] }> {
     const items = await this.repo.getMyInbox(userId);
     return { items };

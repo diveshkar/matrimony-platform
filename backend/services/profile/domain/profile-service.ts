@@ -226,6 +226,44 @@ export class ProfileService {
       }
     }
 
+    // Check interest status between viewer and profile owner
+    if (viewerId && viewerId !== userId) {
+      try {
+        const { BaseRepository } = await import('../../shared/repositories/base-repository.js');
+        const coreRepo = new BaseRepository('core');
+
+        // Check if viewer sent interest to this profile
+        const sentInterest = await coreRepo.get<{ status: string }>(
+          `USER#${viewerId}`,
+          `INTEREST#OUT#${userId}`,
+        );
+
+        // Check if this profile sent interest to viewer
+        const receivedInterest = await coreRepo.get<{ status: string }>(
+          `USER#${viewerId}`,
+          `INTEREST#IN#${userId}`,
+        );
+
+        if (sentInterest) {
+          // I sent interest to them
+          publicProfile.interestStatus = sentInterest.status; // pending, accepted, declined
+        } else if (receivedInterest) {
+          // They sent interest to me
+          if (receivedInterest.status === 'accepted') {
+            publicProfile.interestStatus = 'accepted'; // mutual — show Chat Now
+          } else if (receivedInterest.status === 'declined') {
+            publicProfile.interestStatus = 'none'; // I declined them — allow re-interaction
+          } else {
+            publicProfile.interestStatus = 'received'; // pending — show Accept/Decline
+          }
+        } else {
+          publicProfile.interestStatus = 'none';
+        }
+      } catch {
+        publicProfile.interestStatus = 'none';
+      }
+    }
+
     return publicProfile;
   }
 }

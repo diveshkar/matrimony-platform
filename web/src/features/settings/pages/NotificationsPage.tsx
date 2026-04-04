@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/common/EmptyState';
-import { PageHeader } from '@/components/common/PageHeader';
 import { cn } from '@/lib/utils/cn';
 import { formatRelativeTime } from '@/lib/utils/format';
 import { useNotifications, useMarkAllRead } from '../hooks/useSettings';
@@ -26,7 +25,7 @@ export default function NotificationsPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 max-w-2xl">
+      <div className="space-y-6 max-w-2xl mx-auto">
         <Skeleton className="h-8 w-48" />
         {[...Array(4)].map((_, i) => (
           <Skeleton key={i} className="h-20 rounded-xl" />
@@ -36,24 +35,27 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="space-y-4 max-w-2xl">
-      <PageHeader
-        title="Notifications"
-        description={unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
-        action={
-          unreadCount > 0 ? (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => markAll.mutate()}
-              disabled={markAll.isPending}
-            >
-              <CheckCheck className="mr-1.5 h-4 w-4" />
-              Mark all read
-            </Button>
-          ) : undefined
-        }
-      />
+    <div className="space-y-5 max-w-2xl mx-auto">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-heading text-xl sm:text-2xl font-bold text-foreground">Notifications</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
+          </p>
+        </div>
+        {unreadCount > 0 && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-xl"
+            onClick={() => markAll.mutate()}
+            disabled={markAll.isPending}
+          >
+            <CheckCheck className="mr-1.5 h-4 w-4" />
+            Mark all read
+          </Button>
+        )}
+      </div>
 
       {notifications.length === 0 ? (
         <EmptyState
@@ -69,7 +71,7 @@ export default function NotificationsPage() {
               <Link key={notif.notificationId} to={notif.actionUrl || '#'}>
                 <Card
                   className={cn(
-                    'border-0 transition-shadow',
+                    'border-0 transition-shadow rounded-xl',
                     notif.isRead
                       ? 'shadow-soft-sm'
                       : 'shadow-soft bg-primary-50/30 border-l-4 border-l-primary-700',

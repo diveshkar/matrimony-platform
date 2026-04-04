@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { PageHeader } from '@/components/common/PageHeader';
 import { useMyProfile, useUpdateProfile } from '../hooks/useProfile';
 import { ROUTES } from '@/lib/constants/routes';
 import {
@@ -27,7 +26,7 @@ import {
 } from '@/lib/constants/enums';
 
 const selectClass =
-  'flex h-10 w-full rounded-lg border border-input bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring';
+  'flex h-11 w-full rounded-xl border border-input bg-white px-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring hover:border-primary-300 transition-colors';
 
 export default function EditProfilePage() {
   const { data: response, isLoading } = useMyProfile();
@@ -64,7 +63,7 @@ export default function EditProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 max-w-2xl">
+      <div className="space-y-6 max-w-2xl mx-auto">
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-64 rounded-xl" />
       </div>
@@ -75,32 +74,37 @@ export default function EditProfilePage() {
   const denomOptions = form.religion ? DENOMINATION_OPTIONS[form.religion as string] || [] : [];
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      <Button variant="ghost" size="sm" asChild className="mb-2">
-        <Link to={ROUTES.MY_PROFILE}>
-          <ArrowLeft className="mr-1.5 h-4 w-4" />
-          Back to Profile
-        </Link>
-      </Button>
+    <div className="space-y-6 max-w-2xl pb-20">
+      <div className="flex items-center gap-3">
+        <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" asChild>
+          <Link to={ROUTES.MY_PROFILE}>
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+        </Button>
+        <h1 className="font-heading text-xl font-bold text-foreground">Edit Profile</h1>
+      </div>
 
-      <PageHeader
-        title="Edit Profile"
-        action={
-          <Button onClick={handleSave} disabled={!hasChanges || updateProfile.isPending}>
-            {updateProfile.isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="mr-2 h-4 w-4" />
-                Save Changes
-              </>
-            )}
-          </Button>
-        }
-      />
+      {/* Sticky save bar */}
+      {hasChanges && (
+        <div className="fixed bottom-0 left-0 right-0 z-30 border-t bg-white/95 backdrop-blur-md shadow-soft-xl px-4 py-3">
+          <div className="max-w-2xl mx-auto flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">You have unsaved changes</p>
+            <Button onClick={handleSave} disabled={updateProfile.isPending}>
+              {updateProfile.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Changes
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Basic Info */}
       <Card>
@@ -474,22 +478,6 @@ export default function EditProfilePage() {
         </CardContent>
       </Card>
 
-      {/* Save button at bottom */}
-      <div className="flex justify-end pb-8">
-        <Button onClick={handleSave} disabled={!hasChanges || updateProfile.isPending} size="lg">
-          {updateProfile.isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            <>
-              <Save className="mr-2 h-4 w-4" />
-              Save Changes
-            </>
-          )}
-        </Button>
-      </div>
     </div>
   );
 }

@@ -45,11 +45,12 @@ export function useWhoViewedMe() {
   return useQuery({ queryKey: ['who-viewed-me'], queryFn: () => settingsApi.getWhoViewedMe() });
 }
 
-export function useNotifications() {
+export function useNotifications(enabled = true) {
   return useQuery({
     queryKey: ['notifications'],
     queryFn: () => settingsApi.getNotifications(),
-    refetchInterval: 30000,
+    refetchInterval: enabled ? 30000 : false,
+    enabled,
   });
 }
 

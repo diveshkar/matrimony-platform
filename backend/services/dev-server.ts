@@ -63,6 +63,7 @@ import { main as sendInterestHandler } from './interests/handlers/send-interest.
 import { main as respondInterestHandler } from './interests/handlers/respond-interest.js';
 import { main as getInterestsHandler } from './interests/handlers/get-interests.js';
 import { main as shortlistHandler } from './interests/handlers/shortlist.js';
+import { main as withdrawInterestHandler } from './interests/handlers/withdraw-interest.js';
 import { main as getConversationsHandler } from './chat/handlers/get-conversations.js';
 import { main as getMessagesHandler } from './chat/handlers/get-messages.js';
 import { main as sendMessageHandler } from './chat/handlers/send-message.js';
@@ -264,6 +265,7 @@ route('get', '/discover/search', searchProfilesHandler);
 
 route('post', '/interests', sendInterestHandler);
 route('post', '/interests/:senderId/respond', respondInterestHandler);
+route('delete', '/interests/:receiverId', withdrawInterestHandler);
 route('get', '/interests', getInterestsHandler);
 route('get', '/shortlist', shortlistHandler);
 route('post', '/shortlist', shortlistHandler);

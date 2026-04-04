@@ -7,7 +7,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/common/EmptyState';
-import { PageHeader } from '@/components/common/PageHeader';
 import { cn } from '@/lib/utils/cn';
 import { formatRelativeTime } from '@/lib/utils/format';
 import { profileDetailPath, ROUTES } from '@/lib/constants/routes';
@@ -33,16 +32,22 @@ export default function InterestsPage() {
         : [];
 
   return (
-    <div className="space-y-6 max-w-3xl">
-      <PageHeader title="Interests" description="Manage your sent and received interests" />
+    <div className="space-y-6 max-w-3xl mx-auto">
+      {/* Header */}
+      <div>
+        <h1 className="font-heading text-xl sm:text-2xl font-bold text-foreground">Interests</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">Manage your sent and received interests</p>
+      </div>
 
       {/* Tabs */}
-      <div className="flex rounded-lg bg-muted p-1">
+      <div className="flex rounded-xl bg-muted/70 p-1.5">
         <button
           onClick={() => setTab('inbox')}
           className={cn(
-            'flex-1 flex items-center justify-center gap-2 rounded-md py-2.5 text-sm font-medium transition-all',
-            tab === 'inbox' ? 'bg-white text-foreground shadow-soft-sm' : 'text-muted-foreground',
+            'flex-1 flex items-center justify-center gap-2 rounded-lg py-3 text-sm font-medium transition-all',
+            tab === 'inbox'
+              ? 'bg-white text-foreground shadow-soft'
+              : 'text-muted-foreground hover:text-foreground',
           )}
         >
           <Heart className="h-4 w-4" />
@@ -57,8 +62,10 @@ export default function InterestsPage() {
         <button
           onClick={() => setTab('outbox')}
           className={cn(
-            'flex-1 flex items-center justify-center gap-2 rounded-md py-2.5 text-sm font-medium transition-all',
-            tab === 'outbox' ? 'bg-white text-foreground shadow-soft-sm' : 'text-muted-foreground',
+            'flex-1 flex items-center justify-center gap-2 rounded-lg py-3 text-sm font-medium transition-all',
+            tab === 'outbox'
+              ? 'bg-white text-foreground shadow-soft'
+              : 'text-muted-foreground hover:text-foreground',
           )}
         >
           <Send className="h-4 w-4" />
@@ -147,14 +154,14 @@ function InterestCard({
   const profileId = isInbox ? item.senderId : item.receiverId;
 
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-      <Card className="border-0 shadow-soft">
-        <CardContent className="p-4 flex items-center gap-4">
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+      <Card className="border-0 shadow-soft-sm hover:shadow-soft transition-shadow rounded-xl">
+        <CardContent className="p-4 sm:p-5 flex items-center gap-4">
           {/* Avatar */}
           <Link to={profileDetailPath(profileId)}>
-            <div className="h-14 w-14 rounded-full overflow-hidden bg-primary-50 shrink-0">
+            <div className="h-14 w-14 rounded-2xl overflow-hidden bg-primary-50 shrink-0">
               {photo ? (
-                <img src={photo} alt={name} className="h-full w-full object-cover" />
+                <img src={photo} alt={name} loading="lazy" className="h-full w-full object-cover" />
               ) : (
                 <div className="h-full w-full flex items-center justify-center">
                   <User className="h-7 w-7 text-primary-300" />

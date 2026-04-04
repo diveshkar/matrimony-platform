@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   Menu,
-  X,
   Bell,
   MessageCircle,
   Heart,
@@ -91,11 +90,11 @@ export function Header() {
           )}
         </div>
 
-        {/* Mobile menu button */}
+        {/* Mobile actions */}
         <div className="flex md:hidden items-center gap-1">
           {isAuthenticated && <NotificationBell />}
           <Button variant="ghost" size="icon" onClick={() => setMobileOpen(!mobileOpen)}>
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            <Menu className="h-5 w-5" />
           </Button>
         </div>
       </div>
@@ -136,7 +135,10 @@ function NotificationBell() {
       </Button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-80 rounded-xl border bg-white shadow-soft-xl z-50 animate-fade-in">
+        <>
+          {/* Backdrop on mobile */}
+          <div className="fixed inset-0 bg-black/20 z-40 md:hidden" onClick={() => setOpen(false)} />
+        <div className="fixed right-2 left-2 top-16 md:absolute md:right-0 md:left-auto md:top-auto mt-2 md:w-80 rounded-2xl border bg-white shadow-soft-xl z-50 animate-fade-in">
           <div className="flex items-center justify-between px-4 py-3 border-b">
             <h3 className="font-heading font-semibold text-sm">Notifications</h3>
             {unreadCount > 0 && (
@@ -195,11 +197,12 @@ function NotificationBell() {
           <Link
             to={ROUTES.NOTIFICATIONS}
             onClick={() => setOpen(false)}
-            className="block text-center text-xs text-primary-700 font-medium py-3 border-t hover:bg-warm-50 transition-colors"
+            className="block text-center text-xs text-primary-700 font-medium py-3 border-t hover:bg-warm-50 transition-colors rounded-b-2xl"
           >
             View All Notifications
           </Link>
         </div>
+        </>
       )}
     </div>
   );

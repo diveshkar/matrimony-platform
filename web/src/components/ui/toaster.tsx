@@ -73,31 +73,31 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
 
       {/* Toast container */}
-      <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 max-w-sm w-full pointer-events-none">
+      <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 z-[100] flex flex-col gap-2 sm:max-w-xs pointer-events-none">
         <AnimatePresence>
           {toasts.map((t) => {
             const Icon = icons[t.type];
             return (
               <motion.div
                 key={t.id}
-                initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                initial={{ opacity: 0, y: 15, scale: 0.97 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, x: 100, scale: 0.95 }}
+                exit={{ opacity: 0, x: 80, scale: 0.97 }}
                 className={cn(
-                  'pointer-events-auto rounded-xl border px-4 py-3 shadow-soft-lg flex items-start gap-3',
+                  'pointer-events-auto rounded-lg border px-3 py-2.5 shadow-soft-lg flex items-center gap-2.5',
                   styles[t.type],
                 )}
               >
-                <Icon className={cn('h-5 w-5 shrink-0 mt-0.5', iconStyles[t.type])} />
+                <Icon className={cn('h-4 w-4 shrink-0', iconStyles[t.type])} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold">{t.title}</p>
-                  {t.description && <p className="text-xs mt-0.5 opacity-80">{t.description}</p>}
+                  <p className="text-xs font-semibold leading-tight">{t.title}</p>
+                  {t.description && <p className="text-[10px] mt-0.5 opacity-70 leading-tight">{t.description}</p>}
                 </div>
                 <button
                   onClick={() => removeToast(t.id)}
-                  className="shrink-0 opacity-50 hover:opacity-100 transition-opacity"
+                  className="shrink-0 opacity-40 hover:opacity-100 transition-opacity"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-3.5 w-3.5" />
                 </button>
               </motion.div>
             );

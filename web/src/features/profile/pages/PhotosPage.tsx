@@ -16,7 +16,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { PageHeader } from '@/components/common/PageHeader';
 import { EmptyState } from '@/components/common/EmptyState';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { ImageCropDialog } from '@/components/common/ImageCropDialog';
@@ -109,7 +108,7 @@ export default function PhotosPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 max-w-3xl">
+      <div className="space-y-6 max-w-3xl mx-auto">
         <Skeleton className="h-8 w-48" />
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           {[...Array(3)].map((_, i) => (
@@ -121,18 +120,20 @@ export default function PhotosPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-3xl">
-      <Button variant="ghost" size="sm" asChild className="mb-2">
-        <Link to={ROUTES.MY_PROFILE}>
-          <ArrowLeft className="mr-1.5 h-4 w-4" />
-          Back to Profile
-        </Link>
-      </Button>
-
-      <PageHeader
-        title="My Photos"
-        description={`${photos.length} of ${CONFIG.MAX_PHOTOS} photos uploaded`}
-      />
+    <div className="space-y-6 max-w-3xl mx-auto">
+      <div className="flex items-center gap-3">
+        <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" asChild>
+          <Link to={ROUTES.MY_PROFILE}>
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+        </Button>
+        <div>
+          <h1 className="font-heading text-xl font-bold text-foreground">My Photos</h1>
+          <p className="text-xs text-muted-foreground">
+            {photos.length} of {CONFIG.MAX_PHOTOS} photos uploaded
+          </p>
+        </div>
+      </div>
 
       {/* Upload area */}
       {canUpload && (
@@ -154,10 +155,10 @@ export default function PhotosPage() {
             }
           }}
           className={cn(
-            'relative cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition-all focus-ring',
+            'relative cursor-pointer rounded-2xl border-2 border-dashed p-10 text-center transition-all focus-ring',
             dragActive
-              ? 'border-primary-700 bg-primary-50'
-              : 'border-border hover:border-primary-300 hover:bg-warm-50',
+              ? 'border-primary-700 bg-primary-50 scale-[1.01]'
+              : 'border-primary-200 hover:border-primary-400 hover:bg-warm-50 bg-warm-50/50',
           )}
         >
           <input
@@ -174,12 +175,12 @@ export default function PhotosPage() {
               <p className="text-sm text-muted-foreground">Uploading...</p>
             </div>
           ) : (
-            <div className="flex flex-col items-center gap-3">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary-50">
-                <ImagePlus className="h-7 w-7 text-primary-700" />
+            <div className="flex flex-col items-center gap-4">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-100">
+                <ImagePlus className="h-8 w-8 text-primary-600" />
               </div>
               <div>
-                <p className="text-sm font-medium text-foreground">
+                <p className="text-sm font-semibold text-foreground">
                   Drop a photo here or click to browse
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
@@ -207,7 +208,7 @@ export default function PhotosPage() {
           description="Upload your first photo to get noticed by potential matches"
         />
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
           <AnimatePresence>
             {photos.map((photo) => (
               <motion.div
@@ -217,7 +218,7 @@ export default function PhotosPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
               >
-                <Card className="overflow-hidden border-0 shadow-soft group relative">
+                <Card className="overflow-hidden border-0 shadow-soft group relative rounded-2xl">
                   <div className="aspect-square relative">
                     <img
                       src={photo.url}

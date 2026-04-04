@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { PageHeader } from '@/components/common/PageHeader';
 import { ROUTES } from '@/lib/constants/routes';
 import { usePrivacySettings, useUpdatePrivacy } from '../hooks/useSettings';
 
@@ -15,7 +14,7 @@ export default function PrivacySettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 max-w-2xl">
+      <div className="space-y-6 max-w-2xl mx-auto">
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-64 rounded-xl" />
       </div>
@@ -23,15 +22,18 @@ export default function PrivacySettingsPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      <Button variant="ghost" size="sm" asChild className="mb-2">
-        <Link to={ROUTES.SETTINGS}>
-          <ArrowLeft className="mr-1.5 h-4 w-4" />
-          Back to Settings
-        </Link>
-      </Button>
-
-      <PageHeader title="Privacy Settings" description="Control who sees your information" />
+    <div className="space-y-6 max-w-2xl mx-auto">
+      <div className="flex items-center gap-3">
+        <Button variant="outline" size="icon" className="h-9 w-9 shrink-0 rounded-xl" asChild>
+          <Link to={ROUTES.SETTINGS}>
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+        </Button>
+        <div>
+          <h1 className="font-heading text-xl font-bold text-foreground">Privacy Settings</h1>
+          <p className="text-xs text-muted-foreground">Control who sees your information</p>
+        </div>
+      </div>
 
       <Card>
         <CardHeader>

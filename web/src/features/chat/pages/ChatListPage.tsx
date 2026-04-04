@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/common/EmptyState';
-import { PageHeader } from '@/components/common/PageHeader';
 import { formatRelativeTime } from '@/lib/utils/format';
 import { chatDetailPath, ROUTES } from '@/lib/constants/routes';
 import { useConversations } from '../hooks/useChat';
@@ -16,7 +15,7 @@ export default function ChatListPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 max-w-2xl">
+      <div className="space-y-6 max-w-2xl mx-auto">
         <Skeleton className="h-8 w-48" />
         {[...Array(4)].map((_, i) => (
           <Skeleton key={i} className="h-20 rounded-xl" />
@@ -26,8 +25,15 @@ export default function ChatListPage() {
   }
 
   return (
-    <div className="space-y-4 max-w-2xl">
-      <PageHeader title="Messages" description="Your conversations" />
+    <div className="space-y-5 max-w-2xl mx-auto">
+      <div>
+        <h1 className="font-heading text-xl sm:text-2xl font-bold text-foreground">Messages</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">
+          {conversations.length > 0
+            ? `${conversations.length} conversation${conversations.length !== 1 ? 's' : ''}`
+            : 'Your conversations'}
+        </p>
+      </div>
 
       {isError && (
         <EmptyState
@@ -57,7 +63,7 @@ export default function ChatListPage() {
             <Link
               key={conv.conversationId}
               to={chatDetailPath(conv.conversationId)}
-              className="flex items-center gap-4 p-4 rounded-xl border bg-white hover:bg-warm-50 hover:shadow-soft transition-all shadow-soft-sm"
+              className="flex items-center gap-4 p-4 rounded-2xl bg-white hover:bg-warm-50 hover:shadow-soft transition-all shadow-soft-sm"
             >
               <div className="h-12 w-12 rounded-full overflow-hidden bg-primary-50 shrink-0">
                 {conv.otherUserPhoto ? (

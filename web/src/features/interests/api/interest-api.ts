@@ -35,6 +35,11 @@ export const interestApi = {
       .post<ApiResponse<{ status: string }>>(`/interests/${senderId}/respond`, { action })
       .then((r) => r.data),
 
+  withdraw: (receiverId: string) =>
+    apiClient
+      .delete<ApiResponse<{ status: string }>>(`/interests/${receiverId}`)
+      .then((r) => r.data),
+
   getInbox: () =>
     apiClient
       .get<ApiResponse<{ items: InterestItem[] }>>('/interests?type=inbox')

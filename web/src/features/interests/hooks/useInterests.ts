@@ -33,6 +33,22 @@ export function useSendInterest() {
   });
 }
 
+export function useWithdrawInterest() {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  return useMutation({
+    mutationFn: (receiverId: string) => interestApi.withdraw(receiverId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['interests'] });
+      toast.info('Interest withdrawn');
+    },
+    onError: () => {
+      toast.error('Failed to withdraw interest');
+    },
+  });
+}
+
 export function useRespondInterest() {
   const queryClient = useQueryClient();
   const toast = useToast();

@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/common/EmptyState';
-import { PageHeader } from '@/components/common/PageHeader';
 import { ROUTES } from '@/lib/constants/routes';
 import { formatRelativeTime } from '@/lib/utils/format';
 import { useBlockedUsers, useUnblockUser } from '../hooks/useSettings';
@@ -16,7 +15,7 @@ export default function BlockedUsersPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 max-w-2xl">
+      <div className="space-y-6 max-w-2xl mx-auto">
         <Skeleton className="h-8 w-48" />
         {[...Array(3)].map((_, i) => (
           <Skeleton key={i} className="h-16 rounded-xl" />
@@ -26,15 +25,18 @@ export default function BlockedUsersPage() {
   }
 
   return (
-    <div className="space-y-4 max-w-2xl">
-      <Button variant="ghost" size="sm" asChild className="mb-2">
-        <Link to={ROUTES.SETTINGS}>
-          <ArrowLeft className="mr-1.5 h-4 w-4" />
-          Back to Settings
-        </Link>
-      </Button>
-
-      <PageHeader title="Blocked Users" description={`${blocked.length} blocked`} />
+    <div className="space-y-4 max-w-2xl mx-auto">
+      <div className="flex items-center gap-3">
+        <Button variant="outline" size="icon" className="h-9 w-9 shrink-0 rounded-xl" asChild>
+          <Link to={ROUTES.SETTINGS}>
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+        </Button>
+        <div>
+          <h1 className="font-heading text-xl font-bold text-foreground">Blocked Users</h1>
+          <p className="text-xs text-muted-foreground">{blocked.length} blocked</p>
+        </div>
+      </div>
 
       {blocked.length === 0 ? (
         <EmptyState
