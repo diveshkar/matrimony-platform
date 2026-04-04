@@ -38,7 +38,8 @@ export default function EditProfilePage() {
 
   const handleSave = async () => {
     // Remove DynamoDB keys from update
-    const { PK, SK, userId, schemaVersion, createdAt, updatedAt, profileCompletion, ...updates } = form;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { PK: _pk, SK: _sk, userId: _uid, schemaVersion: _sv, createdAt: _ca, updatedAt: _ua, profileCompletion: _pc, ...updates } = form;
     await updateProfile.mutateAsync(updates);
     setHasChanges(false);
   };

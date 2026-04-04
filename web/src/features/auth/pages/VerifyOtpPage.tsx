@@ -69,6 +69,7 @@ export default function VerifyOtpPage() {
         submitOtp(newOtp.join(''));
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [otp],
   );
 
@@ -81,16 +82,20 @@ export default function VerifyOtpPage() {
     [otp],
   );
 
-  const handlePaste = useCallback((e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, CONFIG.OTP_LENGTH);
-    if (pasted.length === CONFIG.OTP_LENGTH) {
-      const digits = pasted.split('');
-      setOtp(digits);
-      inputRefs.current[CONFIG.OTP_LENGTH - 1]?.focus();
-      submitOtp(pasted);
-    }
-  }, []);
+  const handlePaste = useCallback(
+    (e: React.ClipboardEvent) => {
+      e.preventDefault();
+      const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, CONFIG.OTP_LENGTH);
+      if (pasted.length === CONFIG.OTP_LENGTH) {
+        const digits = pasted.split('');
+        setOtp(digits);
+        inputRefs.current[CONFIG.OTP_LENGTH - 1]?.focus();
+        submitOtp(pasted);
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
 
   const submitOtp = async (otpString: string) => {
     if (!state?.identifier) return;
