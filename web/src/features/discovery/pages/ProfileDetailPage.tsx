@@ -1,6 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
 import {
   ArrowLeft,
   MapPin,
@@ -41,6 +41,7 @@ function formatEnum(str?: string): string {
 
 export default function ProfileDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const queryClient = useQueryClient();
 
   const {
     data: response,
@@ -51,6 +52,12 @@ export default function ProfileDetailPage() {
     queryFn: () => profileApi.getProfile(id!),
     enabled: !!id,
   });
+
+  useEffect(() => {
+    if (response?.success) {
+      queryClient.invalidateQueries({ queryKey: ['usage'] });
+    }
+  }, [response?.success, queryClient]);
 
   if (isLoading) {
     return (

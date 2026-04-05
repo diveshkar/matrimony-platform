@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Search, Sparkles, Heart, Users, ArrowRight } from 'lucide-react';
+import { Search, Sparkles, Heart, Users, ArrowRight, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UsageBar } from '@/features/subscription/components/UsageBar';
@@ -36,17 +36,20 @@ export default function DiscoverPage() {
               Profiles recommended based on your preferences
             </p>
           </div>
-          <Button
-            variant="secondary"
-            size="sm"
-            className="self-start sm:self-center gap-2"
-            asChild
-          >
-            <Link to={ROUTES.SEARCH}>
-              <Search className="h-4 w-4" />
-              Search Profiles
-            </Link>
-          </Button>
+          <div className="flex gap-2 self-start sm:self-center">
+            <Button variant="secondary" size="sm" className="gap-2" asChild>
+              <Link to={ROUTES.RECENTLY_JOINED}>
+                <Clock className="h-4 w-4" />
+                New Profiles
+              </Link>
+            </Button>
+            <Button variant="secondary" size="sm" className="gap-2" asChild>
+              <Link to={ROUTES.SEARCH}>
+                <Search className="h-4 w-4" />
+                Search
+              </Link>
+            </Button>
+          </div>
         </div>
       </motion.div>
 

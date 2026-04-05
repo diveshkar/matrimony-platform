@@ -25,10 +25,12 @@ export function useSendInterest() {
       interestApi.send(receiverId, message),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['interests'] });
+      queryClient.invalidateQueries({ queryKey: ['usage'] });
       toast.success('Interest sent!', 'They will be notified');
     },
-    onError: () => {
-      toast.error('Failed to send interest', 'Please try again');
+    onError: (err) => {
+      const msg = err instanceof Error ? err.message : 'Please try again';
+      toast.error('Failed to send interest', msg);
     },
   });
 }

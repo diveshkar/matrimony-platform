@@ -14,10 +14,12 @@ export const ROUTES = {
   DASHBOARD: '/dashboard',
   MY_PROFILE: '/my-profile',
   EDIT_PROFILE: '/my-profile/edit',
+  EDIT_PREFERENCES: '/my-profile/preferences',
   MY_PHOTOS: '/my-profile/photos',
   PROFILE_PREVIEW: '/my-profile/preview',
 
   DISCOVER: '/discover',
+  RECENTLY_JOINED: '/discover/new',
   SEARCH: '/search',
   PROFILE_DETAIL: '/profiles/:id',
 

@@ -10,13 +10,37 @@ import type { DiscoveryProfile } from '../api/discovery-api';
 interface ProfileCardProps {
   profile: DiscoveryProfile;
   className?: string;
+  compact?: boolean;
 }
 
 function formatEnum(str: string): string {
   return str.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-export function ProfileCard({ profile, className }: ProfileCardProps) {
+export function ProfileCard({ profile, className, compact }: ProfileCardProps) {
+  if (compact) {
+    return (
+      <Link to={profileDetailPath(profile.userId)}>
+        <Card className={cn('overflow-hidden border-0 shadow-soft hover-lift cursor-pointer group', className)}>
+          <div className="aspect-[3/4] relative bg-muted overflow-hidden">
+            {profile.primaryPhotoUrl ? (
+              <img src={profile.primaryPhotoUrl} alt={profile.name} loading="lazy" className="h-full w-full object-cover" />
+            ) : (
+              <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-primary-100 to-warm-100">
+                <User className="h-10 w-10 text-primary-200" />
+              </div>
+            )}
+            <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/60 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-2">
+              <h3 className="font-heading font-bold text-white text-xs truncate">{profile.name}, {profile.age}</h3>
+              <span className="text-[10px] text-white/70 truncate block">{profile.country}</span>
+            </div>
+          </div>
+        </Card>
+      </Link>
+    );
+  }
+
   return (
     <Link to={profileDetailPath(profile.userId)}>
       <Card

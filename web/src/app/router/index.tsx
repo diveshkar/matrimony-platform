@@ -24,6 +24,7 @@ const VerifyOtpPage = lazy(() => import('@/features/auth/pages/VerifyOtpPage'));
 const OnboardingPage = lazy(() => import('@/features/profile/pages/OnboardingPage'));
 const MyProfilePage = lazy(() => import('@/features/profile/pages/MyProfilePage'));
 const EditProfilePage = lazy(() => import('@/features/profile/pages/EditProfilePage'));
+const EditPreferencesPage = lazy(() => import('@/features/profile/pages/EditPreferencesPage'));
 const DashboardPage = lazy(() => import('@/features/home/pages/DashboardPage'));
 
 // Phase 1D — Photos
@@ -32,6 +33,7 @@ const PhotosPage = lazy(() => import('@/features/profile/pages/PhotosPage'));
 // Phase 1E — Discovery
 const DiscoverPage = lazy(() => import('@/features/discovery/pages/DiscoverPage'));
 const SearchPage = lazy(() => import('@/features/discovery/pages/SearchPage'));
+const RecentlyJoinedPage = lazy(() => import('@/features/discovery/pages/RecentlyJoinedPage'));
 const ProfileDetailPage = lazy(() => import('@/features/discovery/pages/ProfileDetailPage'));
 
 // Phase 1F — Interests & Shortlist
@@ -100,8 +102,10 @@ export function AppRouter() {
           <Route path={ROUTES.DASHBOARD} element={<DashboardPage />} />
           <Route path={ROUTES.MY_PROFILE} element={<MyProfilePage />} />
           <Route path={ROUTES.EDIT_PROFILE} element={<EditProfilePage />} />
+          <Route path={ROUTES.EDIT_PREFERENCES} element={<EditPreferencesPage />} />
           <Route path={ROUTES.MY_PHOTOS} element={<PhotosPage />} />
           <Route path={ROUTES.DISCOVER} element={<DiscoverPage />} />
+          <Route path={ROUTES.RECENTLY_JOINED} element={<RecentlyJoinedPage />} />
           <Route path={ROUTES.SEARCH} element={<SearchPage />} />
           <Route path={ROUTES.PROFILE_DETAIL} element={<ProfileDetailPage />} />
           <Route path={ROUTES.INTERESTS} element={<InterestsPage />} />

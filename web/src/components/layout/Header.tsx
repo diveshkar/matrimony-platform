@@ -8,8 +8,6 @@ import {
   User,
   Crown,
   Settings,
-  Shield,
-  UserX,
   Eye,
   Camera,
   LogOut,
@@ -215,9 +213,8 @@ const settingsMenuItems = [
   { label: 'My Profile', href: ROUTES.MY_PROFILE, icon: User },
   { label: 'My Photos', href: ROUTES.MY_PHOTOS, icon: Camera },
   { label: 'Who Viewed Me', href: ROUTES.WHO_VIEWED, icon: Eye },
-  { label: 'Privacy Settings', href: ROUTES.PRIVACY_SETTINGS, icon: Shield },
-  { label: 'Blocked Users', href: ROUTES.BLOCKED_USERS, icon: UserX },
   { label: 'Manage Plan', href: ROUTES.PLANS, icon: Crown },
+  { label: 'All Settings', href: ROUTES.SETTINGS, icon: Settings },
 ];
 
 function SettingsDropdown() {

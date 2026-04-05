@@ -23,7 +23,7 @@ export function useUsage() {
   return useQuery({
     queryKey: ['usage'],
     queryFn: () => subscriptionApi.getUsage(),
-    staleTime: 1000 * 30,
+    staleTime: 1000 * 5,
     refetchOnWindowFocus: true,
     enabled: isAuthenticated,
   });

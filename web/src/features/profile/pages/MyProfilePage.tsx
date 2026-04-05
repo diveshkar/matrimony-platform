@@ -274,7 +274,7 @@ export default function MyProfilePage() {
 
       {/* Partner Preferences */}
       {preferences && (
-        <SectionCard icon={Briefcase} title="Partner Preferences">
+        <SectionCard icon={Briefcase} title="Partner Preferences" editHref={ROUTES.EDIT_PREFERENCES}>
           <div className="flex flex-wrap gap-2">
             {(() => {
               const p = preferences as Record<string, unknown>;
@@ -318,10 +318,12 @@ export default function MyProfilePage() {
 function SectionCard({
   icon: Icon,
   title,
+  editHref,
   children,
 }: {
   icon: typeof Heart;
   title: string;
+  editHref?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -332,6 +334,11 @@ function SectionCard({
             <Icon className="h-3.5 w-3.5 text-primary-700" />
           </div>
           {title}
+          {editHref && (
+            <Link to={editHref} className="ml-auto text-xs text-primary-700 hover:underline font-medium">
+              Edit
+            </Link>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2 pt-0">{children}</CardContent>

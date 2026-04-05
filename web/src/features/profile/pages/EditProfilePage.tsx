@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ArrowLeft, Save, Loader2, User, Heart, GraduationCap, MapPin, Users, MessageCircle, Pen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMyProfile, useUpdateProfile } from '../hooks/useProfile';
+import { useToast } from '@/components/ui/toaster';
 import { ROUTES } from '@/lib/constants/routes';
 import {
   RELIGION_OPTIONS,
@@ -29,8 +31,9 @@ const selectClass =
   'flex h-11 w-full rounded-xl border border-input bg-white px-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring hover:border-primary-300 transition-colors';
 
 export default function EditProfilePage() {
-  const { data: response, isLoading } = useMyProfile();
+  const { data: response, isLoading, isError } = useMyProfile();
   const updateProfile = useUpdateProfile();
+  const toast = useToast();
   const [form, setForm] = useState<Record<string, unknown>>({});
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -47,23 +50,39 @@ export default function EditProfilePage() {
   };
 
   const handleSave = async () => {
-    const updates = { ...form };
-    delete updates.PK;
-    delete updates.SK;
-    delete updates.userId;
-    delete updates.schemaVersion;
-    delete updates.createdAt;
-    delete updates.updatedAt;
-    delete updates.profileCompletion;
-    await updateProfile.mutateAsync(updates);
-    setHasChanges(false);
+    try {
+      const updates = { ...form };
+      delete updates.PK;
+      delete updates.SK;
+      delete updates.userId;
+      delete updates.schemaVersion;
+      delete updates.createdAt;
+      delete updates.updatedAt;
+      delete updates.profileCompletion;
+      await updateProfile.mutateAsync(updates);
+      setHasChanges(false);
+      toast.success('Profile saved', 'Your changes have been saved successfully');
+    } catch {
+      toast.error('Save failed', 'Could not save your changes. Please try again.');
+    }
   };
 
   if (isLoading) {
     return (
-      <div className="space-y-6 max-w-2xl mx-auto">
+      <div className="space-y-6 max-w-xl mx-auto">
         <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-64 rounded-xl" />
+        <Skeleton className="h-48 rounded-2xl" />
+        <Skeleton className="h-48 rounded-2xl" />
+        <Skeleton className="h-48 rounded-2xl" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="text-center py-16 max-w-xl mx-auto">
+        <p className="text-muted-foreground">Could not load your profile.</p>
+        <Button className="mt-4" onClick={() => window.location.reload()}>Retry</Button>
       </div>
     );
   }
@@ -72,9 +91,10 @@ export default function EditProfilePage() {
   const denomOptions = form.religion ? DENOMINATION_OPTIONS[form.religion as string] || [] : [];
 
   return (
-    <div className="space-y-6 max-w-2xl pb-20">
-      <div className="flex items-center gap-3">
-        <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" asChild>
+    <div className="max-w-xl mx-auto pb-24">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-6">
+        <Button variant="outline" size="icon" className="h-9 w-9 shrink-0 rounded-xl" asChild>
           <Link to={ROUTES.MY_PROFILE}>
             <ArrowLeft className="h-4 w-4" />
           </Link>
@@ -82,12 +102,198 @@ export default function EditProfilePage() {
         <h1 className="font-heading text-xl font-bold text-foreground">Edit Profile</h1>
       </div>
 
+      <div className="space-y-5">
+        {/* Basic Info */}
+        <SectionCard icon={User} title="Basic Information" delay={0}>
+          <Field label="Name">
+            <Input value={(form.name as string) || ''} onChange={(e) => update('name', e.target.value)} className="h-11 rounded-xl" />
+          </Field>
+          <Field label="Date of Birth">
+            <Input type="date" value={(form.dateOfBirth as string) || ''} onChange={(e) => update('dateOfBirth', e.target.value)} className="h-11 rounded-xl" />
+          </Field>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Gender">
+              <select value={(form.gender as string) || ''} onChange={(e) => update('gender', e.target.value)} className={selectClass}>
+                {GENDER_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </Field>
+            <Field label="Height">
+              <select value={String(form.height || '')} onChange={(e) => update('height', Number(e.target.value))} className={selectClass}>
+                <option value="">Select</option>
+                {HEIGHT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </Field>
+          </div>
+          <Field label="Marital Status">
+            <select value={(form.maritalStatus as string) || ''} onChange={(e) => update('maritalStatus', e.target.value)} className={selectClass}>
+              {MARITAL_STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </Field>
+        </SectionCard>
+
+        {/* Contact Info */}
+        <SectionCard icon={MessageCircle} title="Contact Information" delay={0.05}>
+          <p className="text-xs text-muted-foreground -mt-1 mb-2">Visible only to Gold and Platinum members.</p>
+          <Field label="WhatsApp Number">
+            <Input value={(form.whatsappNumber as string) || ''} onChange={(e) => update('whatsappNumber', e.target.value)} placeholder="+447911123456" className="h-11 rounded-xl" />
+          </Field>
+          <Field label="Personal Email">
+            <Input type="email" value={(form.personalEmail as string) || ''} onChange={(e) => update('personalEmail', e.target.value)} placeholder="your.email@example.com" className="h-11 rounded-xl" />
+          </Field>
+        </SectionCard>
+
+        {/* Cultural */}
+        <SectionCard icon={Heart} title="Cultural Background" delay={0.1}>
+          <Field label="Religion">
+            <select value={(form.religion as string) || ''} onChange={(e) => update('religion', e.target.value)} className={selectClass}>
+              {RELIGION_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </Field>
+          {casteOptions.length > 0 && (
+            <Field label="Caste">
+              <select value={(form.caste as string) || ''} onChange={(e) => update('caste', e.target.value)} className={selectClass}>
+                <option value="">Select</option>
+                {casteOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </Field>
+          )}
+          {denomOptions.length > 0 && (
+            <Field label="Denomination">
+              <select value={(form.denomination as string) || ''} onChange={(e) => update('denomination', e.target.value)} className={selectClass}>
+                <option value="">Select</option>
+                {denomOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </Field>
+          )}
+          <Field label="Mother Tongue">
+            <select value={(form.motherTongue as string) || ''} onChange={(e) => update('motherTongue', e.target.value)} className={selectClass}>
+              {MOTHER_TONGUE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </Field>
+          <Field label="Gothram">
+            <Input value={(form.gothram as string) || ''} onChange={(e) => update('gothram', e.target.value)} placeholder="Optional" className="h-11 rounded-xl" />
+          </Field>
+        </SectionCard>
+
+        {/* Education & Career */}
+        <SectionCard icon={GraduationCap} title="Education & Career" delay={0.15}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Education">
+              <select value={(form.education as string) || ''} onChange={(e) => update('education', e.target.value)} className={selectClass}>
+                <option value="">Select</option>
+                {EDUCATION_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </Field>
+            <Field label="Field of Study">
+              <select value={(form.educationField as string) || ''} onChange={(e) => update('educationField', e.target.value)} className={selectClass}>
+                <option value="">Select</option>
+                {EDUCATION_FIELD_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </Field>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Occupation">
+              <select value={(form.occupation as string) || ''} onChange={(e) => update('occupation', e.target.value)} className={selectClass}>
+                <option value="">Select</option>
+                {OCCUPATION_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </Field>
+            <Field label="Income">
+              <select value={(form.incomeRange as string) || ''} onChange={(e) => update('incomeRange', e.target.value)} className={selectClass}>
+                <option value="">Prefer not to say</option>
+                {INCOME_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </Field>
+          </div>
+          <Field label="Employer">
+            <Input value={(form.employer as string) || ''} onChange={(e) => update('employer', e.target.value)} placeholder="Company name" className="h-11 rounded-xl" />
+          </Field>
+        </SectionCard>
+
+        {/* Location */}
+        <SectionCard icon={MapPin} title="Location" delay={0.2}>
+          <Field label="Country">
+            <select value={(form.country as string) || ''} onChange={(e) => update('country', e.target.value)} className={selectClass}>
+              <option value="">Select</option>
+              {COUNTRY_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </Field>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="State / Province">
+              <Input value={(form.state as string) || ''} onChange={(e) => update('state', e.target.value)} className="h-11 rounded-xl" />
+            </Field>
+            <Field label="City">
+              <Input value={(form.city as string) || ''} onChange={(e) => update('city', e.target.value)} className="h-11 rounded-xl" />
+            </Field>
+          </div>
+        </SectionCard>
+
+        {/* Family */}
+        <SectionCard icon={Users} title="Family" delay={0.25}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Father's Occupation">
+              <Input value={(form.fatherOccupation as string) || ''} onChange={(e) => update('fatherOccupation', e.target.value)} className="h-11 rounded-xl" />
+            </Field>
+            <Field label="Mother's Occupation">
+              <Input value={(form.motherOccupation as string) || ''} onChange={(e) => update('motherOccupation', e.target.value)} className="h-11 rounded-xl" />
+            </Field>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Brothers">
+              <Input type="number" min={0} max={15} value={(form.brothersCount as number) ?? ''} onChange={(e) => update('brothersCount', Number(e.target.value))} className="h-11 rounded-xl" />
+            </Field>
+            <Field label="Sisters">
+              <Input type="number" min={0} max={15} value={(form.sistersCount as number) ?? ''} onChange={(e) => update('sistersCount', Number(e.target.value))} className="h-11 rounded-xl" />
+            </Field>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Family Type">
+              <select value={(form.familyType as string) || ''} onChange={(e) => update('familyType', e.target.value)} className={selectClass}>
+                <option value="">Select</option>
+                {FAMILY_TYPE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </Field>
+            <Field label="Family Status">
+              <select value={(form.familyStatus as string) || ''} onChange={(e) => update('familyStatus', e.target.value)} className={selectClass}>
+                <option value="">Select</option>
+                {FAMILY_STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </Field>
+          </div>
+          <Field label="Family Values">
+            <select value={(form.familyValues as string) || ''} onChange={(e) => update('familyValues', e.target.value)} className={selectClass}>
+              <option value="">Select</option>
+              {FAMILY_VALUES_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </Field>
+        </SectionCard>
+
+        {/* About Me */}
+        <SectionCard icon={Pen} title="About Me" delay={0.3}>
+          <textarea
+            value={(form.aboutMe as string) || ''}
+            onChange={(e) => update('aboutMe', e.target.value)}
+            rows={5}
+            maxLength={2000}
+            placeholder="Tell others about yourself, your interests, and what you're looking for..."
+            className="flex w-full rounded-xl border border-input bg-white px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring hover:border-primary-300 transition-colors"
+          />
+          <p className="mt-1 text-xs text-muted-foreground text-right">
+            {((form.aboutMe as string) || '').length} / 2000
+          </p>
+        </SectionCard>
+      </div>
+
       {/* Sticky save bar */}
       {hasChanges && (
-        <div className="fixed bottom-0 left-0 right-0 z-30 border-t bg-white/95 backdrop-blur-md shadow-soft-xl px-4 py-3">
-          <div className="max-w-2xl mx-auto flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">You have unsaved changes</p>
-            <Button onClick={handleSave} disabled={updateProfile.isPending}>
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="fixed bottom-0 left-0 right-0 z-30 border-t bg-white/95 backdrop-blur-md shadow-soft-xl px-4 py-3"
+        >
+          <div className="max-w-xl mx-auto flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">Unsaved changes</p>
+            <Button onClick={handleSave} disabled={updateProfile.isPending} className="rounded-xl">
               {updateProfile.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -101,382 +307,27 @@ export default function EditProfilePage() {
               )}
             </Button>
           </div>
-        </div>
+        </motion.div>
       )}
-
-      {/* Basic Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Basic Information</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Field label="Name">
-            <Input
-              value={(form.name as string) || ''}
-              onChange={(e) => update('name', e.target.value)}
-            />
-          </Field>
-          <Field label="Date of Birth">
-            <Input
-              type="date"
-              value={(form.dateOfBirth as string) || ''}
-              onChange={(e) => update('dateOfBirth', e.target.value)}
-            />
-          </Field>
-          <Field label="Gender">
-            <select
-              value={(form.gender as string) || ''}
-              onChange={(e) => update('gender', e.target.value)}
-              className={selectClass}
-            >
-              {GENDER_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Height">
-            <select
-              value={String(form.height || '')}
-              onChange={(e) => update('height', Number(e.target.value))}
-              className={selectClass}
-            >
-              <option value="">Select</option>
-              {HEIGHT_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Marital Status">
-            <select
-              value={(form.maritalStatus as string) || ''}
-              onChange={(e) => update('maritalStatus', e.target.value)}
-              className={selectClass}
-            >
-              {MARITAL_STATUS_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </Field>
-        </CardContent>
-      </Card>
-
-      {/* Contact Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Contact Information</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-xs text-muted-foreground">
-            These are visible only to Gold and Platinum members.
-          </p>
-          <Field label="WhatsApp Number">
-            <Input
-              value={(form.whatsappNumber as string) || ''}
-              onChange={(e) => update('whatsappNumber', e.target.value)}
-              placeholder="+447911123456"
-            />
-          </Field>
-          <Field label="Personal Email">
-            <Input
-              type="email"
-              value={(form.personalEmail as string) || ''}
-              onChange={(e) => update('personalEmail', e.target.value)}
-              placeholder="your.email@example.com"
-            />
-          </Field>
-        </CardContent>
-      </Card>
-
-      {/* Cultural */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Cultural Background</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Field label="Religion">
-            <select
-              value={(form.religion as string) || ''}
-              onChange={(e) => update('religion', e.target.value)}
-              className={selectClass}
-            >
-              {RELIGION_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </Field>
-          {casteOptions.length > 0 && (
-            <Field label="Caste">
-              <select
-                value={(form.caste as string) || ''}
-                onChange={(e) => update('caste', e.target.value)}
-                className={selectClass}
-              >
-                <option value="">Select</option>
-                {casteOptions.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
-            </Field>
-          )}
-          {denomOptions.length > 0 && (
-            <Field label="Denomination">
-              <select
-                value={(form.denomination as string) || ''}
-                onChange={(e) => update('denomination', e.target.value)}
-                className={selectClass}
-              >
-                <option value="">Select</option>
-                {denomOptions.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
-            </Field>
-          )}
-          <Field label="Mother Tongue">
-            <select
-              value={(form.motherTongue as string) || ''}
-              onChange={(e) => update('motherTongue', e.target.value)}
-              className={selectClass}
-            >
-              {MOTHER_TONGUE_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Gothram">
-            <Input
-              value={(form.gothram as string) || ''}
-              onChange={(e) => update('gothram', e.target.value)}
-              placeholder="Optional"
-            />
-          </Field>
-        </CardContent>
-      </Card>
-
-      {/* Education & Career */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Education & Career</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Field label="Education">
-            <select
-              value={(form.education as string) || ''}
-              onChange={(e) => update('education', e.target.value)}
-              className={selectClass}
-            >
-              <option value="">Select</option>
-              {EDUCATION_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Field of Study">
-            <select
-              value={(form.educationField as string) || ''}
-              onChange={(e) => update('educationField', e.target.value)}
-              className={selectClass}
-            >
-              <option value="">Select</option>
-              {EDUCATION_FIELD_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Occupation">
-            <select
-              value={(form.occupation as string) || ''}
-              onChange={(e) => update('occupation', e.target.value)}
-              className={selectClass}
-            >
-              <option value="">Select</option>
-              {OCCUPATION_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Employer">
-            <Input
-              value={(form.employer as string) || ''}
-              onChange={(e) => update('employer', e.target.value)}
-              placeholder="Company name"
-            />
-          </Field>
-          <Field label="Income">
-            <select
-              value={(form.incomeRange as string) || ''}
-              onChange={(e) => update('incomeRange', e.target.value)}
-              className={selectClass}
-            >
-              <option value="">Prefer not to say</option>
-              {INCOME_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </Field>
-        </CardContent>
-      </Card>
-
-      {/* Location */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Location</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Field label="Country">
-            <select
-              value={(form.country as string) || ''}
-              onChange={(e) => update('country', e.target.value)}
-              className={selectClass}
-            >
-              <option value="">Select</option>
-              {COUNTRY_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="State / Province">
-            <Input
-              value={(form.state as string) || ''}
-              onChange={(e) => update('state', e.target.value)}
-            />
-          </Field>
-          <Field label="City">
-            <Input
-              value={(form.city as string) || ''}
-              onChange={(e) => update('city', e.target.value)}
-            />
-          </Field>
-        </CardContent>
-      </Card>
-
-      {/* Family */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Family</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Field label="Father's Occupation">
-            <Input
-              value={(form.fatherOccupation as string) || ''}
-              onChange={(e) => update('fatherOccupation', e.target.value)}
-            />
-          </Field>
-          <Field label="Mother's Occupation">
-            <Input
-              value={(form.motherOccupation as string) || ''}
-              onChange={(e) => update('motherOccupation', e.target.value)}
-            />
-          </Field>
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Brothers">
-              <Input
-                type="number"
-                min={0}
-                max={15}
-                value={(form.brothersCount as number) ?? ''}
-                onChange={(e) => update('brothersCount', Number(e.target.value))}
-              />
-            </Field>
-            <Field label="Sisters">
-              <Input
-                type="number"
-                min={0}
-                max={15}
-                value={(form.sistersCount as number) ?? ''}
-                onChange={(e) => update('sistersCount', Number(e.target.value))}
-              />
-            </Field>
-          </div>
-          <Field label="Family Type">
-            <select
-              value={(form.familyType as string) || ''}
-              onChange={(e) => update('familyType', e.target.value)}
-              className={selectClass}
-            >
-              <option value="">Select</option>
-              {FAMILY_TYPE_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Family Status">
-            <select
-              value={(form.familyStatus as string) || ''}
-              onChange={(e) => update('familyStatus', e.target.value)}
-              className={selectClass}
-            >
-              <option value="">Select</option>
-              {FAMILY_STATUS_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Family Values">
-            <select
-              value={(form.familyValues as string) || ''}
-              onChange={(e) => update('familyValues', e.target.value)}
-              className={selectClass}
-            >
-              <option value="">Select</option>
-              {FAMILY_VALUES_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </Field>
-        </CardContent>
-      </Card>
-
-      {/* About Me */}
-      <Card>
-        <CardHeader>
-          <CardTitle>About Me</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <textarea
-            value={(form.aboutMe as string) || ''}
-            onChange={(e) => update('aboutMe', e.target.value)}
-            rows={5}
-            maxLength={2000}
-            className="flex w-full rounded-lg border border-input bg-white px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-          <p className="mt-1 text-xs text-muted-foreground text-right">
-            {((form.aboutMe as string) || '').length} / 2000
-          </p>
-        </CardContent>
-      </Card>
-
     </div>
+  );
+}
+
+function SectionCard({ icon: Icon, title, delay = 0, children }: { icon: React.ElementType; title: string; delay?: number; children: React.ReactNode }) {
+  return (
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay }}>
+      <Card className="border-0 shadow-soft rounded-2xl overflow-hidden">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-50">
+              <Icon className="h-4 w-4 text-primary-700" />
+            </div>
+            {title}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">{children}</CardContent>
+      </Card>
+    </motion.div>
   );
 }
 
