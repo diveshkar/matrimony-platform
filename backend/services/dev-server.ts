@@ -69,6 +69,7 @@ import { main as whoViewedMeHandler } from './safety/handlers/who-viewed-me.js';
 import { main as notificationsHandler } from './safety/handlers/notifications.js';
 import { main as privacySettingsHandler } from './safety/handlers/privacy-settings.js';
 import { main as getUsageHandler } from './subscriptions/handlers/get-usage.js';
+import { main as cancelSubscriptionHandler } from './subscriptions/handlers/cancel-subscription.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -261,6 +262,7 @@ route('get', '/subscriptions/plans', getPlansHandler);
 route('post', '/subscriptions/checkout', createCheckoutHandler);
 route('get', '/subscriptions/me', getMySubscriptionHandler);
 route('post', '/subscriptions/verify-session', verifySessionHandler);
+route('post', '/subscriptions/cancel', cancelSubscriptionHandler);
 
 route('get', '/blocks', blockUserHandler);
 route('post', '/blocks', blockUserHandler);

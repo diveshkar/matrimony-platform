@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Loader2, Crown, Sparkles, Shield, Zap } from 'lucide-react';
+import { Check, Loader2, Crown, Sparkles, Shield, Zap, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils/cn';
-import { usePlans, useMySubscription, useCreateCheckout } from '../hooks/useSubscription';
+import { useToast } from '@/components/ui/toaster';
+import { usePlans, useMySubscription, useCreateCheckout, useCancelSubscription } from '../hooks/useSubscription';
 
 interface PlanStyle {
   popular: boolean;
@@ -64,7 +66,10 @@ export default function PlansPage() {
   const { data: plansResponse, isLoading } = usePlans();
   const { data: subResponse } = useMySubscription();
   const checkout = useCreateCheckout();
+  const cancelSub = useCancelSubscription();
+  const toast = useToast();
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+  const [cancelOpen, setCancelOpen] = useState(false);
 
   const plans = plansResponse?.success ? plansResponse.data : [];
   const currentPlan = subResponse?.success ? subResponse.data.subscription.planId : 'free';
@@ -198,6 +203,23 @@ export default function PlansPage() {
         })}
       </div>
 
+      {/* Cancel Plan */}
+      {currentPlan !== 'free' && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.25 }}
+          className="text-center mb-4"
+        >
+          <button
+            onClick={() => setCancelOpen(true)}
+            className="text-xs text-muted-foreground hover:text-destructive transition-colors underline underline-offset-2"
+          >
+            Cancel my subscription and switch to Free
+          </button>
+        </motion.div>
+      )}
+
       {/* Footer */}
       <motion.p
         initial={{ opacity: 0 }}
@@ -205,9 +227,64 @@ export default function PlansPage() {
         transition={{ delay: 0.3 }}
         className="text-center text-[11px] text-muted-foreground pb-6"
       >
-        All plans auto-renew monthly. Cancel anytime from settings.
+        All plans auto-renew monthly. Cancel anytime.
         Payments processed securely by Stripe.
       </motion.p>
+
+      {/* Cancel Dialog */}
+      <Dialog open={cancelOpen} onOpenChange={setCancelOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50">
+              <AlertTriangle className="h-7 w-7 text-amber-600" />
+            </div>
+            <DialogTitle className="text-center">Cancel Subscription?</DialogTitle>
+            <DialogDescription className="text-center">
+              You'll lose access to your {currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)} plan features immediately.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="bg-amber-50/50 rounded-xl p-4 text-sm space-y-2">
+            <p className="font-medium text-amber-800">You'll lose access to:</p>
+            <ul className="space-y-1 text-xs text-amber-700">
+              {currentPlan === 'platinum' && <li>- 3 profile boosts per month</li>}
+              {currentPlan === 'platinum' && <li>- Premium badge & priority support</li>}
+              {(currentPlan === 'gold' || currentPlan === 'platinum') && <li>- Contact info visibility</li>}
+              {(currentPlan === 'gold' || currentPlan === 'platinum') && <li>- Unlimited profile views & interests</li>}
+              <li>- Chat access (Silver+)</li>
+              <li>- Who viewed me (Silver+)</li>
+            </ul>
+          </div>
+          <div className="flex gap-3 mt-2">
+            <Button
+              variant="outline"
+              className="flex-1 rounded-xl"
+              onClick={() => setCancelOpen(false)}
+            >
+              Keep Plan
+            </Button>
+            <Button
+              variant="destructive"
+              className="flex-1 rounded-xl"
+              disabled={cancelSub.isPending}
+              onClick={async () => {
+                try {
+                  await cancelSub.mutateAsync();
+                  setCancelOpen(false);
+                  toast.info('Subscription cancelled', 'You are now on the Free plan');
+                } catch {
+                  toast.error('Failed to cancel', 'Please try again');
+                }
+              }}
+            >
+              {cancelSub.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                'Cancel Subscription'
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

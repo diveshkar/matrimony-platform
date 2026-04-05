@@ -16,6 +16,10 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
   if (!parsed.success)
     throw new ValidationError(parsed.error.errors[0]?.message || 'Invalid input');
 
+  if (parsed.data.reportedUserId === authedEvent.auth.userId) {
+    throw new ValidationError('Cannot report yourself');
+  }
+
   await repo.reportUser(
     authedEvent.auth.userId,
     parsed.data.reportedUserId,

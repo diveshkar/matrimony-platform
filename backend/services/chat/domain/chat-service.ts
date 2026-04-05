@@ -11,7 +11,24 @@ export class ChatService {
     this.coreRepo = new BaseRepository('core');
   }
 
+  private async isBlocked(userId1: string, userId2: string): Promise<boolean> {
+    const [block1, block2] = await Promise.all([
+      this.coreRepo.get(`USER#${userId1}`, `BLOCK#${userId2}`),
+      this.coreRepo.get(`USER#${userId2}`, `BLOCK#${userId1}`),
+    ]);
+    return !!(block1 || block2);
+  }
+
   async createConversation(user1Id: string, user2Id: string): Promise<{ conversationId: string }> {
+    if (user1Id === user2Id) {
+      throw new ValidationError('Cannot create conversation with yourself');
+    }
+
+    const blocked = await this.isBlocked(user1Id, user2Id);
+    if (blocked) {
+      throw new ForbiddenError('Cannot message this user');
+    }
+
     const existing = await this.chatRepo.findConversationBetween(user1Id, user2Id);
     if (existing) {
       return { conversationId: existing };
@@ -82,9 +99,13 @@ export class ChatService {
       throw new ForbiddenError('Not a participant in this conversation');
     }
 
-    const message = await this.chatRepo.sendMessage(conversationId, userId, content.trim());
+    const otherUser = conv.participantIds.find((id) => id !== userId)!;
+    const blocked = await this.isBlocked(userId, otherUser);
+    if (blocked) {
+      throw new ForbiddenError('Cannot message this user');
+    }
 
-    const otherUserId = conv.participantIds.find((id) => id !== userId)!;
+    const message = await this.chatRepo.sendMessage(conversationId, userId, content.trim());
 
     await Promise.all([
       this.chatRepo.updateUserConversationLastMessage(
@@ -95,7 +116,7 @@ export class ChatService {
         false,
       ),
       this.chatRepo.updateUserConversationLastMessage(
-        otherUserId,
+        otherUser,
         conversationId,
         content.trim(),
         message.createdAt,

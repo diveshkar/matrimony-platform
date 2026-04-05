@@ -81,6 +81,16 @@ export class InterestService {
       throw new ConflictError(`Interest already ${interest.status}`);
     }
 
+    // Check if either user has blocked the other
+    const coreRepo = new BaseRepository('core');
+    const [block1, block2] = await Promise.all([
+      coreRepo.get(`USER#${receiverId}`, `BLOCK#${senderId}`),
+      coreRepo.get(`USER#${senderId}`, `BLOCK#${receiverId}`),
+    ]);
+    if (block1 || block2) {
+      throw new ForbiddenError('Cannot accept interest from a blocked user');
+    }
+
     await this.repo.updateInterestStatus(senderId, receiverId, 'accepted');
 
     try {

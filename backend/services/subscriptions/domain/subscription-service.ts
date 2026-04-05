@@ -55,6 +55,12 @@ export class SubscriptionService {
     const plan = PLANS[planId];
     if (!plan) throw new ValidationError('Invalid plan ID');
 
+    // Prevent duplicate subscriptions
+    const existingSub = await this.repo.getSubscription(userId);
+    if (existingSub && existingSub.status === 'active' && existingSub.planId !== 'free') {
+      throw new ValidationError(`You already have an active ${existingSub.planId} subscription. Cancel it first to switch plans.`);
+    }
+
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 
     const session = await getStripe().checkout.sessions.create({
@@ -143,21 +149,67 @@ export class SubscriptionService {
 
       case 'invoice.paid': {
         const invoice = event.data.object as Stripe.Invoice;
-        const subId = invoice.subscription as string;
+        const stripeSubId = invoice.subscription as string;
 
-        logger.info('Invoice paid', { subscriptionId: subId });
+        if (stripeSubId) {
+          // Find user by Stripe subscription ID and extend their endDate
+          const sub = await this.findSubscriptionByStripeId(stripeSubId);
+          if (sub) {
+            const newEnd = new Date();
+            newEnd.setMonth(newEnd.getMonth() + 1);
+            await this.repo.updateSubscription(sub.userId, {
+              endDate: newEnd.toISOString(),
+              status: 'active',
+            });
+            logger.info('Subscription renewed', { userId: sub.userId, newEndDate: newEnd.toISOString() });
+          } else {
+            logger.warn('Invoice paid but no matching subscription found', { stripeSubId });
+          }
+        }
         break;
       }
 
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription;
-        logger.info('Subscription cancelled', { subscriptionId: subscription.id });
+        const sub = await this.findSubscriptionByStripeId(subscription.id);
+        if (sub) {
+          await this.repo.updateSubscription(sub.userId, { status: 'cancelled' });
+          logger.info('Subscription cancelled via Stripe', { userId: sub.userId, stripeSubId: subscription.id });
+        } else {
+          logger.warn('Subscription deleted but no matching record found', { stripeSubId: subscription.id });
+        }
         break;
       }
 
       default:
         logger.info('Unhandled webhook event', { type: event.type });
     }
+  }
+
+  private async findSubscriptionByStripeId(stripeSubId: string): Promise<{ userId: string } | null> {
+    // Look up subscription by Stripe subscription ID
+    // For webhook events where we only have the Stripe ID, not our userId
+    const { ScanCommand } = await import('@aws-sdk/lib-dynamodb');
+    const { getDynamoClient, getTableName } = await import('../../shared/repositories/dynamodb-client.js');
+    const client = getDynamoClient();
+    const tableName = getTableName('core');
+
+    const result = await client.send(
+      new ScanCommand({
+        TableName: tableName,
+        FilterExpression: 'SK = :sk AND stripeSubscriptionId = :sid',
+        ExpressionAttributeValues: {
+          ':sk': 'SUBSCRIPTION#ACTIVE',
+          ':sid': stripeSubId,
+        },
+        Limit: 1,
+      }),
+    );
+
+    if (result.Items && result.Items.length > 0) {
+      return { userId: result.Items[0].userId as string };
+    }
+    return null;
   }
 
   async getMySubscription(userId: string): Promise<{
@@ -171,5 +223,28 @@ export class SubscriptionService {
       subscription: sub || { planId: 'free', status: 'active' },
       entitlements,
     };
+  }
+
+  async cancelSubscription(userId: string): Promise<{ status: string }> {
+    const sub = await this.repo.getSubscription(userId);
+    if (!sub || sub.status !== 'active' || sub.planId === 'free') {
+      throw new ValidationError('No active subscription to cancel');
+    }
+
+    // Cancel in Stripe first (stops future charges)
+    if (sub.stripeSubscriptionId && !sub.stripeSubscriptionId.startsWith('sub_test_')) {
+      try {
+        await getStripe().subscriptions.cancel(sub.stripeSubscriptionId);
+        logger.info('Stripe subscription cancelled', { stripeSubId: sub.stripeSubscriptionId });
+      } catch (err) {
+        logger.warn('Failed to cancel Stripe subscription', { error: String(err) });
+      }
+    }
+
+    // Then update our database
+    await this.repo.updateSubscription(userId, { status: 'cancelled' });
+    logger.info('Subscription cancelled', { userId, planId: sub.planId });
+
+    return { status: 'subscription_cancelled' };
   }
 }

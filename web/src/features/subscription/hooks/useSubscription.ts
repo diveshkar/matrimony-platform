@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { subscriptionApi } from '../api/subscription-api';
 import { useAuth } from '@/lib/auth/auth-context';
 
@@ -36,6 +36,17 @@ export function useCreateCheckout() {
       if (response.success && response.data.checkoutUrl) {
         window.location.href = response.data.checkoutUrl;
       }
+    },
+  });
+}
+
+export function useCancelSubscription() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => subscriptionApi.cancel(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-subscription'] });
+      queryClient.invalidateQueries({ queryKey: ['usage'] });
     },
   });
 }

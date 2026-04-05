@@ -746,7 +746,7 @@ async function seed() {
         TableName: CORE_TABLE,
         Item: {
           PK: `USER#${uid}`,
-          SK: 'SUBSCRIPTION#v1',
+          SK: 'SUBSCRIPTION#ACTIVE',
           userId: uid,
           planId: sub.planId,
           stripeSubscriptionId: `sub_test_${uid}`,

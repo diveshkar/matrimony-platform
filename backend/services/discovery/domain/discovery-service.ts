@@ -107,6 +107,10 @@ export class DiscoveryService {
       this.coreRepo.query<{ SK: string }>(`USER#${userId}`, { limit: 100 }),
     ]);
 
+    if (!myProfile) {
+      return { items: [] };
+    }
+
     const blockedIds = new Set<string>();
     for (const item of blockedResult.items) {
       if (item.SK.startsWith('BLOCK#')) {
@@ -114,7 +118,7 @@ export class DiscoveryService {
       }
     }
 
-    const myGender = myProfile?.gender as string | undefined;
+    const myGender = myProfile.gender as string;
     const lookingForGender =
       myGender === 'male' ? 'female' : myGender === 'female' ? 'male' : undefined;
 

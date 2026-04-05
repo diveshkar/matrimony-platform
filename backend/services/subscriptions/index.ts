@@ -5,6 +5,7 @@ import { main as webhook } from './handlers/webhook.js';
 import { main as getMySubscription } from './handlers/get-my-subscription.js';
 import { main as verifySession } from './handlers/verify-session.js';
 import { main as getUsage } from './handlers/get-usage.js';
+import { main as cancelSubscription } from './handlers/cancel-subscription.js';
 
 const routes: Record<string, (e: APIGatewayProxyEventV2, c: Context) => Promise<unknown>> = {
   'GET /subscriptions/plans': getPlans,
@@ -13,6 +14,7 @@ const routes: Record<string, (e: APIGatewayProxyEventV2, c: Context) => Promise<
   'GET /subscriptions/me': getMySubscription,
   'POST /subscriptions/verify-session': verifySession,
   'GET /subscriptions/usage': getUsage,
+  'POST /subscriptions/cancel': cancelSubscription,
 };
 
 export const main = async (event: APIGatewayProxyEventV2, context: Context) => {

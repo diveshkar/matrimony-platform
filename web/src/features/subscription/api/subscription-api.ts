@@ -63,4 +63,9 @@ export const subscriptionApi = {
         ApiResponse<{ status: string; planId: string }>
       >('/subscriptions/verify-session', { sessionId })
       .then((r) => r.data),
+
+  cancel: () =>
+    apiClient
+      .post<ApiResponse<{ status: string }>>('/subscriptions/cancel')
+      .then((r) => r.data),
 };

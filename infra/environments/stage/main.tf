@@ -614,6 +614,15 @@ module "route_sub_usage" {
   lambda_function_name = module.lambda_subscriptions.function_name
 }
 
+module "route_sub_cancel" {
+  source               = "../../modules/api_gateway_route"
+  api_id               = module.api_gateway.api_id
+  api_execution_arn    = module.api_gateway.execution_arn
+  route_key            = "POST /subscriptions/cancel"
+  lambda_invoke_arn    = module.lambda_subscriptions.invoke_arn
+  lambda_function_name = module.lambda_subscriptions.function_name
+}
+
 # Safety routes
 module "route_blocks_get" {
   source               = "../../modules/api_gateway_route"

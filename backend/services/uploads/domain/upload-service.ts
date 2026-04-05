@@ -17,7 +17,7 @@ export class UploadService {
 
   async getUploadUrl(
     userId: string,
-    fileName: string,
+    _fileName: string,
     mimeType: string,
     fileSize: number,
   ): Promise<{
@@ -38,7 +38,8 @@ export class UploadService {
       throw new ValidationError(`Maximum ${MAX_PHOTOS} photos allowed`);
     }
 
-    const ext = fileName.split('.').pop() || 'jpg';
+    const mimeToExt: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
+    const ext = mimeToExt[mimeType] || 'jpg';
     const s3Key = `photos/${userId}/${Date.now()}.${ext}`;
     const bucket = process.env.S3_MEDIA_BUCKET;
     const isLocal = !bucket || process.env.ENVIRONMENT === 'dev';
