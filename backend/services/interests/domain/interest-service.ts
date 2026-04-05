@@ -1,5 +1,6 @@
 import { InterestRepository } from '../repositories/interest-repository.js';
 import { BaseRepository } from '../../shared/repositories/base-repository.js';
+import { logger } from '../../shared/utils/logger.js';
 import {
   ConflictError,
   ForbiddenError,
@@ -64,8 +65,8 @@ export class InterestService {
         message: `${senderName} is interested in your profile`,
         actionUrl: '/interests',
       });
-    } catch {
-      /* non-critical */
+    } catch (err) {
+      logger.warn('Failed to send interest notification', { error: String(err) });
     }
 
     return { status: 'interest_sent' };
@@ -86,8 +87,8 @@ export class InterestService {
       const { ChatService } = await import('../../chat/domain/chat-service.js');
       const chatService = new ChatService();
       await chatService.createConversation(senderId, receiverId);
-    } catch {
-      /* non-critical */
+    } catch (err) {
+      logger.warn('Failed to create conversation on interest accept', { error: String(err) });
     }
 
     try {
@@ -100,8 +101,8 @@ export class InterestService {
         message: `${receiverName} accepted your interest. You can now chat!`,
         actionUrl: '/chats',
       });
-    } catch {
-      /* non-critical */
+    } catch (err) {
+      logger.warn('Failed to send accept notification', { error: String(err) });
     }
 
     return { status: 'interest_accepted' };

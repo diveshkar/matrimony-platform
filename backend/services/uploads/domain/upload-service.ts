@@ -1,3 +1,5 @@
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { PhotoRepository } from '../repositories/photo-repository.js';
 import { ValidationError, NotFoundError } from '../../shared/errors/app-errors.js';
 import type { PhotoMetadata } from '../../../packages/shared-types/index.js';
@@ -38,11 +40,24 @@ export class UploadService {
 
     const ext = fileName.split('.').pop() || 'jpg';
     const s3Key = `photos/${userId}/${Date.now()}.${ext}`;
+    const bucket = process.env.S3_MEDIA_BUCKET;
+    const isLocal = !bucket || process.env.ENVIRONMENT === 'dev';
 
-    const isLocal = !process.env.S3_MEDIA_BUCKET || process.env.ENVIRONMENT === 'dev';
-    const uploadUrl = isLocal
-      ? `http://localhost:4000/uploads/file`
-      : `https://${process.env.S3_MEDIA_BUCKET}.s3.amazonaws.com/${s3Key}`;
+    let uploadUrl: string;
+    if (isLocal) {
+      uploadUrl = `http://localhost:4000/uploads/file`;
+    } else {
+      const s3 = new S3Client({ region: process.env.AWS_REGION || 'ap-south-1' });
+      uploadUrl = await getSignedUrl(
+        s3,
+        new PutObjectCommand({
+          Bucket: bucket,
+          Key: s3Key,
+          ContentType: mimeType,
+        }),
+        { expiresIn: 300 },
+      );
+    }
 
     return {
       uploadUrl,

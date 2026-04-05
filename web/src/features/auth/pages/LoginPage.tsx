@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Phone, Mail, Heart, ArrowRight, Loader2, Shield, Users, Sparkles } from 'lucide-react';
+import { Mail, Heart, ArrowRight, Loader2, Shield, Users, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
@@ -11,23 +11,6 @@ import { useAuth } from '@/lib/auth/auth-context';
 import { ROUTES } from '@/lib/constants/routes';
 import { CONFIG } from '@/lib/constants/config';
 
-type AuthMode = 'phone' | 'email';
-
-const countryCodes = [
-  { code: '+44', country: 'UK', flag: '🇬🇧' },
-  { code: '+94', country: 'LK', flag: '🇱🇰' },
-  { code: '+91', country: 'IN', flag: '🇮🇳' },
-  { code: '+1', country: 'US/CA', flag: '🇺🇸' },
-  { code: '+61', country: 'AU', flag: '🇦🇺' },
-  { code: '+971', country: 'UAE', flag: '🇦🇪' },
-  { code: '+49', country: 'DE', flag: '🇩🇪' },
-  { code: '+33', country: 'FR', flag: '🇫🇷' },
-  { code: '+39', country: 'IT', flag: '🇮🇹' },
-  { code: '+65', country: 'SG', flag: '🇸🇬' },
-  { code: '+60', country: 'MY', flag: '🇲🇾' },
-  { code: '+64', country: 'NZ', flag: '🇳🇿' },
-];
-
 const trustSignals = [
   { icon: Shield, text: 'Verified profiles' },
   { icon: Users, text: '15,000+ members' },
@@ -35,9 +18,6 @@ const trustSignals = [
 ];
 
 export default function LoginPage() {
-  const [mode, setMode] = useState<AuthMode>('phone');
-  const [countryCode, setCountryCode] = useState('+44');
-  const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
 
@@ -63,22 +43,12 @@ export default function LoginPage() {
     setError('');
 
     try {
-      if (mode === 'phone') {
-        if (!phoneNumber || phoneNumber.length < 6) {
-          setError('Please enter a valid phone number');
-          return;
-        }
-        const fullPhone = `${countryCode}${phoneNumber.replace(/\s/g, '')}`;
-        await authStart.mutateAsync({ phone: fullPhone });
-        navigate(ROUTES.VERIFY_OTP, { state: { identifier: fullPhone, type: 'phone' } });
-      } else {
-        if (!email || !email.includes('@')) {
-          setError('Please enter a valid email address');
-          return;
-        }
-        await authStart.mutateAsync({ email });
-        navigate(ROUTES.VERIFY_OTP, { state: { identifier: email, type: 'email' } });
+      if (!email || !email.includes('@')) {
+        setError('Please enter a valid email address');
+        return;
       }
+      await authStart.mutateAsync({ email });
+      navigate(ROUTES.VERIFY_OTP, { state: { identifier: email, type: 'email' } });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Something went wrong';
       setError(message);
@@ -159,85 +129,26 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* Mode toggle */}
-          <div className="flex rounded-xl bg-muted/70 p-1.5 mb-6">
-            <button
-              type="button"
-              onClick={() => {
-                setMode('phone');
-                setError('');
-              }}
-              className={`flex-1 flex items-center justify-center gap-2 rounded-lg py-3 text-sm font-medium transition-all ${
-                mode === 'phone'
-                  ? 'bg-white text-foreground shadow-soft'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <Phone className="h-4 w-4" />
-              Phone
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setMode('email');
-                setError('');
-              }}
-              className={`flex-1 flex items-center justify-center gap-2 rounded-lg py-3 text-sm font-medium transition-all ${
-                mode === 'email'
-                  ? 'bg-white text-foreground shadow-soft'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <Mail className="h-4 w-4" />
-              Email
-            </button>
+          <div className="flex items-center justify-center gap-2 mb-6 text-muted-foreground">
+            <Mail className="h-4 w-4" />
+            <span className="text-sm">Sign in with your email</span>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {mode === 'phone' ? (
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">
-                  Phone Number
-                </label>
-                <div className="flex gap-2">
-                  <select
-                    value={countryCode}
-                    onChange={(e) => setCountryCode(e.target.value)}
-                    className="flex h-12 rounded-xl border border-input bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring w-[115px]"
-                  >
-                    {countryCodes.map((cc) => (
-                      <option key={cc.code} value={cc.code}>
-                        {cc.flag} {cc.code}
-                      </option>
-                    ))}
-                  </select>
-                  <Input
-                    type="tel"
-                    placeholder="7911 123456"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    error={!!error}
-                    className="flex-1 h-12 rounded-xl"
-                    autoFocus
-                  />
-                </div>
-              </div>
-            ) : (
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">
-                  Email Address
-                </label>
-                <Input
-                  type="email"
-                  placeholder="your.email@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  error={!!error}
-                  className="h-12 rounded-xl"
-                  autoFocus
-                />
-              </div>
-            )}
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">
+                Email Address
+              </label>
+              <Input
+                type="email"
+                placeholder="your.email@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                error={!!error}
+                className="h-12 rounded-xl"
+                autoFocus
+              />
+            </div>
 
             {error && (
               <motion.p
@@ -270,7 +181,7 @@ export default function LoginPage() {
           </form>
 
           <p className="mt-5 text-center text-xs text-muted-foreground">
-            We will send you a one-time verification code
+            We'll send a verification code to your email
           </p>
 
           <Separator className="my-6" />

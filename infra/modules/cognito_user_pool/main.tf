@@ -2,8 +2,8 @@ resource "aws_cognito_user_pool" "this" {
   name = var.pool_name
 
   # Username configuration — login via phone or email
-  username_attributes      = ["phone_number", "email"]
-  auto_verified_attributes = ["phone_number", "email"]
+  username_attributes      = ["email"]
+  auto_verified_attributes = ["email"]
 
   # Password policy
   password_policy {
@@ -20,12 +20,8 @@ resource "aws_cognito_user_pool" "this" {
   # Account recovery
   account_recovery_setting {
     recovery_mechanism {
-      name     = "verified_phone_number"
-      priority = 1
-    }
-    recovery_mechanism {
       name     = "verified_email"
-      priority = 2
+      priority = 1
     }
   }
 

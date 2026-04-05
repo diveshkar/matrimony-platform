@@ -51,7 +51,12 @@ export class ChatService {
       throw new ForbiddenError('Not a participant in this conversation');
     }
 
-    const startKey = cursor ? JSON.parse(Buffer.from(cursor, 'base64').toString()) : undefined;
+    let startKey: Record<string, unknown> | undefined;
+    try {
+      startKey = cursor ? JSON.parse(Buffer.from(cursor, 'base64').toString()) : undefined;
+    } catch {
+      startKey = undefined;
+    }
     const result = await this.chatRepo.getMessages(conversationId, limit, startKey);
 
     await this.chatRepo.markConversationRead(userId, conversationId);

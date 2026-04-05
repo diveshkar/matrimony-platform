@@ -97,11 +97,14 @@ export class SubscriptionService {
 
     let event: Stripe.Event;
 
-    if (webhookSecret && webhookSecret !== 'whsec_placeholder') {
+    const isDevEnv = process.env.ENVIRONMENT === 'dev' || !process.env.ENVIRONMENT;
+    if (webhookSecret) {
       event = getStripe().webhooks.constructEvent(payload, signature, webhookSecret);
-    } else {
+    } else if (isDevEnv) {
       event = JSON.parse(payload) as Stripe.Event;
       logger.warn('Webhook signature verification skipped (dev mode)');
+    } else {
+      throw new ValidationError('STRIPE_WEBHOOK_SECRET is required in stage/prod');
     }
 
     logger.info('Stripe webhook received', { type: event.type, id: event.id });

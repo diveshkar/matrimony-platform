@@ -2,6 +2,7 @@ import type { APIGatewayProxyEventV2, Context } from 'aws-lambda';
 import { createHandler, withAuth, type AuthenticatedEvent } from '../../shared/middleware/index.js';
 import { success } from '../../shared/utils/response.js';
 import { ValidationError } from '../../shared/errors/app-errors.js';
+import { logger } from '../../shared/utils/logger.js';
 import { ProfileService } from '../domain/profile-service.js';
 import { checkEntitlement } from '../../shared/middleware/entitlement-check.js';
 
@@ -46,8 +47,8 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
           : `Someone viewed your profile. Upgrade to see who!`,
         actionUrl: viewedUserUsage.whoViewedMeAccess ? '/who-viewed-me' : '/plans',
       });
-    } catch {
-      /* non-critical */
+    } catch (err) {
+      logger.warn('Failed to record profile view', { error: String(err) });
     }
   }
 

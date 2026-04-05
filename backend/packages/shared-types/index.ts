@@ -2,8 +2,8 @@ export interface UserAccount {
   PK: string;
   SK: string;
   userId: string;
-  phone: string;
-  email?: string;
+  phone?: string;
+  email: string;
   matrimonyId: string;
   accountStatus: 'active' | 'suspended' | 'deleted';
   hasProfile: boolean;
@@ -81,7 +81,7 @@ export interface UserPrivacy {
   PK: string;
   SK: string;
   userId: string;
-  hidePhone: boolean;
+  hideWhatsapp: boolean;
   hideDob: boolean;
   photoVisibility: 'all' | 'contacts' | 'hidden';
   horoscopeVisibility: 'all' | 'contacts' | 'hidden';

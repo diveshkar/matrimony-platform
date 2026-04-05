@@ -30,6 +30,12 @@ variable "alarm_email" {
   description = "Email for CloudWatch alarm notifications"
 }
 
+variable "jwt_secret" {
+  type        = string
+  sensitive   = true
+  description = "Secret key for signing JWT tokens"
+}
+
 variable "stripe_secret_key" {
   type      = string
   default   = ""

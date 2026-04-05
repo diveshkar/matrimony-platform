@@ -12,7 +12,7 @@ export function useAuthStart() {
   return useMutation({
     mutationFn: (data: AuthStartRequest) => authApi.start(data),
     onSuccess: () => {
-      toast.success('OTP sent', 'Check your phone or email for the verification code');
+      toast.success('OTP sent', 'Check your email for the verification code');
     },
     onError: () => {
       toast.error('Failed to send OTP', 'Please try again');
@@ -32,7 +32,6 @@ export function useAuthVerify() {
         const { accessToken, refreshToken, user } = response.data;
         login(accessToken, refreshToken, {
           id: user.id,
-          phone: user.phone,
           email: user.email,
           hasProfile: user.hasProfile,
           onboardingComplete: user.onboardingComplete,

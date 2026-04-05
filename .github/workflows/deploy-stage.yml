@@ -36,18 +36,16 @@ jobs:
         env:
           VITE_API_BASE_URL: ${{ vars.API_BASE_URL }}
 
-      - run: pnpm run build:backend
-
-      # Package Lambda functions into ZIPs
-      - name: Package Lambda functions
-        run: bash scripts/package-lambdas.sh
-
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # Terraform apply (deploys infra + Lambda code)
+      # Package Lambda functions + layer, upload to S3
+      - name: Package and upload Lambda functions
+        run: bash scripts/package-lambdas.sh ${{ vars.LAMBDA_S3_BUCKET }}
+
+      # Terraform apply (deploys infra, Lambda reads code from S3)
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: '1.6'
@@ -55,6 +53,7 @@ jobs:
       - name: Terraform apply
         working-directory: infra/environments/stage
         env:
+          TF_VAR_jwt_secret: ${{ secrets.JWT_SECRET }}
           TF_VAR_stripe_secret_key: ${{ secrets.STRIPE_SECRET_KEY }}
           TF_VAR_stripe_webhook_secret: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
           TF_VAR_certificate_arn: ${{ secrets.CERTIFICATE_ARN }}

@@ -47,7 +47,7 @@ const features = [
     icon: Users,
     title: 'Verified Profiles',
     description:
-      'Every profile is phone-verified. We review profiles to build a trusted, genuine community.',
+      'Every profile is email-verified. We review profiles to build a trusted, genuine community.',
     color: 'bg-blue-50 text-blue-600',
   },
   {

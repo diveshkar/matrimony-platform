@@ -10,7 +10,7 @@ import { CONFIG } from '@/lib/constants/config';
 export default function VerifyOtpPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const state = location.state as { identifier?: string; type?: 'phone' | 'email' } | null;
+  const state = location.state as { identifier?: string; type?: 'email' } | null;
 
   const [otp, setOtp] = useState<string[]>(Array(CONFIG.OTP_LENGTH).fill(''));
   const [error, setError] = useState('');
@@ -97,10 +97,7 @@ export default function VerifyOtpPage() {
     setError('');
 
     try {
-      const payload =
-        state.type === 'phone'
-          ? { phone: state.identifier, otp: otpString }
-          : { email: state.identifier, otp: otpString };
+      const payload = { email: state.identifier, otp: otpString };
 
       await authVerify.mutateAsync(payload);
       localStorage.removeItem('otp_cooldown_until');
@@ -117,8 +114,7 @@ export default function VerifyOtpPage() {
     setError('');
 
     try {
-      const payload =
-        state.type === 'phone' ? { phone: state.identifier } : { email: state.identifier };
+      const payload = { email: state.identifier };
 
       await authStart.mutateAsync(payload);
       const expiryMs = Date.now() + CONFIG.OTP_RESEND_COOLDOWN_SECONDS * 1000;
@@ -133,9 +129,7 @@ export default function VerifyOtpPage() {
   };
 
   const maskedIdentifier = state?.identifier
-    ? state.type === 'phone'
-      ? `${state.identifier.slice(0, 4)}****${state.identifier.slice(-3)}`
-      : `${state.identifier.slice(0, 3)}***@${state.identifier.split('@')[1]}`
+    ? `${state.identifier.slice(0, 3)}***@${state.identifier.split('@')[1]}`
     : '';
 
   return (
@@ -239,7 +233,7 @@ export default function VerifyOtpPage() {
           className="text-muted-foreground"
         >
           <ArrowLeft className="mr-1.5 h-4 w-4" />
-          Change {state?.type === 'phone' ? 'phone number' : 'email'}
+          Change email
         </Button>
       </motion.div>
     </div>

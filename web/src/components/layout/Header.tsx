@@ -107,7 +107,8 @@ export function Header() {
 /* ── Notification Bell with Dropdown ──────── */
 
 function NotificationBell() {
-  const { data: response, refetch } = useNotifications();
+  const { isAuthenticated } = useAuth();
+  const { data: response, refetch } = useNotifications(isAuthenticated);
   const markAll = useMarkAllRead();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);

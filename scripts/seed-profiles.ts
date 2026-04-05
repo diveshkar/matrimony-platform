@@ -291,7 +291,7 @@ async function seed() {
           PK: `USER#${userId}`,
           SK: 'ACCOUNT#v1',
           userId,
-          phone: `+4470000000${String(i + 1).padStart(2, '0')}`,
+          email: `demo${i + 1}@matrimony-test.com`,
           matrimonyId: `MTR${100000 + i}`,
           accountStatus: 'active',
           hasProfile: true,

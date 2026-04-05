@@ -17,7 +17,7 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
     throw new ValidationError(parsed.error.errors[0]?.message || 'Invalid input');
   }
 
-  const result = await authService.startAuth(parsed.data.phone, parsed.data.email);
+  const result = await authService.startAuth(parsed.data.email);
 
   return success(result, requestId, 200);
 }

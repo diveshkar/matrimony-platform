@@ -14,7 +14,7 @@ resource "aws_apigatewayv2_route" "this" {
 }
 
 resource "aws_lambda_permission" "this" {
-  statement_id  = "AllowAPIGateway-${replace(var.route_key, " ", "-")}"
+  statement_id  = "AllowAPIGateway-${replace(replace(replace(replace(var.route_key, " ", "-"), "/", "-"), "{", ""), "}", "")}"
   action        = "lambda:InvokeFunction"
   function_name = var.lambda_function_name
   principal     = "apigateway.amazonaws.com"

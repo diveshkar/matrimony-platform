@@ -22,14 +22,12 @@ variable "timeout" {
   default = 30
 }
 
-variable "filename" {
-  type    = string
-  default = ""
+variable "s3_bucket" {
+  type = string
 }
 
-variable "source_code_hash" {
-  type    = string
-  default = ""
+variable "s3_key" {
+  type = string
 }
 
 variable "environment_variables" {
@@ -50,4 +48,14 @@ variable "log_retention_days" {
 variable "tags" {
   type    = map(string)
   default = {}
+}
+
+variable "attach_policy" {
+  type    = bool
+  default = false
+}
+
+variable "layers" {
+  type    = list(string)
+  default = []
 }

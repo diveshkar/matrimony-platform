@@ -11,18 +11,12 @@ export const phoneSchema = z
 
 export const emailSchema = z.string().email('Invalid email address');
 
-export const authStartSchema = z
-  .object({
-    phone: phoneSchema.optional(),
-    email: emailSchema.optional(),
-  })
-  .refine((data) => data.phone || data.email, {
-    message: 'Either phone or email is required',
-  });
+export const authStartSchema = z.object({
+  email: emailSchema,
+});
 
 export const authVerifySchema = z.object({
-  phone: phoneSchema.optional(),
-  email: emailSchema.optional(),
+  email: emailSchema,
   otp: z.string().length(6, 'OTP must be 6 digits'),
 });
 
@@ -79,7 +73,7 @@ export const preferencesSchema = z.object({
 });
 
 export const privacySettingsSchema = z.object({
-  hidePhone: z.boolean(),
+  hideWhatsapp: z.boolean(),
   hideDob: z.boolean(),
   photoVisibility: z.enum(['all', 'contacts', 'hidden']),
   horoscopeVisibility: z.enum(['all', 'contacts', 'hidden']),

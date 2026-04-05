@@ -13,7 +13,6 @@ import {
   Loader2,
   Ban,
   Flag,
-  Phone,
   Mail,
   MessageCircle,
   Lock,
@@ -151,8 +150,7 @@ export default function ProfileDetailPage() {
 
       {/* Contact Info */}
       <ContactInfoCard
-        phone={s('phone')}
-        email={s('email') || s('personalEmail')}
+        email={s('personalEmail') || s('email')}
         whatsapp={s('whatsappNumber')}
         canView={raw.contactInfoVisible === true}
       />
@@ -397,24 +395,22 @@ function maskEmail(email: string): string {
 }
 
 function ContactInfoCard({
-  phone,
   email,
   whatsapp,
   canView,
 }: {
-  phone: string;
   email: string;
   whatsapp: string;
   canView: boolean;
 }) {
-  const hasAny = phone || email || whatsapp;
+  const hasAny = email || whatsapp;
   if (!hasAny) return null;
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Phone className="h-5 w-5 text-primary-700" />
+          <Mail className="h-5 w-5 text-primary-700" />
           Contact Information
           {!canView && (
             <Badge variant="outline" className="ml-auto text-[10px] font-normal">
@@ -425,12 +421,6 @@ function ContactInfoCard({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {phone && (
-          <div className="flex items-center gap-3">
-            <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
-            <span className="text-sm font-medium">{canView ? phone : maskPhone(phone)}</span>
-          </div>
-        )}
         {email && (
           <div className="flex items-center gap-3">
             <Mail className="h-4 w-4 text-muted-foreground shrink-0" />

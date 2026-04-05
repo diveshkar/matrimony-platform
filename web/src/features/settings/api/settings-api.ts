@@ -27,7 +27,7 @@ export interface NotificationItem {
 }
 
 export interface PrivacySettings {
-  hidePhone: boolean;
+  hideWhatsapp: boolean;
   hideDob: boolean;
   photoVisibility: 'all' | 'contacts' | 'hidden';
   horoscopeVisibility: 'all' | 'contacts' | 'hidden';

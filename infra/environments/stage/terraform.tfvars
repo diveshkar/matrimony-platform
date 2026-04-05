@@ -1,4 +1,9 @@
-aws_region           = "ap-south-1"
-environment          = "stage"
-domain_name          = "stage.matrimony.com"
-cors_allowed_origins = ["https://stage.matrimony.com", "http://localhost:3000"]
+aws_region            = "ap-south-1"
+environment           = "stage"
+domain_name           = "stage.matrimony.com"
+cors_allowed_origins  = ["https://stage.matrimony.com", "http://localhost:3000", "https://d13g8w11hvs9mg.cloudfront.net"]
+certificate_arn       = ""
+alarm_email           = ""
+jwt_secret            = "CHANGE-ME-use-a-random-64-char-string"
+stripe_secret_key     = "sk_test_placeholder"
+stripe_webhook_secret = "whsec_placeholder"

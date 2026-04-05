@@ -15,8 +15,9 @@ interface ErrorResponse {
   requestId: string;
 }
 
+const isDev = process.env.ENVIRONMENT === 'dev' || !process.env.ENVIRONMENT;
 const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': process.env.CORS_ALLOWED_ORIGINS || '*',
+  'Access-Control-Allow-Origin': process.env.CORS_ALLOWED_ORIGINS || (isDev ? '*' : ''),
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
   'Content-Type': 'application/json',

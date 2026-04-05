@@ -20,21 +20,22 @@ resource "aws_iam_role_policy_attachment" "basic_execution" {
 }
 
 resource "aws_iam_role_policy" "custom" {
-  count  = var.policy_json != "" ? 1 : 0
+  count  = var.attach_policy ? 1 : 0
   name   = "${var.function_name}-policy"
   role   = aws_iam_role.lambda.id
   policy = var.policy_json
 }
 
 resource "aws_lambda_function" "this" {
-  function_name    = var.function_name
-  role             = aws_iam_role.lambda.arn
-  handler          = var.handler
-  runtime          = var.runtime
-  memory_size      = var.memory_size
-  timeout          = var.timeout
-  filename         = var.filename
-  source_code_hash = var.source_code_hash
+  function_name = var.function_name
+  role          = aws_iam_role.lambda.arn
+  handler       = var.handler
+  runtime       = var.runtime
+  memory_size   = var.memory_size
+  timeout       = var.timeout
+  layers        = var.layers
+  s3_bucket     = var.s3_bucket
+  s3_key        = var.s3_key
 
   environment {
     variables = var.environment_variables

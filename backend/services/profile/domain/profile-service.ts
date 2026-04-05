@@ -1,5 +1,6 @@
 import { ProfileRepository } from '../repositories/profile-repository.js';
 import { ConflictError, NotFoundError } from '../../shared/errors/app-errors.js';
+import { logger } from '../../shared/utils/logger.js';
 import type {
   UserProfile,
   UserPreference,
@@ -114,7 +115,7 @@ export class ProfileService {
     }
 
     await this.repo.savePrivacy(userId, {
-      hidePhone: true,
+      hideWhatsapp: true,
       hideDob: false,
       photoVisibility: 'all',
       horoscopeVisibility: 'all',
@@ -126,8 +127,8 @@ export class ProfileService {
     try {
       const { DiscoveryService } = await import('../../discovery/domain/discovery-service.js');
       await new DiscoveryService().syncProfileToDiscovery(userId);
-    } catch {
-      /* non-critical */
+    } catch (err) {
+      logger.warn('Failed to sync profile to discovery', { userId, error: String(err) });
     }
 
     return profile;
@@ -200,7 +201,7 @@ export class ProfileService {
     delete publicProfile.PK;
     delete publicProfile.SK;
 
-    if (privacy?.hidePhone) delete publicProfile.phone;
+    if (privacy?.hideWhatsapp) delete publicProfile.whatsappNumber;
     if (privacy?.hideDob) {
       delete publicProfile.dateOfBirth;
     }
@@ -211,8 +212,8 @@ export class ProfileService {
         const usage = await getRemainingUsage(viewerId);
         publicProfile.contactInfoVisible = usage.contactInfoAccess;
         if (!usage.contactInfoAccess) {
-          delete publicProfile.phone;
-          delete publicProfile.email;
+          delete publicProfile.whatsappNumber;
+          delete publicProfile.personalEmail;
         }
       } catch {
         publicProfile.contactInfoVisible = false;

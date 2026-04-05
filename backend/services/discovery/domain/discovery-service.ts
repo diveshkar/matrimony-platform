@@ -119,7 +119,7 @@ export class DiscoveryService {
       myGender === 'male' ? 'female' : myGender === 'female' ? 'male' : undefined;
 
     let allResults: DiscoveryProfile[] = [];
-    const startKey = cursor ? JSON.parse(Buffer.from(cursor, 'base64').toString()) : undefined;
+    const startKey = cursor ? (() => { try { return JSON.parse(Buffer.from(cursor, 'base64').toString()); } catch { return undefined; } })() : undefined;
     let lastKey: Record<string, unknown> | undefined;
 
     if (prefs?.countries?.length && lookingForGender) {
@@ -193,7 +193,7 @@ export class DiscoveryService {
     limit = 20,
     cursor?: string,
   ): Promise<{ items: DiscoveryProfile[]; nextCursor?: string }> {
-    const startKey = cursor ? JSON.parse(Buffer.from(cursor, 'base64').toString()) : undefined;
+    const startKey = cursor ? (() => { try { return JSON.parse(Buffer.from(cursor, 'base64').toString()); } catch { return undefined; } })() : undefined;
 
     const blockedResult = await this.coreRepo.query<{ SK: string }>(`USER#${userId}`, {
       limit: 100,
