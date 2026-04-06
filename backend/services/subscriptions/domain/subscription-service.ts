@@ -237,11 +237,12 @@ export class SubscriptionService {
         await getStripe().subscriptions.cancel(sub.stripeSubscriptionId);
         logger.info('Stripe subscription cancelled', { stripeSubId: sub.stripeSubscriptionId });
       } catch (err) {
-        logger.warn('Failed to cancel Stripe subscription', { error: String(err) });
+        logger.error('Failed to cancel Stripe subscription', { error: String(err), stripeSubId: sub.stripeSubscriptionId });
+        throw new ValidationError('Failed to cancel subscription with payment provider. Please try again or contact support.');
       }
     }
 
-    // Then update our database
+    // Only update DB if Stripe succeeded (or was test/seeded)
     await this.repo.updateSubscription(userId, { status: 'cancelled' });
     logger.info('Subscription cancelled', { userId, planId: sub.planId });
 

@@ -64,6 +64,24 @@ export class AuthRepository extends BaseRepository {
     await this.delete(`OTP#${identifier}`, 'PENDING#v1');
   }
 
+  async getLockout(identifier: string): Promise<{ lockedUntil: number } | null> {
+    const record = await this.get<{ lockedUntil: number }>(`OTP#${identifier}`, 'LOCKOUT#v1');
+    if (!record) return null;
+    if (record.lockedUntil <= Math.floor(Date.now() / 1000)) return null;
+    return record;
+  }
+
+  async setLockout(identifier: string, durationSeconds: number): Promise<void> {
+    const now = Math.floor(Date.now() / 1000);
+    await this.put({
+      PK: `OTP#${identifier}`,
+      SK: 'LOCKOUT#v1',
+      lockedUntil: now + durationSeconds,
+      ttl: now + durationSeconds,
+      createdAt: new Date().toISOString(),
+    });
+  }
+
   async findAccountByPhone(phone: string): Promise<AccountRecord | null> {
     const result = await this.query<{ userId: string }>(`PHONE#${phone}`, {
       indexName: 'GSI1',

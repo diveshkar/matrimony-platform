@@ -76,6 +76,12 @@ export class AuthService {
       throw new ValidationError('Email is required');
     }
 
+    const lockout = await this.repo.getLockout(email);
+    if (lockout) {
+      const remaining = Math.ceil((lockout.lockedUntil - Math.floor(Date.now() / 1000)) / 60);
+      throw new RateLimitError(`Too many failed attempts. Try again in ${remaining} minutes.`);
+    }
+
     const existing = await this.repo.getOtp(email);
     if (existing) {
       const now = Math.floor(Date.now() / 1000);
@@ -127,7 +133,8 @@ export class AuthService {
 
     if (record.attempts >= 5) {
       await this.repo.deleteOtp(email);
-      throw new RateLimitError('Too many failed attempts. Please request a new OTP.');
+      await this.repo.setLockout(email, 3600);
+      throw new RateLimitError('Too many failed attempts. Locked for 1 hour.');
     }
 
     if (record.otp !== otp) {

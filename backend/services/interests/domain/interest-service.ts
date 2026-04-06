@@ -177,6 +177,11 @@ export class InterestService {
       throw new ValidationError('Cannot shortlist yourself');
     }
 
+    const blocked = await this.repo.isBlocked(userId, targetUserId);
+    if (blocked) {
+      throw new ForbiddenError('Cannot shortlist this user');
+    }
+
     const targetProfile = await this.coreRepo.get<Record<string, unknown>>(
       `USER#${targetUserId}`,
       'PROFILE#v1',

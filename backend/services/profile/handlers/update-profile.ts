@@ -3,7 +3,7 @@ import { createHandler, withAuth, type AuthenticatedEvent } from '../../shared/m
 import { success } from '../../shared/utils/response.js';
 import { ValidationError } from '../../shared/errors/app-errors.js';
 import { ProfileService } from '../domain/profile-service.js';
-import { updateProfileSchema } from '../../../packages/shared-schemas/index.js';
+import { updateProfileSchema, preferencesSchema } from '../../../packages/shared-schemas/index.js';
 
 const profileService = new ProfileService();
 
@@ -18,9 +18,18 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
     throw new ValidationError(parsed.error.errors[0]?.message || 'Invalid input');
   }
 
+  let validatedPreferences = undefined;
+  if (body.preferences) {
+    const prefsParsed = preferencesSchema.safeParse(body.preferences);
+    if (!prefsParsed.success) {
+      throw new ValidationError(prefsParsed.error.errors[0]?.message || 'Invalid preferences');
+    }
+    validatedPreferences = prefsParsed.data;
+  }
+
   const result = await profileService.updateProfile(authedEvent.auth.userId, {
     ...parsed.data,
-    preferences: body.preferences,
+    preferences: validatedPreferences,
   });
 
   return success(result, requestId);
