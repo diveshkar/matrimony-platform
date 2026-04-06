@@ -69,4 +69,21 @@ export const profileApi = {
 
   getProfile: (id: string) =>
     apiClient.get<ApiResponse<Record<string, unknown>>>(`/profiles/${id}`).then((r) => r.data),
+
+  getBoostStatus: () =>
+    apiClient.get<ApiResponse<{
+      isActive: boolean;
+      expiresAt: string | null;
+      boostsUsed: number;
+      boostsTotal: number;
+      canBoost: boolean;
+    }>>('/me/boost').then((r) => r.data),
+
+  activateBoost: () =>
+    apiClient.post<ApiResponse<{
+      status: string;
+      expiresAt: string;
+      boostsUsed: number;
+      boostsTotal: number;
+    }>>('/me/boost').then((r) => r.data),
 };

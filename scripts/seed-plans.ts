@@ -25,6 +25,10 @@ const plans = [
     contactInfoAccess: false,
     whoViewedMeAccess: false,
     boostsPerMonth: 0,
+    maxPhotos: 3,
+    photoViewLimit: 1,
+    photoVisibilityControl: false,
+    prioritySearch: false,
   },
   {
     planId: 'silver',
@@ -34,6 +38,10 @@ const plans = [
     contactInfoAccess: false,
     whoViewedMeAccess: true,
     boostsPerMonth: 0,
+    maxPhotos: 6,
+    photoViewLimit: 4,
+    photoVisibilityControl: true,
+    prioritySearch: false,
   },
   {
     planId: 'gold',
@@ -43,6 +51,10 @@ const plans = [
     contactInfoAccess: true,
     whoViewedMeAccess: true,
     boostsPerMonth: 1,
+    maxPhotos: 6,
+    photoViewLimit: -1,
+    photoVisibilityControl: true,
+    prioritySearch: false,
   },
   {
     planId: 'platinum',
@@ -52,6 +64,10 @@ const plans = [
     contactInfoAccess: true,
     whoViewedMeAccess: true,
     boostsPerMonth: 3,
+    maxPhotos: 6,
+    photoViewLimit: -1,
+    photoVisibilityControl: true,
+    prioritySearch: true,
   },
 ];
 
@@ -72,7 +88,7 @@ async function seed() {
     );
 
     console.log(
-      `  ✓ ${plan.planId}: views=${plan.profileViewsPerDay}, interests=${plan.interestsPerDay}, chat=${plan.chatAccess}`,
+      `  ✓ ${plan.planId.padEnd(8)}: views=${String(plan.profileViewsPerDay).padEnd(3)} interests=${String(plan.interestsPerDay).padEnd(3)} chat=${String(plan.chatAccess).padEnd(5)} photos=${plan.maxPhotos} viewLimit=${String(plan.photoViewLimit).padEnd(2)} priority=${plan.prioritySearch}`,
     );
   }
 

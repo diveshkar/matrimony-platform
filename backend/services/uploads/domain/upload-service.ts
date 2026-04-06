@@ -4,9 +4,9 @@ import { PhotoRepository } from '../repositories/photo-repository.js';
 import { ValidationError, NotFoundError } from '../../shared/errors/app-errors.js';
 import type { PhotoMetadata } from '../../../packages/shared-types/index.js';
 
-const MAX_PHOTOS = 6;
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const UPLOAD_LIMITS: Record<string, number> = { free: 3, silver: 6, gold: 6, platinum: 6 };
 
 export class UploadService {
   private repo: PhotoRepository;
@@ -33,10 +33,23 @@ export class UploadService {
       throw new ValidationError('File size must be under 5MB');
     }
 
+    const { SubscriptionRepository } = await import('../../subscriptions/repositories/subscription-repository.js');
+    const subRepo = new SubscriptionRepository();
+    const entitlement = await subRepo.getUserEntitlement(userId);
+    const sub = await subRepo.getSubscription(userId);
+    const planId = sub?.status === 'active' ? sub.planId : 'free';
+    const maxPhotos = UPLOAD_LIMITS[planId] || 3;
+
     const count = await this.repo.getPhotoCount(userId);
-    if (count >= MAX_PHOTOS) {
-      throw new ValidationError(`Maximum ${MAX_PHOTOS} photos allowed`);
+    if (count >= maxPhotos) {
+      throw new ValidationError(
+        maxPhotos < 6
+          ? `Free plan allows ${maxPhotos} photos. Upgrade to Silver+ to upload up to 6.`
+          : `Maximum ${maxPhotos} photos allowed`,
+      );
     }
+
+    void entitlement;
 
     const mimeToExt: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
     const ext = mimeToExt[mimeType] || 'jpg';
@@ -77,6 +90,22 @@ export class UploadService {
       visibility?: 'all' | 'contacts' | 'hidden';
     },
   ): Promise<PhotoMetadata> {
+    if (!data.s3Key.startsWith(`photos/${userId}/`)) {
+      throw new ValidationError('Invalid photo key');
+    }
+
+    const isLocal = process.env.ENVIRONMENT === 'dev';
+    const bucket = process.env.S3_MEDIA_BUCKET;
+    if (!isLocal) {
+      const validUrlPatterns = [
+        `https://${bucket}.s3.`,
+        `https://s3.`,
+      ];
+      if (!validUrlPatterns.some((p) => data.url.startsWith(p))) {
+        throw new ValidationError('Invalid photo URL');
+      }
+    }
+
     const photo = await this.repo.savePhoto(userId, {
       s3Key: data.s3Key,
       url: data.url,
@@ -109,6 +138,16 @@ export class UploadService {
     photoId: string,
     visibility: 'all' | 'contacts' | 'hidden',
   ): Promise<void> {
+    if (visibility !== 'all') {
+      const { SubscriptionRepository } = await import('../../subscriptions/repositories/subscription-repository.js');
+      const subRepo = new SubscriptionRepository();
+      const sub = await subRepo.getSubscription(userId);
+      const planId = sub?.status === 'active' ? sub.planId : 'free';
+      if (planId === 'free') {
+        throw new ValidationError('Photo visibility controls require Silver plan or above. Upgrade to manage who sees your photos.');
+      }
+    }
+
     const photo = await this.repo.getPhoto(userId, photoId);
     if (!photo) throw new NotFoundError('Photo');
 

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { MapPin, GraduationCap, Briefcase, User, Heart } from 'lucide-react';
+import { MapPin, GraduationCap, Briefcase, User, Heart, Zap } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils/cn';
@@ -91,15 +91,23 @@ export function ProfileCard({ profile, className, compact }: ProfileCardProps) {
             </div>
           </div>
 
-          {/* Verified badge */}
-          {profile.primaryPhotoUrl && (
-            <div className="absolute top-2 left-2">
-              <Badge
-                variant="success"
-                className="text-[9px] backdrop-blur-sm bg-emerald-500/90 border-0"
-              >
-                Verified
-              </Badge>
+          {/* Badges */}
+          {(profile.primaryPhotoUrl || (profile as unknown as { isBoosted?: boolean }).isBoosted) && (
+            <div className="absolute top-2 left-2 flex gap-1">
+              {profile.primaryPhotoUrl && (
+                <Badge
+                  variant="success"
+                  className="text-[9px] backdrop-blur-sm bg-emerald-500/90 border-0"
+                >
+                  Verified
+                </Badge>
+              )}
+              {(profile as unknown as { isBoosted?: boolean }).isBoosted && (
+                <Badge className="text-[9px] backdrop-blur-sm bg-accent-500/90 border-0 text-white">
+                  <Zap className="mr-0.5 h-2.5 w-2.5 fill-current" />
+                  Boosted
+                </Badge>
+              )}
             </div>
           )}
         </div>

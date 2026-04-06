@@ -42,6 +42,8 @@ import { main as createProfileHandler } from './profile/handlers/create-profile.
 import { main as getMyProfileHandler } from './profile/handlers/get-my-profile.js';
 import { main as updateProfileHandler } from './profile/handlers/update-profile.js';
 import { main as getProfileHandler } from './profile/handlers/get-profile.js';
+import { main as boostProfileHandler } from './profile/handlers/boost-profile.js';
+import { main as getBoostStatusHandler } from './profile/handlers/get-boost-status.js';
 import { main as getUploadUrlHandler } from './uploads/handlers/get-upload-url.js';
 import { main as confirmUploadHandler } from './uploads/handlers/confirm-upload.js';
 import { main as getPhotosHandler } from './uploads/handlers/get-photos.js';
@@ -224,6 +226,8 @@ route('post', '/profiles', createProfileHandler);
 route('get', '/me', getMyProfileHandler);
 route('patch', '/me', updateProfileHandler);
 route('get', '/profiles/:id', getProfileHandler);
+route('post', '/me/boost', boostProfileHandler);
+route('get', '/me/boost', getBoostStatusHandler);
 
 route('post', '/uploads/photo-url', getUploadUrlHandler);
 route('post', '/uploads/photo-confirm', confirmUploadHandler);

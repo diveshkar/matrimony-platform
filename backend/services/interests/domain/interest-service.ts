@@ -36,6 +36,14 @@ export class InterestService {
       throw new ConflictError('Interest already sent to this user');
     }
 
+    const cooldownKey = await this.coreRepo.get<{ ttl: number }>(
+      `USER#${senderId}`,
+      `INTEREST_COOLDOWN#${receiverId}`,
+    );
+    if (cooldownKey) {
+      throw new ConflictError('Please wait before sending another interest to this user');
+    }
+
     const [senderProfile, receiverProfile] = await Promise.all([
       this.coreRepo.get<Record<string, unknown>>(`USER#${senderId}`, 'PROFILE#v1'),
       this.coreRepo.get<Record<string, unknown>>(`USER#${receiverId}`, 'PROFILE#v1'),
@@ -141,6 +149,14 @@ export class InterestService {
     }
 
     await this.repo.deleteInterest(senderId, receiverId);
+
+    await this.coreRepo.put({
+      PK: `USER#${senderId}`,
+      SK: `INTEREST_COOLDOWN#${receiverId}`,
+      ttl: Math.floor(Date.now() / 1000) + 86400,
+      createdAt: new Date().toISOString(),
+    });
+
     return { status: 'interest_withdrawn' };
   }
 
@@ -194,7 +210,21 @@ export class InterestService {
   }
 
   async getShortlist(userId: string): Promise<{ items: unknown[] }> {
-    const items = await this.repo.getShortlist(userId);
+    const allItems = await this.repo.getShortlist(userId);
+
+    const blockedResult = await this.coreRepo.query<{ SK: string }>(`USER#${userId}`, { limit: 200 });
+    const blockedIds = new Set<string>();
+    for (const item of blockedResult.items) {
+      if (item.SK.startsWith('BLOCK#')) {
+        blockedIds.add(item.SK.replace('BLOCK#', ''));
+      }
+    }
+
+    const items = allItems.filter((item) => {
+      const targetId = (item as unknown as Record<string, unknown>).targetUserId as string;
+      return !blockedIds.has(targetId);
+    });
+
     return { items };
   }
 

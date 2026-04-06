@@ -1,5 +1,5 @@
 import { useRef, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Upload,
@@ -12,10 +12,13 @@ import {
   ImagePlus,
   AlertCircle,
   ArrowLeft,
+  Crown,
+  Camera,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/common/EmptyState';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { ImageCropDialog } from '@/components/common/ImageCropDialog';
@@ -24,6 +27,7 @@ import { cn } from '@/lib/utils/cn';
 import { CONFIG } from '@/lib/constants/config';
 import { ROUTES } from '@/lib/constants/routes';
 import { PHOTO_VISIBILITY_OPTIONS } from '@/lib/constants/enums';
+import { useMySubscription } from '@/features/subscription/hooks/useSubscription';
 import {
   useMyPhotos,
   useUploadPhoto,
@@ -40,15 +44,21 @@ export default function PhotosPage() {
   const updateVisibility = useUpdatePhotoVisibility();
   const deletePhoto = useDeletePhoto();
 
+  const { data: subResponse } = useMySubscription();
+  const navigate = useNavigate();
+  const currentPlan = subResponse?.success ? subResponse.data.subscription.planId : 'free';
+  const maxPhotos = currentPlan === 'free' ? 3 : 6;
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<PhotoData | null>(null);
   const [error, setError] = useState('');
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const [cropFileName, setCropFileName] = useState('');
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   const photos = response?.success ? response.data : [];
-  const canUpload = photos.length < CONFIG.MAX_PHOTOS;
+  const canUpload = photos.length < maxPhotos;
 
   const handleFiles = useCallback(
     (files: FileList | null) => {
@@ -68,7 +78,7 @@ export default function PhotosPage() {
       }
 
       if (!canUpload) {
-        setError(`Maximum ${CONFIG.MAX_PHOTOS} photos allowed`);
+        setUpgradeOpen(true);
         return;
       }
 
@@ -129,24 +139,30 @@ export default function PhotosPage() {
         <div>
           <h1 className="font-heading text-xl font-bold text-foreground">My Photos</h1>
           <p className="text-xs text-muted-foreground">
-            {photos.length} of {CONFIG.MAX_PHOTOS} photos uploaded
+            {photos.length} of {maxPhotos} photos uploaded
+            {currentPlan === 'free' && <span className="text-primary-600 ml-1">(Silver+ gets 6)</span>}
           </p>
         </div>
       </div>
 
       {/* Upload area */}
-      {canUpload && (
-        <div
-          role="button"
-          tabIndex={0}
-          aria-label="Upload photo. Click or drag and drop an image file."
-          onDragOver={(e) => {
-            e.preventDefault();
-            setDragActive(true);
-          }}
-          onDragLeave={() => setDragActive(false)}
-          onDrop={handleDrop}
-          onClick={() => fileInputRef.current?.click()}
+      <div
+        role="button"
+        tabIndex={0}
+        aria-label="Upload photo. Click or drag and drop an image file."
+        onDragOver={(e) => {
+          e.preventDefault();
+          if (canUpload) setDragActive(true);
+        }}
+        onDragLeave={() => setDragActive(false)}
+        onDrop={(e) => {
+          if (canUpload) handleDrop(e);
+          else { e.preventDefault(); setUpgradeOpen(true); }
+        }}
+        onClick={() => {
+          if (canUpload) fileInputRef.current?.click();
+          else setUpgradeOpen(true);
+        }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
@@ -189,7 +205,6 @@ export default function PhotosPage() {
             </div>
           )}
         </div>
-      )}
 
       {/* Error */}
       {error && (
@@ -329,6 +344,57 @@ export default function PhotosPage() {
           loading={uploadPhoto.isPending}
         />
       )}
+
+      {/* Upgrade dialog for photo limit */}
+      <Dialog open={upgradeOpen} onOpenChange={setUpgradeOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-50">
+              <Camera className="h-7 w-7 text-accent-600" />
+            </div>
+            <DialogTitle className="text-center">Upload More Photos</DialogTitle>
+            <DialogDescription className="text-center">
+              Free plan allows up to {maxPhotos} photos. Upgrade to Silver or above to upload up to 6 photos and unlock photo visibility controls.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="bg-primary-50/50 rounded-xl p-4 text-sm space-y-2">
+            <p className="font-medium text-primary-800">With Silver+ you get:</p>
+            <ul className="space-y-1.5 text-xs text-primary-700">
+              <li className="flex items-center gap-2">
+                <Camera className="h-3.5 w-3.5 shrink-0" />
+                Upload up to 6 photos
+              </li>
+              <li className="flex items-center gap-2">
+                <Eye className="h-3.5 w-3.5 shrink-0" />
+                Control who sees your photos
+              </li>
+              <li className="flex items-center gap-2">
+                <Crown className="h-3.5 w-3.5 shrink-0" />
+                Silver members see 4 photos, Gold sees all
+              </li>
+            </ul>
+          </div>
+          <div className="flex gap-3 mt-2">
+            <Button
+              variant="outline"
+              className="flex-1 rounded-xl"
+              onClick={() => setUpgradeOpen(false)}
+            >
+              Maybe Later
+            </Button>
+            <Button
+              className="flex-1 rounded-xl shadow-glow"
+              onClick={() => {
+                setUpgradeOpen(false);
+                navigate(ROUTES.PLANS);
+              }}
+            >
+              <Crown className="mr-2 h-4 w-4" />
+              Upgrade Plan
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

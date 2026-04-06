@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Edit,
@@ -11,13 +12,16 @@ import {
   Crown,
   User,
   Briefcase,
+  Zap,
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/common/EmptyState';
-import { useMyProfile } from '../hooks/useProfile';
+import { useMyProfile, useBoostStatus, useActivateBoost } from '../hooks/useProfile';
 import { useMySubscription } from '@/features/subscription/hooks/useSubscription';
 import { calculateAge, formatHeight } from '@/lib/utils/format';
 import { ROUTES } from '@/lib/constants/routes';
@@ -25,6 +29,10 @@ import { ROUTES } from '@/lib/constants/routes';
 export default function MyProfilePage() {
   const { data: response, isLoading, isError, refetch } = useMyProfile();
   const { data: subResponse } = useMySubscription();
+  const { data: boostResponse } = useBoostStatus();
+  const activateBoost = useActivateBoost();
+  const navigate = useNavigate();
+  const [boostDialogOpen, setBoostDialogOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -143,6 +151,18 @@ export default function MyProfilePage() {
                       <Camera className="mr-1.5 h-3 w-3" />
                       Photos
                     </Link>
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => setBoostDialogOpen(true)}
+                    className={`text-xs h-8 ${
+                      boostResponse?.success && boostResponse.data.isActive
+                        ? 'bg-accent-500 hover:bg-accent-600 text-white'
+                        : 'bg-white/10 hover:bg-white/20 text-white'
+                    }`}
+                  >
+                    <Zap className="mr-1.5 h-3 w-3" />
+                    {boostResponse?.success && boostResponse.data.isActive ? 'Boosted' : 'Boost'}
                   </Button>
                 </div>
               </div>
@@ -311,6 +331,108 @@ export default function MyProfilePage() {
           </div>
         </SectionCard>
       )}
+
+      {/* Boost Dialog */}
+      <Dialog open={boostDialogOpen} onOpenChange={setBoostDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          {(() => {
+            const boost = boostResponse?.success ? boostResponse.data : null;
+            const canBoost = boost?.canBoost;
+            const isActive = boost?.isActive;
+            const boostsTotal = boost?.boostsTotal || 0;
+            const boostsUsed = boost?.boostsUsed || 0;
+            const noBoostPlan = boostsTotal <= 0;
+
+            if (noBoostPlan) {
+              return (
+                <>
+                  <DialogHeader>
+                    <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-50">
+                      <Zap className="h-7 w-7 text-accent-600" />
+                    </div>
+                    <DialogTitle className="text-center">Profile Boost</DialogTitle>
+                    <DialogDescription className="text-center">
+                      Boost your profile to appear at the top of discovery results for 24 hours.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="bg-primary-50/50 rounded-xl p-4 text-sm text-primary-800 space-y-1.5">
+                    <p className="font-medium">Available on Gold and Platinum:</p>
+                    <ul className="text-xs text-primary-700 space-y-1">
+                      <li className="flex items-center gap-2"><Crown className="h-3.5 w-3.5 shrink-0" />Gold: 1 boost per month</li>
+                      <li className="flex items-center gap-2"><Crown className="h-3.5 w-3.5 shrink-0" />Platinum: 3 boosts per month</li>
+                    </ul>
+                  </div>
+                  <div className="flex gap-3 mt-2">
+                    <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setBoostDialogOpen(false)}>Maybe Later</Button>
+                    <Button className="flex-1 rounded-xl shadow-glow" onClick={() => { setBoostDialogOpen(false); navigate(ROUTES.PLANS); }}>
+                      <Crown className="mr-2 h-4 w-4" />Upgrade Plan
+                    </Button>
+                  </div>
+                </>
+              );
+            }
+
+            if (isActive) {
+              const hoursLeft = boost?.expiresAt ? Math.max(1, Math.ceil((new Date(boost.expiresAt).getTime() - Date.now()) / 3600000)) : 0;
+              return (
+                <>
+                  <DialogHeader>
+                    <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-100">
+                      <Zap className="h-7 w-7 text-accent-600 fill-accent-600" />
+                    </div>
+                    <DialogTitle className="text-center">Profile is Boosted!</DialogTitle>
+                    <DialogDescription className="text-center">
+                      Your profile is appearing at the top of discovery results.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="bg-accent-50 rounded-xl p-5 text-center">
+                    <p className="text-3xl font-heading font-bold text-accent-700">{hoursLeft}h</p>
+                    <p className="text-xs text-accent-600 mt-1">remaining</p>
+                  </div>
+                  <p className="text-xs text-center text-muted-foreground">{boostsUsed} of {boostsTotal} boosts used this month</p>
+                  <Button variant="outline" className="w-full rounded-xl" onClick={() => setBoostDialogOpen(false)}>Close</Button>
+                </>
+              );
+            }
+
+            return (
+              <>
+                <DialogHeader>
+                  <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-50">
+                    <Zap className="h-7 w-7 text-accent-600" />
+                  </div>
+                  <DialogTitle className="text-center">Boost Your Profile</DialogTitle>
+                  <DialogDescription className="text-center">
+                    Appear at the top of discovery results for 24 hours and get more visibility.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="bg-accent-50/50 rounded-xl p-4 text-sm space-y-2">
+                  <p className="font-medium text-accent-800">What happens when you boost:</p>
+                  <ul className="text-xs text-accent-700 space-y-1.5">
+                    <li className="flex items-center gap-2"><Zap className="h-3.5 w-3.5 shrink-0" />Profile appears at the top of all matching users</li>
+                    <li className="flex items-center gap-2"><Zap className="h-3.5 w-3.5 shrink-0" />Lasts for 24 hours</li>
+                    <li className="flex items-center gap-2"><Zap className="h-3.5 w-3.5 shrink-0" />Get up to 10x more profile views</li>
+                  </ul>
+                </div>
+                <p className="text-xs text-center text-muted-foreground">{boostsUsed} of {boostsTotal} boosts used this month</p>
+                <div className="flex gap-3">
+                  <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setBoostDialogOpen(false)}>Cancel</Button>
+                  <Button
+                    className="flex-1 rounded-xl bg-accent-600 hover:bg-accent-700 text-white shadow-glow"
+                    disabled={!canBoost || activateBoost.isPending}
+                    onClick={async () => {
+                      await activateBoost.mutateAsync();
+                      setBoostDialogOpen(false);
+                    }}
+                  >
+                    {activateBoost.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Zap className="mr-2 h-4 w-4" />Boost Now</>}
+                  </Button>
+                </div>
+              </>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -181,7 +181,7 @@ export class DiscoveryService {
       });
     }
 
-    filtered = scoreAndSort(filtered, myProfile, prefs);
+    filtered = await scoreAndSort(filtered, myProfile, prefs);
 
     const items = filtered.slice(0, limit);
     const nextCursor = lastKey
@@ -226,7 +226,15 @@ export class DiscoveryService {
       results = await this.discoveryRepo.getAllProfiles(limit + 10);
     }
 
-    let filtered = results.items.filter((p) => p.userId !== userId && !blockedIds.has(p.userId));
+    // Deduplicate
+    const seen = new Set<string>();
+    const deduped = results.items.filter((p) => {
+      if (seen.has(p.userId)) return false;
+      seen.add(p.userId);
+      return true;
+    });
+
+    let filtered = deduped.filter((p) => p.userId !== userId && !blockedIds.has(p.userId));
 
     if (filters.gender) filtered = filtered.filter((p) => p.gender === filters.gender);
     if (filters.ageMin) filtered = filtered.filter((p) => p.age >= filters.ageMin!);
@@ -253,16 +261,31 @@ export class DiscoveryService {
   }
 }
 
-function scoreAndSort(
+async function scoreAndSort(
   profiles: DiscoveryProfile[],
   myProfile: Record<string, unknown> | null,
   prefs: UserPreferences | null,
-): DiscoveryProfile[] {
+): Promise<DiscoveryProfile[]> {
   if (!myProfile) return profiles;
+
+  // Check which profiles are currently boosted
+  const { BaseRepository } = await import('../../shared/repositories/base-repository.js');
+  const boostRepo = new BaseRepository('core');
+  const now = new Date();
+
+  const boostedUserIds = new Set<string>();
+  for (const p of profiles) {
+    const boost = await boostRepo.get<{ expiresAt: string }>(`USER#${p.userId}`, 'BOOST#ACTIVE');
+    if (boost && new Date(boost.expiresAt) > now) {
+      boostedUserIds.add(p.userId);
+    }
+  }
 
   return profiles
     .map((p) => {
       let score = 0;
+
+      if (boostedUserIds.has(p.userId)) score += 100;
 
       if (prefs?.religions?.includes(p.religion)) score += 30;
       else if (p.religion === myProfile.religion) score += 20;
@@ -273,12 +296,12 @@ function scoreAndSort(
       if (p.primaryPhotoUrl) score += 10;
       score += Math.floor(p.profileCompletion / 10);
 
-      return { ...p, _matchScore: score };
+      return { ...p, _matchScore: score, _isBoosted: boostedUserIds.has(p.userId) };
     })
     .sort(
       (a, b) =>
         (b as unknown as { _matchScore: number })._matchScore -
         (a as unknown as { _matchScore: number })._matchScore,
     )
-    .map(({ _matchScore: _, ...p }) => p as DiscoveryProfile);
+    .map(({ _matchScore: _, _isBoosted, ...p }) => ({ ...p, isBoosted: _isBoosted }) as DiscoveryProfile & { isBoosted: boolean });
 }

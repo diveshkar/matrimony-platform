@@ -197,6 +197,10 @@ export class ProfileService {
 
     const privacy = await this.repo.getPrivacy(userId);
 
+    if (viewerId && viewerId !== userId && privacy?.showInSearch === false) {
+      throw new NotFoundError('Profile');
+    }
+
     const publicProfile: Record<string, unknown> = { ...profile };
     delete publicProfile.PK;
     delete publicProfile.SK;
@@ -206,10 +210,27 @@ export class ProfileService {
       delete publicProfile.dateOfBirth;
     }
 
+    // Load user's photos
+    const { PhotoRepository } = await import('../../uploads/repositories/photo-repository.js');
+    const photoRepo = new PhotoRepository();
+    const allPhotos = await photoRepo.getPhotos(userId);
+    const visiblePhotos = allPhotos.filter((p) => p.visibility === 'all' || p.isPrimary);
+
+    // Determine how many photos the viewer can see based on plan
+    const PHOTO_VIEW_LIMITS: Record<string, number> = { free: 1, silver: 4, gold: 99, platinum: 99 };
+    let viewerPlan = 'free';
+    let photoViewLimit = 1;
+
     if (viewerId && viewerId !== userId) {
       try {
         const { getRemainingUsage } = await import('../../shared/middleware/entitlement-check.js');
+        const { SubscriptionRepository } = await import('../../subscriptions/repositories/subscription-repository.js');
         const usage = await getRemainingUsage(viewerId);
+        const subRepo = new SubscriptionRepository();
+        const viewerSub = await subRepo.getSubscription(viewerId);
+        viewerPlan = viewerSub?.status === 'active' ? viewerSub.planId : 'free';
+        photoViewLimit = PHOTO_VIEW_LIMITS[viewerPlan] || 1;
+
         publicProfile.contactInfoVisible = usage.contactInfoAccess;
         if (!usage.contactInfoAccess) {
           delete publicProfile.whatsappNumber;
@@ -218,7 +239,20 @@ export class ProfileService {
       } catch {
         publicProfile.contactInfoVisible = false;
       }
+    } else {
+      photoViewLimit = 99; // own profile sees all
     }
+
+    // Return photos: visible ones up to limit, rest marked as locked
+    const sortedPhotos = visiblePhotos.sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0));
+    publicProfile.photos = sortedPhotos.map((p, i) => ({
+      photoId: p.photoId,
+      url: i < photoViewLimit ? p.url : '',
+      isPrimary: p.isPrimary,
+      locked: i >= photoViewLimit,
+    }));
+    publicProfile.photoViewLimit = photoViewLimit;
+    publicProfile.totalPhotos = sortedPhotos.length;
 
     if (viewerId && viewerId !== userId) {
       try {

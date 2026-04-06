@@ -50,3 +50,29 @@ export function useUpdateProfile() {
     },
   });
 }
+
+export function useBoostStatus() {
+  const { isAuthenticated } = useAuth();
+  return useQuery({
+    queryKey: ['boost-status'],
+    queryFn: () => profileApi.getBoostStatus(),
+    enabled: isAuthenticated,
+  });
+}
+
+export function useActivateBoost() {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  return useMutation({
+    mutationFn: () => profileApi.activateBoost(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['boost-status'] });
+      toast.success('Profile boosted!', 'Your profile will appear at the top for 24 hours');
+    },
+    onError: (err) => {
+      const msg = err instanceof Error ? err.message : 'Could not boost profile';
+      toast.error('Boost failed', msg);
+    },
+  });
+}

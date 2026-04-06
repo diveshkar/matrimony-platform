@@ -16,7 +16,14 @@ import {
   Mail,
   MessageCircle,
   Lock,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Crown,
+  Camera,
 } from 'lucide-react';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -47,11 +54,19 @@ export default function ProfileDetailPage() {
     data: response,
     isLoading,
     isError,
+    error,
   } = useQuery({
     queryKey: ['profile', id],
     queryFn: () => profileApi.getProfile(id!),
     enabled: !!id,
+    retry: (failureCount, err) => {
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      if (status === 403) return false;
+      return failureCount < 2;
+    },
   });
+
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (response?.success) {
@@ -70,6 +85,34 @@ export default function ProfileDetailPage() {
   }
 
   if (isError) {
+    const status = (error as { response?: { status?: number } })?.response?.status;
+    const is403 = status === 403;
+
+    if (is403) {
+      return (
+        <div className="max-w-md mx-auto text-center py-16">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50">
+            <Lock className="h-8 w-8 text-amber-600" />
+          </div>
+          <h2 className="font-heading text-xl font-bold text-foreground">Daily Limit Reached</h2>
+          <p className="mt-3 text-sm text-muted-foreground max-w-sm mx-auto">
+            You've used all your profile views for today. Upgrade your plan to view more profiles.
+          </p>
+          <div className="mt-6 flex justify-center gap-3">
+            <Button variant="outline" asChild>
+              <Link to={ROUTES.DISCOVER}>Back to Discover</Link>
+            </Button>
+            <Button asChild>
+              <Link to={ROUTES.PLANS}>
+                <Crown className="mr-2 h-4 w-4" />
+                Upgrade Plan
+              </Link>
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <EmptyState
         title="Profile not found"
@@ -93,10 +136,12 @@ export default function ProfileDetailPage() {
     );
   }
 
-  const raw = response.data as Record<string, string | number | boolean | undefined>;
+  const raw = response.data as Record<string, unknown>;
   const s = (key: string): string => String(raw[key] || '');
   const n = (key: string): number => Number(raw[key]) || 0;
-  const age = raw.dateOfBirth ? calculateAge(s('dateOfBirth')) : null;
+  const age = s('dateOfBirth') ? calculateAge(s('dateOfBirth')) : null;
+  const photos = (raw.photos || []) as { photoId: string; url: string; isPrimary: boolean; locked: boolean }[];
+  const totalPhotos = (raw.totalPhotos as number) || 0;
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -109,8 +154,11 @@ export default function ProfileDetailPage() {
 
       {/* Hero photo card */}
       <Card className="overflow-hidden border-0 shadow-soft-lg">
-        <div className="aspect-[4/5] sm:aspect-[16/9] lg:aspect-[2/1] relative bg-muted">
-          {raw.primaryPhotoUrl ? (
+        <div
+          className="aspect-[4/5] sm:aspect-[16/9] lg:aspect-[2/1] relative bg-muted cursor-pointer"
+          onClick={() => photos.length > 0 && !photos[0]?.locked && setLightboxIndex(0)}
+        >
+          {s('primaryPhotoUrl') ? (
             <img
               src={s('primaryPhotoUrl')}
               alt={s('name')}
@@ -129,8 +177,8 @@ export default function ProfileDetailPage() {
               {s('name')}{age ? `, ${age}` : ''}
             </h1>
             <div className="flex items-center gap-3 mt-1.5 text-sm text-white/70">
-              {raw.height && <span>{formatHeight(n('height'))}</span>}
-              {raw.city && (
+              {n('height') > 0 && <span>{formatHeight(n('height'))}</span>}
+              {s('city') && (
                 <span className="flex items-center gap-1">
                   <MapPin className="h-3 w-3" />
                   {s('city')}, {s('country')}
@@ -146,10 +194,131 @@ export default function ProfileDetailPage() {
         </div>
       </Card>
 
+      {/* Photo Gallery */}
+      {photos.length > 1 && (
+        <Card className="border-0 shadow-soft overflow-hidden">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary-50">
+                <Camera className="h-3.5 w-3.5 text-primary-700" />
+              </div>
+              Photos
+              <span className="text-xs text-muted-foreground font-normal ml-1">
+                {totalPhotos} photo{totalPhotos !== 1 ? 's' : ''}
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+              {photos.map((photo, i) => (
+                <motion.button
+                  key={photo.photoId}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.05 }}
+                  onClick={() => !photo.locked && setLightboxIndex(i)}
+                  className={`relative aspect-square rounded-xl overflow-hidden group ${
+                    photo.locked ? 'cursor-default' : 'cursor-pointer'
+                  }`}
+                >
+                  {photo.locked ? (
+                    <div className="h-full w-full bg-gradient-to-br from-primary-100 via-warm-100 to-primary-50 flex flex-col items-center justify-center gap-1.5 p-2">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/80 shadow-soft">
+                        <Lock className="h-4 w-4 text-primary-600" />
+                      </div>
+                      <span className="text-[9px] text-primary-700 font-medium text-center leading-tight">Upgrade to view</span>
+                    </div>
+                  ) : (
+                    <>
+                      <img
+                        src={photo.url}
+                        alt={`Photo ${i + 1}`}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                    </>
+                  )}
+                  {photo.isPrimary && !photo.locked && (
+                    <div className="absolute top-1.5 left-1.5">
+                      <Badge className="text-[8px] px-1.5 py-0 bg-white/90 text-primary-700 backdrop-blur-sm">
+                        Primary
+                      </Badge>
+                    </div>
+                  )}
+                </motion.button>
+              ))}
+            </div>
+            {photos.some((p) => p.locked) && (
+              <Link
+                to={ROUTES.PLANS}
+                className="flex items-center justify-center gap-2 mt-3 py-2.5 rounded-xl bg-gradient-to-r from-primary-50 to-accent-50 text-xs font-medium text-primary-700 hover:from-primary-100 hover:to-accent-100 transition-colors"
+              >
+                <Crown className="h-3.5 w-3.5" />
+                Upgrade to see all {totalPhotos} photos
+              </Link>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Photo Lightbox */}
+      <Dialog open={lightboxIndex !== null} onOpenChange={() => setLightboxIndex(null)}>
+        <DialogContent className="max-w-3xl p-0 bg-black border-0 overflow-hidden" aria-describedby={undefined}>
+          <DialogTitle className="sr-only">Photo viewer</DialogTitle>
+          {lightboxIndex !== null && photos[lightboxIndex] && !photos[lightboxIndex].locked && (
+            <div className="relative">
+              <button
+                onClick={() => setLightboxIndex(null)}
+                className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={lightboxIndex}
+                  src={photos[lightboxIndex].url}
+                  alt={`Photo ${lightboxIndex + 1}`}
+                  className="w-full max-h-[80vh] object-contain"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                />
+              </AnimatePresence>
+
+              {/* Nav buttons */}
+              {lightboxIndex > 0 && !photos[lightboxIndex - 1]?.locked && (
+                <button
+                  onClick={() => setLightboxIndex(lightboxIndex - 1)}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </button>
+              )}
+              {lightboxIndex < photos.length - 1 && !photos[lightboxIndex + 1]?.locked && (
+                <button
+                  onClick={() => setLightboxIndex(lightboxIndex + 1)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </button>
+              )}
+
+              {/* Counter */}
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/50 text-white text-xs">
+                {lightboxIndex + 1} / {photos.filter((p) => !p.locked).length}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Quick badges */}
       <div className="flex flex-wrap gap-2">
         <Badge variant="outline" className="py-1 px-3 text-xs">{formatEnum(s('religion'))}</Badge>
-        {raw.caste && <Badge variant="outline" className="py-1 px-3 text-xs">{s('caste')}</Badge>}
+        {s('caste') && <Badge variant="outline" className="py-1 px-3 text-xs">{s('caste')}</Badge>}
         <Badge variant="outline" className="py-1 px-3 text-xs">{formatEnum(s('education'))}</Badge>
         <Badge variant="outline" className="py-1 px-3 text-xs">{formatEnum(s('maritalStatus'))}</Badge>
         <Badge variant="outline" className="py-1 px-3 text-xs">{formatEnum(s('motherTongue'))}</Badge>
@@ -159,11 +328,11 @@ export default function ProfileDetailPage() {
       <ContactInfoCard
         email={s('personalEmail') || s('email')}
         whatsapp={s('whatsappNumber')}
-        canView={raw.contactInfoVisible === true}
+        canView={Boolean(raw.contactInfoVisible)}
       />
 
       {/* About */}
-      {raw.aboutMe && (
+      {s('aboutMe') && (
         <Card className="border-0 shadow-soft">
           <CardContent className="pt-5">
             <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap italic">
@@ -187,8 +356,8 @@ export default function ProfileDetailPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           <InfoRow label="Education" value={formatEnum(s('education'))} />
-          {raw.educationField && <InfoRow label="Field" value={s('educationField')} />}
-          {raw.occupation && <InfoRow label="Occupation" value={s('occupation')} />}
+          {s('educationField') &&<InfoRow label="Field" value={s('educationField')} />}
+          {s('occupation') &&<InfoRow label="Occupation" value={s('occupation')} />}
         </CardContent>
       </Card>
 
@@ -204,8 +373,8 @@ export default function ProfileDetailPage() {
         </CardHeader>
         <CardContent className="space-y-2 pt-0">
           <InfoRow label="Country" value={s('country')} />
-          {raw.state && <InfoRow label="State" value={s('state')} />}
-          {raw.city && <InfoRow label="City" value={s('city')} />}
+          {s('state') &&<InfoRow label="State" value={s('state')} />}
+          {s('city') && <InfoRow label="City" value={s('city')} />}
         </CardContent>
       </Card>
 
@@ -221,14 +390,14 @@ export default function ProfileDetailPage() {
         </CardHeader>
         <CardContent className="space-y-2 pt-0">
           <InfoRow label="Religion" value={formatEnum(s('religion'))} />
-          {raw.caste && <InfoRow label="Caste" value={s('caste')} />}
+          {s('caste') && <InfoRow label="Caste" value={s('caste')} />}
           <InfoRow label="Mother Tongue" value={formatEnum(s('motherTongue'))} />
         </CardContent>
       </Card>
       </div> {/* close grid */}
 
       {/* Family */}
-      {(raw.fatherOccupation || raw.motherOccupation || raw.familyType) && (
+      {(s('fatherOccupation') || s('motherOccupation') || s('familyType')) && (
         <Card className="border-0 shadow-soft">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm">
@@ -239,10 +408,10 @@ export default function ProfileDetailPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {raw.fatherOccupation && <InfoRow label="Father" value={s('fatherOccupation')} />}
-            {raw.motherOccupation && <InfoRow label="Mother" value={s('motherOccupation')} />}
-            {raw.familyType && <InfoRow label="Family Type" value={formatEnum(s('familyType'))} />}
-            {raw.familyValues && (
+            {s('fatherOccupation') &&<InfoRow label="Father" value={s('fatherOccupation')} />}
+            {s('motherOccupation') &&<InfoRow label="Mother" value={s('motherOccupation')} />}
+            {s('familyType') &&<InfoRow label="Family Type" value={formatEnum(s('familyType'))} />}
+            {s('familyValues') && (
               <InfoRow label="Family Values" value={formatEnum(s('familyValues'))} />
             )}
           </CardContent>

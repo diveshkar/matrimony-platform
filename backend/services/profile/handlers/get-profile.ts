@@ -29,24 +29,46 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
       const { BaseRepository } = await import('../../shared/repositories/base-repository.js');
       const repo = new SafetyRepository();
       const coreRepo = new BaseRepository('core');
-      const viewerProfile = await coreRepo.get<Record<string, unknown>>(
-        `USER#${authedEvent.auth.userId}`,
-        'PROFILE#v1',
-      );
-      await repo.recordView(profileId, authedEvent.auth.userId, viewerProfile || undefined);
 
-      const viewerName = (viewerProfile?.name as string) || 'Someone';
-      const { getRemainingUsage } = await import('../../shared/middleware/entitlement-check.js');
-      const viewedUserUsage = await getRemainingUsage(profileId);
+      const today = new Date().toISOString().split('T')[0];
+      const dedupKey = `VIEWDEDUP#${authedEvent.auth.userId}#${today}`;
+      const alreadyViewed = await coreRepo.get(`USER#${profileId}`, dedupKey);
 
-      await repo.createNotification(profileId, {
-        type: 'profile_viewed',
-        title: 'Someone viewed your profile',
-        message: viewedUserUsage.whoViewedMeAccess
-          ? `${viewerName} viewed your profile`
-          : `Someone viewed your profile. Upgrade to see who!`,
-        actionUrl: viewedUserUsage.whoViewedMeAccess ? '/who-viewed-me' : '/plans',
-      });
+      if (!alreadyViewed) {
+        await coreRepo.put({
+          PK: `USER#${profileId}`,
+          SK: dedupKey,
+          viewerId: authedEvent.auth.userId,
+          date: today,
+          ttl: Math.floor(Date.now() / 1000) + 86400 * 2,
+        });
+
+        const viewerProfile = await coreRepo.get<Record<string, unknown>>(
+          `USER#${authedEvent.auth.userId}`,
+          'PROFILE#v1',
+        );
+        await repo.recordView(profileId, authedEvent.auth.userId, viewerProfile || undefined);
+
+        const viewerName = (viewerProfile?.name as string) || 'Someone';
+        const { SubscriptionRepository } = await import('../../subscriptions/repositories/subscription-repository.js');
+        const viewedSubRepo = new SubscriptionRepository();
+        const viewedSub = await viewedSubRepo.getSubscription(profileId);
+        const viewedPlan = viewedSub?.status === 'active' ? viewedSub.planId : 'free';
+
+        const canSeeNames = viewedPlan === 'gold' || viewedPlan === 'platinum';
+        const canSeeCount = viewedPlan === 'silver' || canSeeNames;
+
+        await repo.createNotification(profileId, {
+          type: 'profile_viewed',
+          title: 'Someone viewed your profile',
+          message: canSeeNames
+            ? `${viewerName} viewed your profile`
+            : canSeeCount
+              ? 'Someone viewed your profile. Upgrade to Gold to see who!'
+              : 'Someone viewed your profile. Upgrade to see who!',
+          actionUrl: canSeeCount ? '/who-viewed-me' : '/plans',
+        });
+      }
     } catch (err) {
       logger.warn('Failed to record profile view', { error: String(err) });
     }

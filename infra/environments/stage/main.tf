@@ -393,6 +393,24 @@ module "route_profile_get" {
   lambda_function_name = module.lambda_profile.function_name
 }
 
+module "route_boost_post" {
+  source               = "../../modules/api_gateway_route"
+  api_id               = module.api_gateway.api_id
+  api_execution_arn    = module.api_gateway.execution_arn
+  route_key            = "POST /me/boost"
+  lambda_invoke_arn    = module.lambda_profile.invoke_arn
+  lambda_function_name = module.lambda_profile.function_name
+}
+
+module "route_boost_get" {
+  source               = "../../modules/api_gateway_route"
+  api_id               = module.api_gateway.api_id
+  api_execution_arn    = module.api_gateway.execution_arn
+  route_key            = "GET /me/boost"
+  lambda_invoke_arn    = module.lambda_profile.invoke_arn
+  lambda_function_name = module.lambda_profile.function_name
+}
+
 # Upload routes
 module "route_upload_url" {
   source               = "../../modules/api_gateway_route"
