@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { subscriptionApi } from '../api/subscription-api';
 import { useAuth } from '@/lib/auth/auth-context';
+import { useToast } from '@/components/ui/toaster';
 
 export function usePlans() {
   return useQuery({
@@ -30,12 +31,18 @@ export function useUsage() {
 }
 
 export function useCreateCheckout() {
+  const toast = useToast();
   return useMutation({
     mutationFn: (planId: string) => subscriptionApi.createCheckout(planId),
     onSuccess: (response) => {
       if (response.success && response.data.checkoutUrl) {
         window.location.href = response.data.checkoutUrl;
       }
+    },
+    onError: (err) => {
+      const axiosErr = err as { response?: { data?: { error?: { message?: string } } } };
+      const msg = axiosErr?.response?.data?.error?.message || 'Could not start checkout. Please try again.';
+      toast.error('Checkout failed', msg);
     },
   });
 }
