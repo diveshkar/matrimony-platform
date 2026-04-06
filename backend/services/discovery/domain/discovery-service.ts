@@ -268,16 +268,24 @@ async function scoreAndSort(
 ): Promise<DiscoveryProfile[]> {
   if (!myProfile) return profiles;
 
-  // Check which profiles are currently boosted
+  // Check boost status and subscription plan for each profile
   const { BaseRepository } = await import('../../shared/repositories/base-repository.js');
-  const boostRepo = new BaseRepository('core');
+  const coreRepo2 = new BaseRepository('core');
   const now = new Date();
 
   const boostedUserIds = new Set<string>();
+  const platinumUserIds = new Set<string>();
+
   for (const p of profiles) {
-    const boost = await boostRepo.get<{ expiresAt: string }>(`USER#${p.userId}`, 'BOOST#ACTIVE');
+    const [boost, sub] = await Promise.all([
+      coreRepo2.get<{ expiresAt: string }>(`USER#${p.userId}`, 'BOOST#ACTIVE'),
+      coreRepo2.get<{ planId: string; status: string }>(`USER#${p.userId}`, 'SUBSCRIPTION#ACTIVE'),
+    ]);
     if (boost && new Date(boost.expiresAt) > now) {
       boostedUserIds.add(p.userId);
+    }
+    if (sub?.status === 'active' && sub.planId === 'platinum') {
+      platinumUserIds.add(p.userId);
     }
   }
 
@@ -285,8 +293,13 @@ async function scoreAndSort(
     .map((p) => {
       let score = 0;
 
+      // Boost: +100 (active boost for 24h, Gold=1/mo, Platinum=3/mo)
       if (boostedUserIds.has(p.userId)) score += 100;
 
+      // Platinum priority: +50 (always active for Platinum subscribers)
+      if (platinumUserIds.has(p.userId)) score += 50;
+
+      // Preference matching
       if (prefs?.religions?.includes(p.religion)) score += 30;
       else if (p.religion === myProfile.religion) score += 20;
 

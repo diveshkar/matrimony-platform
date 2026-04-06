@@ -1,65 +1,72 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Loader2, Crown, Sparkles, Shield, Zap, AlertTriangle } from 'lucide-react';
+import {
+  Check,
+  X,
+  Loader2,
+  Crown,
+  Sparkles,
+  Shield,
+  Zap,
+  AlertTriangle,
+  Eye,
+  Heart,
+  MessageCircle,
+  Camera,
+  Search,
+  Users,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils/cn';
 import { useToast } from '@/components/ui/toaster';
 import { usePlans, useMySubscription, useCreateCheckout, useCancelSubscription } from '../hooks/useSubscription';
 
-interface PlanStyle {
-  popular: boolean;
+interface FeatureRow {
+  label: string;
+  icon: typeof Check;
+  free: string | boolean;
+  silver: string | boolean;
+  gold: string | boolean;
+  platinum: string | boolean;
+}
+
+const features: FeatureRow[] = [
+  { label: 'Profile views/day', icon: Eye, free: '10', silver: '30', gold: 'Unlimited', platinum: 'Unlimited' },
+  { label: 'Interests/day', icon: Heart, free: '5', silver: '15', gold: 'Unlimited', platinum: 'Unlimited' },
+  { label: 'Chat access', icon: MessageCircle, free: false, silver: true, gold: true, platinum: true },
+  { label: 'Contact info visible', icon: Users, free: false, silver: false, gold: true, platinum: true },
+  { label: 'Who viewed me', icon: Eye, free: false, silver: 'Count only', gold: 'Full details', platinum: 'Full details' },
+  { label: 'Photo uploads', icon: Camera, free: '3 max', silver: '6 max', gold: '6 max', platinum: '6 max' },
+  { label: "View other's photos", icon: Camera, free: '1 photo', silver: '4 photos', gold: 'All photos', platinum: 'All photos' },
+  { label: 'Photo visibility controls', icon: Eye, free: false, silver: true, gold: true, platinum: true },
+  { label: 'Profile boost', icon: Zap, free: false, silver: false, gold: '1/month', platinum: '3/month' },
+  { label: 'Priority in search', icon: Search, free: false, silver: false, gold: false, platinum: true },
+];
+
+interface PlanCardConfig {
+  id: string;
   icon: typeof Crown;
   accent: string;
   iconBg: string;
-  ring: string;
-  features: string[];
+  gradientFrom: string;
+  popular: boolean;
 }
 
-const planStyles: Record<string, PlanStyle> = {
-  silver: {
-    popular: false,
-    icon: Shield,
-    accent: 'text-slate-600',
-    iconBg: 'bg-slate-100',
-    ring: '',
-    features: [
-      '30 profile views/day',
-      '15 interests/day',
-      'Chat access',
-      'Who viewed me',
-    ],
-  },
-  gold: {
-    popular: true,
-    icon: Crown,
-    accent: 'text-accent-600',
-    iconBg: 'bg-accent-100',
-    ring: 'ring-2 ring-accent-300 ring-offset-2',
-    features: [
-      'Unlimited profile views',
-      'Unlimited interests',
-      'Full chat access',
-      'View contact info',
-      '1 profile boost/month',
-    ],
-  },
-  platinum: {
-    popular: false,
-    icon: Zap,
-    accent: 'text-violet-600',
-    iconBg: 'bg-violet-100',
-    ring: '',
-    features: [
-      'Everything in Gold',
-      'Priority support',
-      '3 boosts/month',
-      'Premium badge',
-      'Top search placement',
-    ],
-  },
+const planConfigs: Record<string, PlanCardConfig> = {
+  silver: { id: 'silver', icon: Shield, accent: 'text-slate-600', iconBg: 'bg-slate-100', gradientFrom: 'from-slate-50', popular: false },
+  gold: { id: 'gold', icon: Crown, accent: 'text-accent-600', iconBg: 'bg-accent-100', gradientFrom: 'from-accent-50', popular: true },
+  platinum: { id: 'platinum', icon: Zap, accent: 'text-violet-600', iconBg: 'bg-violet-100', gradientFrom: 'from-violet-50', popular: false },
+};
+
+const planHighlights: Record<string, string[]> = {
+  silver: ['Chat with your matches', '30 views + 15 interests daily', 'See who viewed your profile'],
+  gold: ['See contact info (WhatsApp & email)', 'Unlimited views & interests', '1 profile boost per month'],
+  platinum: ['Top search placement always', '3 boosts per month', 'Everything in Gold included'],
 };
 
 export default function PlansPage() {
@@ -70,6 +77,7 @@ export default function PlansPage() {
   const toast = useToast();
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [cancelOpen, setCancelOpen] = useState(false);
+  const [showComparison, setShowComparison] = useState(false);
 
   const plans = plansResponse?.success ? plansResponse.data : [];
   const currentPlan = subResponse?.success ? subResponse.data.subscription.planId : 'free';
@@ -80,7 +88,7 @@ export default function PlansPage() {
         <Skeleton className="h-10 w-56 mx-auto" />
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[...Array(3)].map((_, i) => (
-            <Skeleton key={i} className="h-72 rounded-2xl" />
+            <Skeleton key={i} className="h-80 rounded-2xl" />
           ))}
         </div>
       </div>
@@ -88,20 +96,20 @@ export default function PlansPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-2 sm:px-4">
+    <div className="max-w-4xl mx-auto px-2 sm:px-4 pb-8">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         className="text-center mb-8 sm:mb-10"
       >
-        <div className="inline-flex items-center justify-center h-11 w-11 rounded-xl bg-primary-50 mb-3">
-          <Sparkles className="h-5 w-5 text-primary-700" />
+        <div className="inline-flex items-center justify-center h-12 w-12 rounded-2xl bg-gradient-primary shadow-glow mb-4">
+          <Sparkles className="h-5 w-5 text-accent-400" />
         </div>
-        <h1 className="font-heading text-xl sm:text-2xl font-bold text-foreground">
+        <h1 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">
           Choose Your Plan
         </h1>
-        <p className="mt-1.5 text-sm text-muted-foreground max-w-sm mx-auto">
+        <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
           Unlock premium features to find your perfect match faster
         </p>
         {currentPlan !== 'free' && (
@@ -112,13 +120,14 @@ export default function PlansPage() {
         )}
       </motion.div>
 
-      {/* Plans */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-8">
+      {/* Plan Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
         {plans.map((plan, i) => {
-          const style = planStyles[plan.id] || planStyles.silver;
+          const config = planConfigs[plan.id] || planConfigs.silver;
           const isCurrentPlan = currentPlan === plan.id;
           const price = (plan.priceMonthly / 100).toFixed(2);
-          const Icon = style.icon;
+          const Icon = config.icon;
+          const highlights = planHighlights[plan.id] || [];
 
           return (
             <motion.div
@@ -126,89 +135,190 @@ export default function PlansPage() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.08 }}
-              className={cn(
-                'relative rounded-2xl bg-white overflow-hidden transition-all',
-                style.popular
-                  ? 'shadow-soft-lg sm:-mt-2 sm:mb-2'
-                  : 'shadow-soft hover:shadow-soft-lg',
-                style.ring,
-              )}
             >
-              {/* Popular ribbon */}
-              {style.popular && (
-                <div className="bg-gradient-gold text-white text-center py-1.5 text-[10px] font-bold tracking-wide uppercase">
-                  Most Popular
-                </div>
-              )}
-
-              <div className="p-5 sm:p-6">
-                {/* Icon + Name */}
-                <div className="flex items-center gap-2.5 mb-4">
-                  <div className={cn('flex h-9 w-9 items-center justify-center rounded-lg', style.iconBg)}>
-                    <Icon className={cn('h-4.5 w-4.5', style.accent)} />
+              <Card
+                className={cn(
+                  'relative rounded-2xl border-0 overflow-hidden transition-all h-full',
+                  config.popular
+                    ? 'shadow-soft-lg ring-2 ring-accent-300 ring-offset-2 sm:-mt-3 sm:mb-3'
+                    : 'shadow-soft hover:shadow-soft-lg',
+                )}
+              >
+                {/* Popular ribbon */}
+                {config.popular && (
+                  <div className="bg-gradient-gold text-white text-center py-1.5 text-[10px] font-bold tracking-wide uppercase">
+                    Most Popular
                   </div>
-                  <div>
-                    <h3 className="font-heading font-bold text-base leading-none">{plan.name}</h3>
-                    {isCurrentPlan && (
-                      <span className="text-[9px] text-accent-600 font-semibold">Current</span>
+                )}
+
+                <div className={cn('p-5 sm:p-6 bg-gradient-to-b to-white', config.gradientFrom)}>
+                  {/* Icon + Name */}
+                  <div className="flex items-center gap-2.5 mb-4">
+                    <div className={cn('flex h-10 w-10 items-center justify-center rounded-xl', config.iconBg)}>
+                      <Icon className={cn('h-5 w-5', config.accent)} />
+                    </div>
+                    <div>
+                      <h3 className="font-heading font-bold text-lg leading-none">{plan.name}</h3>
+                      {isCurrentPlan && (
+                        <span className="text-[9px] text-accent-600 font-semibold">Current Plan</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Price */}
+                  <div className="mb-5">
+                    <span className="font-heading text-4xl font-bold text-foreground">£{price}</span>
+                    <span className="text-sm text-muted-foreground ml-1">/mo</span>
+                  </div>
+
+                  {/* CTA */}
+                  <Button
+                    className={cn(
+                      'w-full rounded-xl mb-5 h-11',
+                      config.popular && !isCurrentPlan && 'shadow-glow',
                     )}
-                  </div>
+                    variant={config.popular ? 'default' : 'outline'}
+                    onClick={() => {
+                      setSelectedPlanId(plan.id);
+                      checkout.mutate(plan.id);
+                    }}
+                    disabled={isCurrentPlan || checkout.isPending}
+                  >
+                    {checkout.isPending && selectedPlanId === plan.id ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Redirecting...
+                      </>
+                    ) : isCurrentPlan ? (
+                      'Current Plan'
+                    ) : (
+                      `Get ${plan.name}`
+                    )}
+                  </Button>
+
+                  {/* Highlights */}
+                  <ul className="space-y-3">
+                    {highlights.map((f) => (
+                      <li key={f} className="flex items-start gap-2.5">
+                        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 mt-0.5">
+                          <Check className="h-3 w-3 text-emerald-600" />
+                        </div>
+                        <span className="text-sm text-foreground leading-snug">{f}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-
-                {/* Price */}
-                <div className="mb-5">
-                  <span className="font-heading text-3xl font-bold text-foreground">£{price}</span>
-                  <span className="text-xs text-muted-foreground ml-1">/mo</span>
-                </div>
-
-                {/* CTA */}
-                <Button
-                  className={cn(
-                    'w-full rounded-xl mb-5',
-                    style.popular && !isCurrentPlan && 'shadow-glow',
-                  )}
-                  variant={style.popular ? 'default' : 'outline'}
-                  onClick={() => {
-                    setSelectedPlanId(plan.id);
-                    checkout.mutate(plan.id);
-                  }}
-                  disabled={isCurrentPlan || checkout.isPending}
-                >
-                  {checkout.isPending && selectedPlanId === plan.id ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Redirecting...
-                    </>
-                  ) : isCurrentPlan ? (
-                    'Current Plan'
-                  ) : (
-                    `Get ${plan.name}`
-                  )}
-                </Button>
-
-                {/* Features */}
-                <ul className="space-y-2.5">
-                  {style.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2">
-                      <div className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-100 mt-0.5">
-                        <Check className="h-2.5 w-2.5 text-emerald-600" />
-                      </div>
-                      <span className="text-xs text-muted-foreground leading-tight">{f}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              </Card>
             </motion.div>
           );
         })}
       </div>
+
+      {/* Compare all features link */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.25 }}
+        className="text-center mb-6"
+      >
+        <button
+          onClick={() => setShowComparison(!showComparison)}
+          className="text-sm text-primary-700 hover:text-primary-800 font-medium underline underline-offset-2 transition-colors"
+        >
+          {showComparison ? 'Hide full comparison' : 'Compare all features'}
+        </button>
+      </motion.div>
+
+      {/* Full Comparison Table */}
+      {showComparison && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          className="mb-8"
+        >
+          <Card className="border-0 shadow-soft-lg rounded-2xl overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-warm-50">
+                    <th className="text-left py-3 px-4 font-medium text-muted-foreground text-xs w-[200px]">Feature</th>
+                    <th className="text-center py-3 px-3 font-medium text-xs w-[80px]">
+                      <span className="text-muted-foreground">Free</span>
+                    </th>
+                    <th className="text-center py-3 px-3 font-medium text-xs w-[80px]">
+                      <span className="text-slate-600">Silver</span>
+                    </th>
+                    <th className="text-center py-3 px-3 font-medium text-xs w-[80px]">
+                      <span className="text-accent-600 font-semibold">Gold</span>
+                    </th>
+                    <th className="text-center py-3 px-3 font-medium text-xs w-[80px]">
+                      <span className="text-violet-600">Platinum</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {features.map((row) => (
+                    <tr key={row.label} className="hover:bg-warm-50/50 transition-colors">
+                      <td className="py-3 px-4 text-xs text-foreground font-medium">
+                        {row.label}
+                      </td>
+                      {(['free', 'silver', 'gold', 'platinum'] as const).map((plan) => {
+                        const val = row[plan];
+                        return (
+                          <td key={plan} className="text-center py-3 px-3">
+                            {val === true ? (
+                              <div className="flex justify-center">
+                                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100">
+                                  <Check className="h-3 w-3 text-emerald-600" />
+                                </div>
+                              </div>
+                            ) : val === false ? (
+                              <div className="flex justify-center">
+                                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-red-50">
+                                  <X className="h-3 w-3 text-red-400" />
+                                </div>
+                              </div>
+                            ) : (
+                              <span className={cn(
+                                'text-xs font-medium',
+                                plan === 'gold' ? 'text-accent-700' :
+                                plan === 'platinum' ? 'text-violet-700' :
+                                'text-foreground',
+                              )}>
+                                {val}
+                              </span>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <Separator />
+
+            {/* Price row */}
+            <div className="flex items-center bg-warm-50/50">
+              <div className="py-3 px-4 w-[200px] text-xs font-semibold text-foreground">Monthly price</div>
+              <div className="flex-1 grid grid-cols-4 text-center">
+                <span className="py-3 text-xs font-bold text-foreground">Free</span>
+                <span className="py-3 text-xs font-bold text-foreground">£9.99</span>
+                <span className="py-3 text-xs font-bold text-accent-700">£19.99</span>
+                <span className="py-3 text-xs font-bold text-violet-700">£29.99</span>
+              </div>
+            </div>
+          </Card>
+        </motion.div>
+      )}
 
       {/* Cancel Plan */}
       {currentPlan !== 'free' && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.25 }}
+          transition={{ delay: 0.3 }}
           className="text-center mb-4"
         >
           <button
@@ -221,15 +331,16 @@ export default function PlansPage() {
       )}
 
       {/* Footer */}
-      <motion.p
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.3 }}
-        className="text-center text-[11px] text-muted-foreground pb-6"
+        transition={{ delay: 0.35 }}
+        className="text-center pb-4"
       >
-        All plans auto-renew monthly. Cancel anytime.
-        Payments processed securely by Stripe.
-      </motion.p>
+        <p className="text-[11px] text-muted-foreground">
+          All plans auto-renew monthly. Cancel anytime. Payments processed securely by Stripe.
+        </p>
+      </motion.div>
 
       {/* Cancel Dialog */}
       <Dialog open={cancelOpen} onOpenChange={setCancelOpen}>
@@ -246,12 +357,15 @@ export default function PlansPage() {
           <div className="bg-amber-50/50 rounded-xl p-4 text-sm space-y-2">
             <p className="font-medium text-amber-800">You'll lose access to:</p>
             <ul className="space-y-1 text-xs text-amber-700">
+              {currentPlan === 'platinum' && <li>- Priority search placement</li>}
               {currentPlan === 'platinum' && <li>- 3 profile boosts per month</li>}
-              {currentPlan === 'platinum' && <li>- Premium badge & priority support</li>}
-              {(currentPlan === 'gold' || currentPlan === 'platinum') && <li>- Contact info visibility</li>}
+              {(currentPlan === 'gold' || currentPlan === 'platinum') && <li>- Contact info visibility (WhatsApp & email)</li>}
               {(currentPlan === 'gold' || currentPlan === 'platinum') && <li>- Unlimited profile views & interests</li>}
-              <li>- Chat access (Silver+)</li>
-              <li>- Who viewed me (Silver+)</li>
+              {(currentPlan === 'gold' || currentPlan === 'platinum') && <li>- Profile boost feature</li>}
+              <li>- Chat access</li>
+              <li>- Who viewed me feature</li>
+              <li>- Photo visibility controls</li>
+              <li>- Reverts to 3 photo uploads (may hide extra photos)</li>
             </ul>
           </div>
           <div className="flex gap-3 mt-2">
