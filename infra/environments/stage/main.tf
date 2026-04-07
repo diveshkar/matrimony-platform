@@ -107,7 +107,7 @@ locals {
   lambda_env = {
     ENVIRONMENT           = var.environment
     JWT_SECRET            = var.jwt_secret
-    SES_FROM_EMAIL        = "noreply@${var.domain_name}"
+    SES_FROM_EMAIL        = var.ses_from_email
     S3_MEDIA_BUCKET       = module.s3_media.bucket_id
     CORS_ALLOWED_ORIGINS  = join(",", var.cors_allowed_origins)
     STRIPE_SECRET_KEY     = var.stripe_secret_key
@@ -170,7 +170,7 @@ module "lambda_health" {
   handler       = "index.main"
   memory_size   = 128
   timeout       = 10
-  s3_bucket     = "thamizhakal-matrimony-tfstate"
+  s3_bucket     = "thamizhakal-matrimony-state"
   s3_key        = "lambda-packages/health.zip"
 
   environment_variables = local.lambda_env
@@ -183,7 +183,7 @@ module "lambda_auth" {
   handler       = "index.main"
   memory_size   = 256
   timeout       = 30
-  s3_bucket     = "thamizhakal-matrimony-tfstate"
+  s3_bucket     = "thamizhakal-matrimony-state"
   s3_key        = "lambda-packages/auth.zip"
 
   environment_variables = local.lambda_env
@@ -198,7 +198,7 @@ module "lambda_profile" {
   handler       = "index.main"
   memory_size   = 256
   timeout       = 30
-  s3_bucket     = "thamizhakal-matrimony-tfstate"
+  s3_bucket     = "thamizhakal-matrimony-state"
   s3_key        = "lambda-packages/profile.zip"
 
   environment_variables = local.lambda_env
@@ -213,7 +213,7 @@ module "lambda_uploads" {
   handler       = "index.main"
   memory_size   = 256
   timeout       = 30
-  s3_bucket     = "thamizhakal-matrimony-tfstate"
+  s3_bucket     = "thamizhakal-matrimony-state"
   s3_key        = "lambda-packages/uploads.zip"
 
   environment_variables = local.lambda_env
@@ -228,7 +228,7 @@ module "lambda_discovery" {
   handler       = "index.main"
   memory_size   = 256
   timeout       = 30
-  s3_bucket     = "thamizhakal-matrimony-tfstate"
+  s3_bucket     = "thamizhakal-matrimony-state"
   s3_key        = "lambda-packages/discovery.zip"
 
   environment_variables = local.lambda_env
@@ -243,7 +243,7 @@ module "lambda_interests" {
   handler       = "index.main"
   memory_size   = 256
   timeout       = 30
-  s3_bucket     = "thamizhakal-matrimony-tfstate"
+  s3_bucket     = "thamizhakal-matrimony-state"
   s3_key        = "lambda-packages/interests.zip"
 
   environment_variables = local.lambda_env
@@ -258,7 +258,7 @@ module "lambda_chat" {
   handler       = "index.main"
   memory_size   = 256
   timeout       = 30
-  s3_bucket     = "thamizhakal-matrimony-tfstate"
+  s3_bucket     = "thamizhakal-matrimony-state"
   s3_key        = "lambda-packages/chat.zip"
 
   environment_variables = local.lambda_env
@@ -273,7 +273,7 @@ module "lambda_subscriptions" {
   handler       = "index.main"
   memory_size   = 256
   timeout       = 30
-  s3_bucket     = "thamizhakal-matrimony-tfstate"
+  s3_bucket     = "thamizhakal-matrimony-state"
   s3_key        = "lambda-packages/subscriptions.zip"
 
   environment_variables = local.lambda_env
@@ -288,7 +288,7 @@ module "lambda_safety" {
   handler       = "index.main"
   memory_size   = 256
   timeout       = 30
-  s3_bucket     = "thamizhakal-matrimony-tfstate"
+  s3_bucket     = "thamizhakal-matrimony-state"
   s3_key        = "lambda-packages/safety.zip"
 
   environment_variables = local.lambda_env
@@ -770,34 +770,3 @@ module "cloudfront_media" {
 }
 
 # ──────────────────────────────────────────────
-# CloudWatch Alarms (Monitoring)
-# ──────────────────────────────────────────────
-
-module "alarms" {
-  source      = "../../modules/cloudwatch_alarms"
-  environment = var.environment
-  alarm_email = var.alarm_email
-
-  api_gateway_id = module.api_gateway.api_id
-
-  lambda_function_names = [
-    module.lambda_health.function_name,
-    module.lambda_auth.function_name,
-    module.lambda_profile.function_name,
-    module.lambda_uploads.function_name,
-    module.lambda_discovery.function_name,
-    module.lambda_interests.function_name,
-    module.lambda_chat.function_name,
-    module.lambda_subscriptions.function_name,
-    module.lambda_safety.function_name,
-  ]
-
-  dynamodb_table_names = [
-    module.dynamodb_core.table_name,
-    module.dynamodb_messages.table_name,
-    module.dynamodb_discovery.table_name,
-    module.dynamodb_events.table_name,
-  ]
-
-  tags = local.common_tags
-}

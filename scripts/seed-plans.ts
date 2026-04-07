@@ -6,7 +6,7 @@ const isLocal = env === 'dev';
 
 const client = DynamoDBDocumentClient.from(
   new DynamoDBClient({
-    region: 'ap-south-1',
+    region: 'ap-southeast-1',
     ...(isLocal && {
       endpoint: 'http://localhost:8000',
       credentials: { accessKeyId: 'fakeMyKeyId', secretAccessKey: 'fakeSecretAccessKey' },

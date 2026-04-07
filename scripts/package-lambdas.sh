@@ -5,7 +5,7 @@ SERVICES=(health auth profile uploads discovery interests chat subscriptions saf
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 BACKEND_DIR="$ROOT_DIR/backend"
 OUTPUT_DIR="$ROOT_DIR/infra/lambda-packages"
-S3_BUCKET="${1:-thamizhakal-matrimony-tfstate}"
+S3_BUCKET="${1:-thamizhakal-matrimony-state}"
 S3_PREFIX="lambda-packages"
 
 echo "=== Lambda Packaging Script ==="

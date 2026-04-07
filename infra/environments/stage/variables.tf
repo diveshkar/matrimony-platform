@@ -1,6 +1,6 @@
 variable "aws_region" {
   type    = string
-  default = "ap-south-1"
+  default = "ap-southeast-1"
 }
 
 variable "environment" {
@@ -48,4 +48,9 @@ variable "stripe_webhook_secret" {
   default     = ""
   sensitive   = true
   description = "Stripe webhook signing secret"
+}
+
+variable "ses_from_email" {
+  type    = string
+  default = ""
 }
