@@ -57,6 +57,20 @@ export class ProfileService {
       throw new ConflictError('Profile already exists. Use update instead.');
     }
 
+    // Validate and register phone number
+    const phoneNumber = data.phoneNumber as string | undefined;
+    if (phoneNumber) {
+      const { validatePhoneNumber } = await import('./phone-validation.js');
+      const { ensurePhoneAvailable, registerPhone, getUserPhone } = await import('./phone-registry.js');
+
+      const existingPhone = await getUserPhone(userId);
+      if (!existingPhone || existingPhone !== phoneNumber) {
+        await validatePhoneNumber(phoneNumber);
+        await ensurePhoneAvailable(phoneNumber, userId);
+        await registerPhone(userId, phoneNumber);
+      }
+    }
+
     const profileData = {
       profileFor: data.profileFor as UserProfile['profileFor'],
       name: data.name as string,
@@ -161,6 +175,20 @@ export class ProfileService {
       throw new NotFoundError('Profile');
     }
 
+    // Handle phone number change
+    const newPhone = updates.phoneNumber as string | undefined;
+    if (newPhone) {
+      const { validatePhoneNumber } = await import('./phone-validation.js');
+      const { changePhone, getUserPhone } = await import('./phone-registry.js');
+
+      const currentPhone = await getUserPhone(userId);
+      if (currentPhone !== newPhone) {
+        await validatePhoneNumber(newPhone);
+        await changePhone(userId, currentPhone, newPhone);
+      }
+      delete updates.phoneNumber;
+    }
+
     const { preferences, ...profileUpdates } = updates;
 
     let result = {};
@@ -204,6 +232,10 @@ export class ProfileService {
     const publicProfile: Record<string, unknown> = { ...profile };
     delete publicProfile.PK;
     delete publicProfile.SK;
+
+    // Add phone verified status
+    const { getUserPhone } = await import('./phone-registry.js');
+    publicProfile.phoneVerified = !!(await getUserPhone(userId));
 
     if (privacy?.hideWhatsapp) delete publicProfile.whatsappNumber;
     if (privacy?.hideDob) {

@@ -21,6 +21,7 @@ import {
   X,
   Crown,
   Camera,
+  ShieldCheck,
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -170,6 +171,16 @@ export default function ProfileDetailPage() {
               <User className="h-24 w-24 text-primary-200" />
             </div>
           )}
+          {/* Verified badge */}
+          {Boolean(raw.phoneVerified) && (
+            <div className="absolute top-3 left-3">
+              <Badge variant="success" className="text-xs backdrop-blur-sm bg-emerald-500/90 border-0 px-2.5 py-1">
+                <ShieldCheck className="mr-1 h-3 w-3" />
+                Phone Verified
+              </Badge>
+            </div>
+          )}
+
           {/* Gradient overlay */}
           <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/70 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-6">

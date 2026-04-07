@@ -11,6 +11,7 @@ export interface AuthenticatedEvent extends APIGatewayProxyEventV2 {
   auth: {
     userId: string;
     email?: string;
+    phone?: string;
   };
 }
 
@@ -49,6 +50,7 @@ export function withAuth(handler: AuthenticatedHandler): LambdaHandler {
     authenticatedEvent.auth = {
       userId: claims.sub as string,
       email: (claims.email as string) || undefined,
+      phone: (claims.phone_number as string) || undefined,
     };
 
     return handler(authenticatedEvent, context);

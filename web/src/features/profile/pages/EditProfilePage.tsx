@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Save, Loader2, User, Heart, GraduationCap, MapPin, Users, MessageCircle, Pen } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, User, Heart, GraduationCap, MapPin, Users, MessageCircle, Pen, Phone, Shield, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import { useMyProfile, useUpdateProfile } from '../hooks/useProfile';
+import { useAuth } from '@/lib/auth/auth-context';
 import { useToast } from '@/components/ui/toaster';
 import { ROUTES } from '@/lib/constants/routes';
 import {
@@ -30,8 +32,16 @@ import {
 const selectClass =
   'flex h-11 w-full rounded-xl border border-input bg-white px-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring hover:border-primary-300 transition-colors';
 
+const countryCodes = [
+  { code: '+44', flag: '🇬🇧' }, { code: '+94', flag: '🇱🇰' }, { code: '+91', flag: '🇮🇳' },
+  { code: '+1', flag: '🇺🇸' }, { code: '+61', flag: '🇦🇺' }, { code: '+971', flag: '🇦🇪' },
+  { code: '+49', flag: '🇩🇪' }, { code: '+33', flag: '🇫🇷' }, { code: '+65', flag: '🇸🇬' },
+  { code: '+60', flag: '🇲🇾' }, { code: '+64', flag: '🇳🇿' },
+];
+
 export default function EditProfilePage() {
   const { data: response, isLoading, isError } = useMyProfile();
+  const { user } = useAuth();
   const updateProfile = useUpdateProfile();
   const toast = useToast();
   const [form, setForm] = useState<Record<string, unknown>>({});
@@ -131,8 +141,69 @@ export default function EditProfilePage() {
           </Field>
         </SectionCard>
 
+        {/* Phone Verification */}
+        <SectionCard icon={Phone} title="Verified Phone Number" delay={0.05}>
+          {user?.phone ? (
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-50">
+              <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-emerald-800">{user.phone}</p>
+                <p className="text-[10px] text-emerald-600">Verified</p>
+              </div>
+              <Badge variant="success" className="text-[9px]">
+                <Shield className="mr-0.5 h-2.5 w-2.5" />
+                Verified
+              </Badge>
+            </div>
+          ) : null}
+          <div>
+            <label className="text-sm font-medium text-foreground mb-1.5 block">
+              {user?.phone ? 'Change Phone Number' : 'Phone Number'}
+            </label>
+            <div className="flex gap-2">
+              <select
+                value={(() => {
+                  const phone = (form.phoneNumber as string) || '';
+                  const match = countryCodes.find((cc) => phone.startsWith(cc.code));
+                  return match?.code || '+44';
+                })()}
+                onChange={(e) => {
+                  const phone = (form.phoneNumber as string) || '';
+                  const match = countryCodes.find((cc) => phone.startsWith(cc.code));
+                  const local = match ? phone.slice(match.code.length) : phone.replace('+', '');
+                  update('phoneNumber', `${e.target.value}${local}`);
+                }}
+                className="flex h-11 rounded-xl border border-input bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring w-[100px]"
+              >
+                {countryCodes.map((cc) => (
+                  <option key={cc.code} value={cc.code}>{cc.flag} {cc.code}</option>
+                ))}
+              </select>
+              <Input
+                type="tel"
+                placeholder="7911 123456"
+                value={(() => {
+                  const phone = (form.phoneNumber as string) || '';
+                  const match = countryCodes.find((cc) => phone.startsWith(cc.code));
+                  return match ? phone.slice(match.code.length) : phone.replace('+', '');
+                })()}
+                onChange={(e) => {
+                  const phone = (form.phoneNumber as string) || '';
+                  const match = countryCodes.find((cc) => phone.startsWith(cc.code));
+                  const code = match?.code || '+44';
+                  update('phoneNumber', `${code}${e.target.value.replace(/\s/g, '')}`);
+                }}
+                className="flex-1 h-11 rounded-xl"
+              />
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1.5">
+              Changing your phone will require re-validation. Must be a real mobile number.
+            </p>
+          </div>
+        </SectionCard>
+
         {/* Contact Info */}
-        <SectionCard icon={MessageCircle} title="Contact Information" delay={0.05}>
+        <SectionCard icon={MessageCircle} title="Contact Information" delay={0.1}>
           <p className="text-xs text-muted-foreground -mt-1 mb-2">Visible only to Gold and Platinum members.</p>
           <Field label="WhatsApp Number">
             <Input value={(form.whatsappNumber as string) || ''} onChange={(e) => update('whatsappNumber', e.target.value)} placeholder="+447911123456" className="h-11 rounded-xl" />

@@ -54,3 +54,35 @@ variable "ses_from_email" {
   type    = string
   default = ""
 }
+
+variable "whatsapp_phone_number_id" {
+  type        = string
+  default     = ""
+  description = "Meta WhatsApp Business API phone number ID"
+}
+
+variable "whatsapp_api_token" {
+  type        = string
+  default     = ""
+  sensitive   = true
+  description = "Meta WhatsApp Business API access token"
+}
+
+variable "whatsapp_template_name" {
+  type        = string
+  default     = "matrimony_otp"
+  description = "WhatsApp OTP message template name"
+}
+
+variable "twilio_account_sid" {
+  type        = string
+  default     = ""
+  description = "Twilio Account SID for phone number validation"
+}
+
+variable "twilio_auth_token" {
+  type        = string
+  default     = ""
+  sensitive   = true
+  description = "Twilio Auth Token for phone number validation"
+}

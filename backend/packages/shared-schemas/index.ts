@@ -11,14 +11,24 @@ export const phoneSchema = z
 
 export const emailSchema = z.string().email('Invalid email address');
 
-export const authStartSchema = z.object({
-  email: emailSchema,
-});
+export const authStartSchema = z
+  .object({
+    phone: phoneSchema.optional(),
+    email: emailSchema.optional(),
+  })
+  .refine((data) => data.phone || data.email, {
+    message: 'Either phone or email is required',
+  });
 
-export const authVerifySchema = z.object({
-  email: emailSchema,
-  otp: z.string().length(6, 'OTP must be 6 digits'),
-});
+export const authVerifySchema = z
+  .object({
+    phone: phoneSchema.optional(),
+    email: emailSchema.optional(),
+    otp: z.string().length(6, 'OTP must be 6 digits'),
+  })
+  .refine((data) => data.phone || data.email, {
+    message: 'Either phone or email is required',
+  });
 
 export const createProfileSchema = z.object({
   profileFor: z.enum(['self', 'son', 'daughter', 'brother', 'sister', 'relative', 'friend']),
@@ -40,6 +50,7 @@ export const createProfileSchema = z.object({
   occupation: z.string().max(100).optional(),
   employer: z.string().max(100).optional(),
   incomeRange: z.string().max(50).optional(),
+  phoneNumber: phoneSchema,
   whatsappNumber: z.string().max(20).optional(),
   personalEmail: z.string().email().optional().or(z.literal('')),
   country: z.string().min(1).max(100),

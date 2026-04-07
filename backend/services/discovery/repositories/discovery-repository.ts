@@ -20,6 +20,7 @@ export interface DiscoveryProfile {
   primaryPhotoUrl?: string;
   profileCompletion: number;
   aboutMe?: string;
+  phoneVerified?: boolean;
   lastActiveAt: string;
   GSI1PK?: string;
   GSI1SK?: string;

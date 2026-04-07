@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 import { AuthRepository } from '../repositories/auth-repository.js';
+import { sendWhatsAppOtp } from './whatsapp-otp.js';
 import {
   ValidationError,
   UnauthorizedError,
@@ -29,13 +30,12 @@ function generateOtp(): string {
 }
 
 async function sendOtpEmail(email: string, otp: string): Promise<void> {
-  const isLocal = process.env.ENVIRONMENT === 'dev';
-  if (isLocal) {
-    logger.info('OTP (dev mode)', { email, otp });
+  if (isDev) {
+    logger.info('Email OTP (dev mode)', { email, otp });
     return;
   }
 
-  const ses = new SESClient({ region: process.env.AWS_REGION || 'ap-south-1' });
+  const ses = new SESClient({ region: process.env.AWS_REGION || 'ap-southeast-1' });
   const fromEmail = process.env.SES_FROM_EMAIL || 'noreply@matrimony.com';
 
   await ses.send(
@@ -71,18 +71,24 @@ export class AuthService {
     this.repo = new AuthRepository();
   }
 
-  async startAuth(email: string): Promise<{ message: string; identifier: string }> {
-    if (!email) {
-      throw new ValidationError('Email is required');
+  async startAuth(
+    phone?: string,
+    email?: string,
+  ): Promise<{ message: string; identifier: string; type: 'phone' | 'email' }> {
+    const identifier = phone || email;
+    if (!identifier) {
+      throw new ValidationError('Phone or email is required');
     }
 
-    const lockout = await this.repo.getLockout(email);
+    const type: 'phone' | 'email' = phone ? 'phone' : 'email';
+
+    const lockout = await this.repo.getLockout(identifier);
     if (lockout) {
       const remaining = Math.ceil((lockout.lockedUntil - Math.floor(Date.now() / 1000)) / 60);
       throw new RateLimitError(`Too many failed attempts. Try again in ${remaining} minutes.`);
     }
 
-    const existing = await this.repo.getOtp(email);
+    const existing = await this.repo.getOtp(identifier);
     if (existing) {
       const now = Math.floor(Date.now() / 1000);
       const secondsSinceCreation = now - Math.floor(new Date(existing.createdAt).getTime() / 1000);
@@ -92,71 +98,83 @@ export class AuthService {
     }
 
     const otp = generateOtp();
-    await this.repo.storeOtp(email, 'email', otp);
-    await sendOtpEmail(email, otp);
+    await this.repo.storeOtp(identifier, type, otp);
+
+    if (phone) {
+      await sendWhatsAppOtp(phone, otp);
+    } else if (email) {
+      await sendOtpEmail(email, otp);
+    }
 
     return {
-      message: 'OTP sent to email',
-      identifier: email,
+      message: phone ? 'OTP sent to WhatsApp' : 'OTP sent to email',
+      identifier,
+      type,
     };
   }
 
   async verifyOtp(
-    email: string,
+    phone: string | undefined,
+    email: string | undefined,
     otp: string,
   ): Promise<{
     accessToken: string;
     refreshToken: string;
     user: {
       id: string;
-      email: string;
+      phone?: string;
+      email?: string;
       matrimonyId: string;
       hasProfile: boolean;
       onboardingComplete: boolean;
     };
     isNewUser: boolean;
   }> {
-    if (!email) {
-      throw new ValidationError('Email is required');
+    const identifier = phone || email;
+    if (!identifier) {
+      throw new ValidationError('Phone or email is required');
     }
 
-    const record = await this.repo.getOtp(email);
+    const record = await this.repo.getOtp(identifier);
     if (!record) {
       throw new ValidationError('No OTP found. Please request a new one.');
     }
 
     const now = Math.floor(Date.now() / 1000);
     if (now > record.expiresAt) {
-      await this.repo.deleteOtp(email);
+      await this.repo.deleteOtp(identifier);
       throw new ValidationError('OTP has expired. Please request a new one.');
     }
 
     if (record.attempts >= 5) {
-      await this.repo.deleteOtp(email);
-      await this.repo.setLockout(email, 3600);
+      await this.repo.deleteOtp(identifier);
+      await this.repo.setLockout(identifier, 3600);
       throw new RateLimitError('Too many failed attempts. Locked for 1 hour.');
     }
 
     if (record.otp !== otp) {
-      await this.repo.incrementOtpAttempts(email);
+      await this.repo.incrementOtpAttempts(identifier);
       throw new ValidationError('Invalid OTP. Please try again.');
     }
 
-    await this.repo.deleteOtp(email);
+    await this.repo.deleteOtp(identifier);
 
-    let account = await this.repo.findAccountByEmail(email);
+    let account = phone
+      ? await this.repo.findAccountByPhone(phone)
+      : await this.repo.findAccountByEmail(email!);
     let isNewUser = false;
 
     if (!account) {
-      account = await this.repo.createAccount(undefined, email);
+      account = await this.repo.createAccount(phone, email);
       isNewUser = true;
       logger.info('New account created', { userId: account.userId });
     }
 
-    const tokenClaims = {
+    const tokenClaims: Record<string, string> = {
       sub: account.userId,
-      email: account.email || '',
     };
+    if (account.email) tokenClaims.email = account.email;
+    if (account.phone) tokenClaims.phone_number = account.phone;
 
     const accessToken = createToken(tokenClaims, 60);
     const refreshToken = createToken({ sub: account.userId, type: 'refresh' }, 43200);
@@ -168,7 +186,8 @@ export class AuthService {
       refreshToken,
       user: {
         id: account.userId,
-        email: account.email || email,
+        phone: account.phone,
+        email: account.email,
         matrimonyId: account.matrimonyId,
         hasProfile: account.hasProfile,
         onboardingComplete: account.onboardingComplete,
@@ -201,10 +220,11 @@ export class AuthService {
       throw new UnauthorizedError('Refresh token revoked');
     }
 
-    const tokenClaims = {
+    const tokenClaims: Record<string, string> = {
       sub: account.userId,
-      email: account.email || '',
     };
+    if (account.email) tokenClaims.email = account.email;
+    if (account.phone) tokenClaims.phone_number = account.phone;
 
     const newAccessToken = createToken(tokenClaims, 60);
     const newRefreshToken = createToken({ sub: account.userId, type: 'refresh' }, 43200);
@@ -223,7 +243,8 @@ export class AuthService {
 
   async getMe(userId: string): Promise<{
     id: string;
-    email: string;
+    phone?: string;
+    email?: string;
     matrimonyId: string;
     hasProfile: boolean;
     onboardingComplete: boolean;
@@ -235,7 +256,8 @@ export class AuthService {
 
     return {
       id: account.userId,
-      email: account.email || '',
+      phone: account.phone,
+      email: account.email,
       matrimonyId: account.matrimonyId,
       hasProfile: account.hasProfile,
       onboardingComplete: account.onboardingComplete,

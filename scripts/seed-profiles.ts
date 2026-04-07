@@ -18,7 +18,8 @@ const CORE_TABLE = `matrimony_core_${env}`;
 const DISCOVERY_TABLE = `matrimony_discovery_${env}`;
 
 interface DemoProfile {
-  email: string;
+  email?: string;
+  phone?: string;
   name: string;
   gender: 'male' | 'female';
   dob: string;
@@ -526,6 +527,87 @@ const demoProfiles: DemoProfile[] = [
     familyValues: 'liberal',
     incomeRange: '70000-90000',
   },
+
+  // ═══ PHONE-ONLY ACCOUNTS (WhatsApp login) ═══
+
+  {
+    phone: '+447700300001',
+    name: 'Shalini Raj',
+    gender: 'female',
+    dob: '2001-03-14',
+    religion: 'hindu',
+    caste: 'Vellalar',
+    motherTongue: 'tamil',
+    education: 'bachelors',
+    occupation: 'Dental Nurse',
+    country: 'United Kingdom',
+    city: 'London',
+    maritalStatus: 'never_married',
+    aboutMe: 'Friendly and caring. Love Tamil movies and cooking. Looking for a kind partner.',
+    height: 160,
+    whatsappNumber: '+447700300001',
+    familyValues: 'moderate',
+  },
+  {
+    phone: '+447700300002',
+    name: 'Tharan Kumar',
+    gender: 'male',
+    dob: '1999-07-22',
+    religion: 'hindu',
+    motherTongue: 'tamil',
+    education: 'bachelors',
+    occupation: 'Delivery Manager',
+    country: 'United Kingdom',
+    city: 'Birmingham',
+    maritalStatus: 'never_married',
+    aboutMe: 'Hardworking and family-oriented. Weekend cricket player. Looking for a life partner.',
+    height: 174,
+    whatsappNumber: '+447700300002',
+    familyValues: 'orthodox',
+  },
+
+  // ═══ BOTH PHONE + EMAIL ACCOUNTS ═══
+
+  {
+    email: 'sowmya@test.com',
+    phone: '+447700400001',
+    name: 'Sowmya Nair',
+    gender: 'female',
+    dob: '2000-11-08',
+    religion: 'hindu',
+    caste: 'Pillai',
+    motherTongue: 'tamil',
+    education: 'masters',
+    occupation: 'Data Scientist',
+    country: 'United Kingdom',
+    city: 'Cambridge',
+    maritalStatus: 'never_married',
+    aboutMe: 'Love data, books, and long walks. Looking for someone who values intellect and kindness.',
+    height: 163,
+    whatsappNumber: '+447700400001',
+    familyValues: 'moderate',
+    incomeRange: '60000-80000',
+  },
+  {
+    email: 'prashanth@test.com',
+    phone: '+447700400002',
+    name: 'Prashanth Kannan',
+    gender: 'male',
+    dob: '1998-05-17',
+    religion: 'hindu',
+    caste: 'Mudaliar',
+    motherTongue: 'tamil',
+    education: 'masters',
+    occupation: 'DevOps Engineer',
+    country: 'United Kingdom',
+    city: 'Edinburgh',
+    maritalStatus: 'never_married',
+    aboutMe: 'Tech enthusiast and part-time musician. Play mridangam at the local temple. Looking for a partner who shares Tamil values.',
+    height: 178,
+    whatsappNumber: '+447700400002',
+    familyValues: 'moderate',
+    incomeRange: '50000-70000',
+  },
 ];
 
 function avatarUrl(name: string, gender: string): string {
@@ -564,7 +646,8 @@ async function seed() {
           PK: `USER#${userId}`,
           SK: 'ACCOUNT#v1',
           userId,
-          email: p.email,
+          ...(p.email && { email: p.email }),
+          ...(p.phone && { phone: p.phone }),
           matrimonyId: `MTR${100000 + i}`,
           accountStatus: 'active',
           hasProfile: true,
@@ -577,6 +660,7 @@ async function seed() {
     );
 
     // Email index (for login lookup)
+    if (p.email) {
     await client.send(
       new PutCommand({
         TableName: CORE_TABLE,
@@ -589,6 +673,23 @@ async function seed() {
         },
       }),
     );
+    }
+
+    // Phone index (for login lookup)
+    if (p.phone) {
+      await client.send(
+        new PutCommand({
+          TableName: CORE_TABLE,
+          Item: {
+            PK: `PHONE#${p.phone}`,
+            SK: 'ACCOUNT#v1',
+            userId,
+            GSI1PK: `PHONE#${p.phone}`,
+            GSI1SK: 'ACCOUNT#v1',
+          },
+        }),
+      );
+    }
 
     // Profile record
     await client.send(
@@ -710,26 +811,30 @@ async function seed() {
       }),
     );
 
-    console.log(`  ${p.email.padEnd(22)} ${p.name.padEnd(20)} ${p.gender.padEnd(7)} ${age}y  ${p.country.padEnd(15)} ${p.religion}`);
+    console.log(`  ${(p.email || p.phone || '').padEnd(22)} ${p.name.padEnd(20)} ${p.gender.padEnd(7)} ${age}y  ${p.country.padEnd(15)} ${p.religion}`);
   }
 
   // ── SUBSCRIPTION RECORDS ──────────────────
   // Assign different plans to specific users for testing
 
-  const emailToUserId: Record<string, string> = {};
+  const loginToUserId: Record<string, string> = {};
   demoProfiles.forEach((p, i) => {
-    emailToUserId[p.email] = `DEMO_USER_${String(i + 1).padStart(3, '0')}`;
+    const uid = `DEMO_USER_${String(i + 1).padStart(3, '0')}`;
+    if (p.email) loginToUserId[p.email] = uid;
+    if (p.phone) loginToUserId[p.phone] = uid;
   });
 
   const subscriptions = [
-    { email: 'anitha@test.com', planId: 'silver' },
-    { email: 'raveen@test.com', planId: 'silver' },
-    { email: 'priya@test.com', planId: 'gold' },
-    { email: 'karthik@test.com', planId: 'gold' },
-    { email: 'revathi@test.com', planId: 'gold' },
-    { email: 'arjun@test.com', planId: 'gold' },
-    { email: 'mohan@test.com', planId: 'platinum' },
-    { email: 'vijay@test.com', planId: 'platinum' },
+    { login: 'anitha@test.com', planId: 'silver' },
+    { login: 'raveen@test.com', planId: 'silver' },
+    { login: '+447700300001', planId: 'silver' },
+    { login: 'priya@test.com', planId: 'gold' },
+    { login: 'karthik@test.com', planId: 'gold' },
+    { login: 'revathi@test.com', planId: 'gold' },
+    { login: 'arjun@test.com', planId: 'gold' },
+    { login: 'sowmya@test.com', planId: 'gold' },
+    { login: 'mohan@test.com', planId: 'platinum' },
+    { login: 'vijay@test.com', planId: 'platinum' },
   ];
 
   console.log('\n  Seeding subscriptions...');
@@ -738,7 +843,7 @@ async function seed() {
   endDate.setMonth(endDate.getMonth() + 3);
 
   for (const sub of subscriptions) {
-    const uid = emailToUserId[sub.email];
+    const uid = loginToUserId[sub.login];
     if (!uid) continue;
 
     await client.send(
@@ -761,7 +866,7 @@ async function seed() {
       }),
     );
 
-    console.log(`    ${sub.email.padEnd(22)} → ${sub.planId}`);
+    console.log(`    ${sub.login.padEnd(22)} → ${sub.planId}`);
   }
 
   // ── PRINT SUMMARY ──────────────────────────
@@ -769,18 +874,21 @@ async function seed() {
   console.log(`\nDone. ${demoProfiles.length} profiles + ${subscriptions.length} subscriptions seeded.`);
   console.log('\n═══════════════════════════════════════════════════════════════');
   console.log('  TEST LOGIN ACCOUNTS');
-  console.log('  Login with any email. OTP appears in terminal (dev mode).');
+  console.log('  Login with email or WhatsApp. OTP appears in terminal (dev mode).');
   console.log('═══════════════════════════════════════════════════════════════\n');
 
   const planMap: Record<string, string> = {};
-  subscriptions.forEach((s) => { planMap[s.email] = s.planId; });
+  subscriptions.forEach((s) => { planMap[s.login] = s.planId; });
 
-  console.log('  EMAIL                 NAME                 PLAN       GENDER  AGE  COUNTRY');
+  console.log('  LOGIN                 NAME                 PLAN       GENDER  AGE  COUNTRY');
   console.log('  ─────────────────────────────────────────────────────────────────────────');
   demoProfiles.forEach((p) => {
-    const plan = planMap[p.email] || 'free';
+    const loginId = p.email || p.phone || '';
+    const login = loginId.padEnd(22);
+    const plan = planMap[loginId] || (p.phone && planMap[p.phone]) || 'free';
     const planLabel = plan.toUpperCase().padEnd(10);
-    console.log(`  ${p.email.padEnd(22)} ${p.name.padEnd(20)} ${planLabel} ${p.gender.padEnd(7)} ${String(calcAge(p.dob)).padEnd(4)} ${p.country}`);
+    const loginType = p.phone && p.email ? '(Both)' : p.phone ? '(WhatsApp)' : '(Email)';
+    console.log(`  ${login} ${p.name.padEnd(20)} ${planLabel} ${p.gender.padEnd(7)} ${String(calcAge(p.dob)).padEnd(4)} ${p.country} ${loginType}`);
   });
 
 }

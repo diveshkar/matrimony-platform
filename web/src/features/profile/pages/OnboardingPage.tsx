@@ -15,6 +15,7 @@ import { StepCulturalRoots } from '../components/onboarding/StepCulturalRoots';
 import { StepEducationCareer } from '../components/onboarding/StepEducationCareer';
 import { StepLocation } from '../components/onboarding/StepLocation';
 import { StepFamily } from '../components/onboarding/StepFamily';
+import { StepPhoneVerify } from '../components/onboarding/StepPhoneVerify';
 import { StepPreferences } from '../components/onboarding/StepPreferences';
 import { StepAboutMe } from '../components/onboarding/StepAboutMe';
 
@@ -25,6 +26,7 @@ const STEPS = [
   { title: 'Education & Career', subtitle: 'Your achievements' },
   { title: 'Location', subtitle: 'Where you call home' },
   { title: 'Family', subtitle: 'Your family story' },
+  { title: 'Verify Phone', subtitle: 'Build trust with your number' },
   { title: 'Partner Preferences', subtitle: 'Who you are looking for' },
   { title: 'About You', subtitle: 'In your own words' },
 ];
@@ -70,6 +72,9 @@ export default function OnboardingPage() {
       case 4:
         if (!draft.country) errors.country = 'Country is required';
         break;
+      case 6:
+        if (!draft.phoneNumber || draft.phoneNumber.length < 8) errors.phoneNumber = 'A valid phone number is required';
+        break;
     }
 
     setStepErrors(errors);
@@ -102,6 +107,7 @@ export default function OnboardingPage() {
       maritalStatus: draft.maritalStatus || 'never_married',
       hasChildren: draft.hasChildren || false,
       childrenCount: draft.childrenCount,
+      phoneNumber: draft.phoneNumber,
       religion: draft.religion || '',
       caste: draft.caste,
       subCaste: draft.subCaste,
@@ -210,9 +216,12 @@ export default function OnboardingPage() {
               <StepFamily data={draft} onChange={updateDraft} errors={stepErrors} />
             )}
             {currentStep === 6 && (
-              <StepPreferences data={draft} onChange={updateDraft} errors={stepErrors} />
+              <StepPhoneVerify data={draft} onChange={updateDraft} errors={stepErrors} />
             )}
             {currentStep === 7 && (
+              <StepPreferences data={draft} onChange={updateDraft} errors={stepErrors} />
+            )}
+            {currentStep === 8 && (
               <StepAboutMe data={draft} onChange={updateDraft} errors={stepErrors} />
             )}
           </motion.div>

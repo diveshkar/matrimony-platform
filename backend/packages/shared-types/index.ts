@@ -3,7 +3,7 @@ export interface UserAccount {
   SK: string;
   userId: string;
   phone?: string;
-  email: string;
+  email?: string;
   matrimonyId: string;
   accountStatus: 'active' | 'suspended' | 'deleted';
   hasProfile: boolean;

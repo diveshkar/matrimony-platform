@@ -11,7 +11,8 @@ import { getStoredToken, clearTokens, storeTokens } from '@/lib/api/client';
 
 interface User {
   id: string;
-  email: string;
+  phone?: string;
+  email?: string;
   hasProfile: boolean;
   onboardingComplete: boolean;
 }

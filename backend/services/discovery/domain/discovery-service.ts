@@ -60,6 +60,10 @@ export class DiscoveryService {
     const country = profile.country as string;
     const religion = profile.religion as string;
 
+    // Check if user has a verified phone
+    const account = await this.coreRepo.get<{ phone?: string }>(`USER#${userId}`, 'ACCOUNT#v1');
+    const phoneVerified = !!account?.phone;
+
     const projection: DiscoveryProfile = {
       PK: `PROFILE#${userId}`,
       SK: 'DISCOVERY#v1',
@@ -80,6 +84,7 @@ export class DiscoveryService {
       primaryPhotoUrl: profile.primaryPhotoUrl as string | undefined,
       profileCompletion: profile.profileCompletion as number,
       aboutMe: profile.aboutMe as string | undefined,
+      phoneVerified,
       lastActiveAt: new Date().toISOString(),
       GSI1PK: `COUNTRY#${country}#GENDER#${gender}`,
       GSI1SK: `AGE#${String(age).padStart(3, '0')}#${userId}`,

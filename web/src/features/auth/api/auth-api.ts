@@ -1,7 +1,8 @@
 import { apiClient, type ApiResponse } from '@/lib/api/client';
 
 export interface AuthStartRequest {
-  email: string;
+  phone?: string;
+  email?: string;
 }
 
 export interface AuthStartResponse {
@@ -10,13 +11,15 @@ export interface AuthStartResponse {
 }
 
 export interface AuthVerifyRequest {
-  email: string;
+  phone?: string;
+  email?: string;
   otp: string;
 }
 
 export interface AuthUser {
   id: string;
-  email: string;
+  phone?: string;
+  email?: string;
   matrimonyId: string;
   hasProfile: boolean;
   onboardingComplete: boolean;

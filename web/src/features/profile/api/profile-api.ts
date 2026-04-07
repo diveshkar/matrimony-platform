@@ -9,6 +9,7 @@ export interface ProfileData {
   maritalStatus: string;
   hasChildren: boolean;
   childrenCount?: number;
+  phoneNumber?: string;
   religion: string;
   caste?: string;
   subCaste?: string;

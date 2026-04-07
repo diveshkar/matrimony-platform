@@ -17,7 +17,7 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
     throw new ValidationError(parsed.error.errors[0]?.message || 'Invalid input');
   }
 
-  const result = await authService.verifyOtp(parsed.data.email, parsed.data.otp);
+  const result = await authService.verifyOtp(parsed.data.phone, parsed.data.email, parsed.data.otp);
 
   return success(result, requestId, 200);
 }
