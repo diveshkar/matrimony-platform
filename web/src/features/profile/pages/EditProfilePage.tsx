@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Save, Loader2, User, Heart, GraduationCap, MapPin, Users, MessageCircle, Pen, Phone, Shield, CheckCircle2 } from 'lucide-react';
@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { DateOfBirthInput } from '@/components/common/DateOfBirthInput';
 import { useMyProfile, useUpdateProfile } from '../hooks/useProfile';
 import { useAuth } from '@/lib/auth/auth-context';
+import { apiClient } from '@/lib/api/client';
 import { useToast } from '@/components/ui/toaster';
 import { ROUTES } from '@/lib/constants/routes';
 import {
@@ -145,63 +146,7 @@ export default function EditProfilePage() {
 
         {/* Phone Verification */}
         <SectionCard icon={Phone} title="Verified Phone Number" delay={0.05}>
-          {user?.phone ? (
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-50">
-              <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
-              <div className="flex-1">
-                <p className="text-sm font-medium text-emerald-800">{user.phone}</p>
-                <p className="text-[10px] text-emerald-600">Verified</p>
-              </div>
-              <Badge variant="success" className="text-[9px]">
-                <Shield className="mr-0.5 h-2.5 w-2.5" />
-                Verified
-              </Badge>
-            </div>
-          ) : null}
-          <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">
-              {user?.phone ? 'Change Phone Number' : 'Phone Number'}
-            </label>
-            <div className="flex gap-2">
-              <select
-                value={(() => {
-                  const phone = (form.phoneNumber as string) || '';
-                  const match = countryCodes.find((cc) => phone.startsWith(cc.code));
-                  return match?.code || '+44';
-                })()}
-                onChange={(e) => {
-                  const phone = (form.phoneNumber as string) || '';
-                  const match = countryCodes.find((cc) => phone.startsWith(cc.code));
-                  const local = match ? phone.slice(match.code.length) : phone.replace('+', '');
-                  update('phoneNumber', `${e.target.value}${local}`);
-                }}
-                className="flex h-11 rounded-xl border border-input bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring w-[100px]"
-              >
-                {countryCodes.map((cc) => (
-                  <option key={cc.code} value={cc.code}>{cc.flag} {cc.code}</option>
-                ))}
-              </select>
-              <Input
-                type="tel"
-                placeholder="7911 123456"
-                value={(() => {
-                  const phone = (form.phoneNumber as string) || '';
-                  const match = countryCodes.find((cc) => phone.startsWith(cc.code));
-                  return match ? phone.slice(match.code.length) : phone.replace('+', '');
-                })()}
-                onChange={(e) => {
-                  const phone = (form.phoneNumber as string) || '';
-                  const match = countryCodes.find((cc) => phone.startsWith(cc.code));
-                  const code = match?.code || '+44';
-                  update('phoneNumber', `${code}${e.target.value.replace(/\s/g, '')}`);
-                }}
-                className="flex-1 h-11 rounded-xl"
-              />
-            </div>
-            <p className="text-[10px] text-muted-foreground mt-1.5">
-              Changing your phone will require re-validation. Must be a real mobile number.
-            </p>
-          </div>
+          <EditPhoneSection currentPhone={user?.phone} onVerified={(phone) => update('phoneNumber', phone)} />
         </SectionCard>
 
         {/* Contact Info */}
@@ -382,6 +327,133 @@ export default function EditProfilePage() {
           </div>
         </motion.div>
       )}
+    </div>
+  );
+}
+
+function EditPhoneSection({ currentPhone, onVerified }: { currentPhone?: string; onVerified: (phone: string) => void }) {
+  const [mode, setMode] = useState<'view' | 'enter' | 'verify' | 'done'>('view');
+  const [cc, setCc] = useState('+44');
+  const [num, setNum] = useState('');
+  const [sending, setSending] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [error, setError] = useState('');
+  const [otp, setOtp] = useState<string[]>(Array(6).fill(''));
+  const [cooldown, setCooldown] = useState(0);
+  const refs = useRef<(HTMLInputElement | null)[]>([]);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = setInterval(() => setCooldown((c) => c - 1), 1000);
+    return () => clearInterval(t);
+  }, [cooldown]);
+
+  const fullPhone = `${cc}${num.replace(/\s/g, '')}`;
+
+  const handleSend = async () => {
+    if (num.length < 6) { setError('Enter a valid phone number'); return; }
+    setError(''); setSending(true);
+    try {
+      await apiClient.post('/me/validate-phone', { phoneNumber: fullPhone, action: 'send-otp' });
+      setMode('verify'); setCooldown(60); setOtp(Array(6).fill(''));
+      setTimeout(() => refs.current[0]?.focus(), 100);
+    } catch (err) {
+      setError((err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || 'Failed');
+    } finally { setSending(false); }
+  };
+
+  const handleVerify = async (code: string) => {
+    setError(''); setVerifying(true);
+    try {
+      await apiClient.post('/me/validate-phone', { phoneNumber: fullPhone, action: 'verify-otp', otp: code });
+      setMode('done'); onVerified(fullPhone);
+    } catch (err) {
+      setError((err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || 'Invalid code');
+      setOtp(Array(6).fill('')); refs.current[0]?.focus();
+    } finally { setVerifying(false); }
+  };
+
+  if (mode === 'done') {
+    return (
+      <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-50">
+        <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+        <div className="flex-1">
+          <p className="text-sm font-medium text-emerald-800">{fullPhone}</p>
+          <p className="text-[10px] text-emerald-600">Newly verified</p>
+        </div>
+        <Badge variant="success" className="text-[9px]"><Shield className="mr-0.5 h-2.5 w-2.5" />Verified</Badge>
+      </div>
+    );
+  }
+
+  if (mode === 'verify') {
+    return (
+      <div className="space-y-4">
+        <p className="text-sm text-muted-foreground text-center">
+          Enter the 6-digit code sent to <span className="font-medium text-foreground">{fullPhone.slice(0, 4)}●●●●{fullPhone.slice(-3)}</span>
+        </p>
+        <div className="flex justify-center gap-2">
+          {otp.map((d, i) => (
+            <input key={i} ref={(el) => { refs.current[i] = el; }} type="text" inputMode="numeric" maxLength={1} value={d}
+              onChange={(e) => {
+                if (!/^\d*$/.test(e.target.value)) return;
+                const n = [...otp]; n[i] = e.target.value.slice(-1); setOtp(n); setError('');
+                if (e.target.value && i < 5) refs.current[i + 1]?.focus();
+                if (n.every(x => x) && e.target.value) handleVerify(n.join(''));
+              }}
+              onKeyDown={(e) => { if (e.key === 'Backspace' && !otp[i] && i > 0) refs.current[i - 1]?.focus(); }}
+              className={`h-12 w-10 rounded-xl border-2 text-center text-lg font-bold transition-all focus:outline-none focus:ring-2 focus:ring-offset-1 ${error ? 'border-destructive' : d ? 'border-primary-700 bg-primary-50' : 'border-input hover:border-primary-300'}`}
+            />
+          ))}
+        </div>
+        {error && <p className="text-xs text-destructive text-center">{error}</p>}
+        {verifying && <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-1"><Loader2 className="h-3 w-3 animate-spin" />Verifying...</p>}
+        <div className="text-center">
+          {cooldown > 0 ? <p className="text-xs text-muted-foreground">Resend in {cooldown}s</p> :
+            <button onClick={handleSend} disabled={sending} className="text-xs text-primary-700 underline">Resend Code</button>}
+        </div>
+        <button onClick={() => { setMode('enter'); setError(''); }} className="text-xs text-muted-foreground underline w-full text-center">Change number</button>
+      </div>
+    );
+  }
+
+  if (mode === 'enter') {
+    return (
+      <div className="space-y-3">
+        <div>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">New Phone Number</label>
+          <div className="flex gap-2">
+            <select value={cc} onChange={(e) => setCc(e.target.value)} className="flex h-11 rounded-xl border border-input bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring w-[100px]">
+              {countryCodes.map((c) => <option key={c.code} value={c.code}>{c.flag} {c.code}</option>)}
+            </select>
+            <Input type="tel" placeholder="7911 123456" value={num} onChange={(e) => { setNum(e.target.value); setError(''); }} error={!!error} className="flex-1 h-11 rounded-xl" />
+          </div>
+          {error && <p className="text-xs text-destructive mt-1">{error}</p>}
+        </div>
+        <Button className="w-full rounded-xl" onClick={handleSend} disabled={sending || num.length < 6}>
+          {sending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Sending...</> : <><Phone className="mr-2 h-4 w-4" />Send Verification Code</>}
+        </Button>
+        <button onClick={() => setMode('view')} className="text-xs text-muted-foreground underline w-full text-center">Cancel</button>
+      </div>
+    );
+  }
+
+  // mode === 'view'
+  return (
+    <div className="space-y-3">
+      {currentPhone ? (
+        <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-50">
+          <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-emerald-800">{currentPhone}</p>
+            <p className="text-[10px] text-emerald-600">Verified</p>
+          </div>
+          <Badge variant="success" className="text-[9px]"><Shield className="mr-0.5 h-2.5 w-2.5" />Verified</Badge>
+        </div>
+      ) : null}
+      <Button variant="outline" size="sm" className="rounded-xl text-xs" onClick={() => setMode('enter')}>
+        {currentPhone ? 'Change Phone Number' : 'Add Phone Number'}
+      </Button>
     </div>
   );
 }
