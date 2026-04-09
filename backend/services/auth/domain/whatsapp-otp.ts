@@ -1,7 +1,21 @@
 import { logger } from '../../shared/utils/logger.js';
 
-const WHATSAPP_API_URL = 'https://graph.facebook.com/v21.0';
-
+/**
+ * Send OTP via Twilio WhatsApp API.
+ *
+ * Uses the same TWILIO_ACCOUNT_SID + TWILIO_AUTH_TOKEN as phone validation.
+ * Twilio has a pre-approved WhatsApp sandbox for testing.
+ *
+ * Setup:
+ *   1. Go to twilio.com/console/sms/whatsapp/sandbox
+ *   2. Join sandbox by sending "join <your-sandbox-word>" from your WhatsApp
+ *   3. Set TWILIO_WHATSAPP_FROM in env (e.g., "whatsapp:+14155238886")
+ *
+ * For production:
+ *   1. Request a Twilio WhatsApp sender number
+ *   2. Get message template approved
+ *   3. Update TWILIO_WHATSAPP_FROM to your production number
+ */
 export async function sendWhatsAppOtp(phone: string, otp: string): Promise<void> {
   const isLocal = process.env.ENVIRONMENT === 'dev' || !process.env.ENVIRONMENT;
   const forceReal = process.env.FORCE_REAL_OTP === 'true';
@@ -11,42 +25,40 @@ export async function sendWhatsAppOtp(phone: string, otp: string): Promise<void>
     return;
   }
 
-  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
-  const apiToken = process.env.WHATSAPP_API_TOKEN;
-  const templateName = process.env.WHATSAPP_TEMPLATE_NAME || 'matrimony_otp';
+  const accountSid = process.env.TWILIO_ACCOUNT_SID;
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+  const fromNumber = process.env.TWILIO_WHATSAPP_FROM || 'whatsapp:+14155238886';
 
-  if (!phoneNumberId || !apiToken) {
-    throw new Error('WHATSAPP_PHONE_NUMBER_ID and WHATSAPP_API_TOKEN are required in stage/prod');
+  if (!accountSid || !authToken) {
+    throw new Error('TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN are required for WhatsApp OTP');
   }
 
-  const response = await fetch(`${WHATSAPP_API_URL}/${phoneNumberId}/messages`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiToken}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      messaging_product: 'whatsapp',
-      to: phone.replace('+', ''),
-      type: 'template',
-      template: {
-        name: templateName,
-        language: { code: 'en' },
-        components: [
-          {
-            type: 'body',
-            parameters: [{ type: 'text', text: otp }],
-          },
-        ],
+  const toNumber = `whatsapp:${phone}`;
+  const body = `Your Matrimony verification code is ${otp}. It expires in 5 minutes.`;
+
+  const credentials = Buffer.from(`${accountSid}:${authToken}`).toString('base64');
+
+  const response = await fetch(
+    `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${credentials}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
-    }),
-  });
+      body: new URLSearchParams({
+        From: fromNumber,
+        To: toNumber,
+        Body: body,
+      }).toString(),
+    },
+  );
 
   if (!response.ok) {
     const errorBody = await response.text();
-    logger.error('WhatsApp OTP send failed', { phone, status: response.status, error: errorBody });
+    logger.error('Twilio WhatsApp OTP failed', { phone, status: response.status, error: errorBody });
     throw new Error('Failed to send WhatsApp OTP. Please try again or use email.');
   }
 
-  logger.info('WhatsApp OTP sent', { phone });
+  logger.info('WhatsApp OTP sent via Twilio', { phone });
 }

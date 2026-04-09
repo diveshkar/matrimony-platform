@@ -64,9 +64,18 @@ export class ProfileService {
       const { ensurePhoneAvailable, registerPhone, getUserPhone } = await import('./phone-registry.js');
 
       const existingPhone = await getUserPhone(userId);
-      if (!existingPhone || existingPhone !== phoneNumber) {
+      const isOwnNumber = existingPhone === phoneNumber;
+
+      // 1. Check uniqueness — always (even for own number, just passes)
+      await ensurePhoneAvailable(phoneNumber, userId);
+
+      // 2. Validate with Twilio — skip only if user already owns this exact number (WhatsApp login)
+      if (!isOwnNumber) {
         await validatePhoneNumber(phoneNumber);
-        await ensurePhoneAvailable(phoneNumber, userId);
+      }
+
+      // 3. Register phone index — skip if already registered
+      if (!isOwnNumber) {
         await registerPhone(userId, phoneNumber);
       }
     }

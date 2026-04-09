@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 interface DateOfBirthInputProps {
   value: string; // YYYY-MM-DD format
@@ -27,11 +27,27 @@ const selectClass = (hasError: boolean) =>
   }`;
 
 export function DateOfBirthInput({ value, onChange, error }: DateOfBirthInputProps) {
-  const parts = useMemo(() => {
-    if (!value) return { day: '', month: '', year: '' };
-    const [year, month, day] = value.split('-');
-    return { day: day || '', month: month || '', year: year || '' };
-  }, [value]);
+  const [day, setDay] = useState('');
+  const [month, setMonth] = useState('');
+  const [year, setYear] = useState('');
+
+  // Initialize from value prop
+  useEffect(() => {
+    if (value && value.includes('-')) {
+      const [y, m, d] = value.split('-');
+      if (y) setYear(y);
+      if (m) setMonth(m);
+      if (d) setDay(String(Number(d))); // remove leading zero for display
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Output YYYY-MM-DD when all three are set
+  useEffect(() => {
+    if (day && month && year) {
+      const paddedDay = day.padStart(2, '0');
+      onChange(`${year}-${month}-${paddedDay}`);
+    }
+  }, [day, month, year]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const currentYear = new Date().getFullYear();
   const minYear = currentYear - 70;
@@ -45,29 +61,18 @@ export function DateOfBirthInput({ value, onChange, error }: DateOfBirthInputPro
 
   const days = useMemo(() => {
     const arr: number[] = [];
-    const daysInMonth = parts.month && parts.year
-      ? new Date(Number(parts.year), Number(parts.month), 0).getDate()
+    const daysInMonth = month && year
+      ? new Date(Number(year), Number(month), 0).getDate()
       : 31;
     for (let d = 1; d <= daysInMonth; d++) arr.push(d);
     return arr;
-  }, [parts.month, parts.year]);
-
-  const handleChange = (field: 'day' | 'month' | 'year', val: string) => {
-    const updated = { ...parts, [field]: val };
-    if (updated.day && updated.month && updated.year) {
-      const paddedDay = updated.day.padStart(2, '0');
-      const paddedMonth = updated.month.padStart(2, '0');
-      onChange(`${updated.year}-${paddedMonth}-${paddedDay}`);
-    } else {
-      onChange('');
-    }
-  };
+  }, [month, year]);
 
   return (
     <div className="flex gap-2">
       <select
-        value={parts.day}
-        onChange={(e) => handleChange('day', e.target.value)}
+        value={day}
+        onChange={(e) => setDay(e.target.value)}
         className={`${selectClass(!!error)} w-[80px]`}
         aria-label="Day"
       >
@@ -78,8 +83,8 @@ export function DateOfBirthInput({ value, onChange, error }: DateOfBirthInputPro
       </select>
 
       <select
-        value={parts.month}
-        onChange={(e) => handleChange('month', e.target.value)}
+        value={month}
+        onChange={(e) => setMonth(e.target.value)}
         className={`${selectClass(!!error)} flex-1`}
         aria-label="Month"
       >
@@ -90,8 +95,8 @@ export function DateOfBirthInput({ value, onChange, error }: DateOfBirthInputPro
       </select>
 
       <select
-        value={parts.year}
-        onChange={(e) => handleChange('year', e.target.value)}
+        value={year}
+        onChange={(e) => setYear(e.target.value)}
         className={`${selectClass(!!error)} w-[90px]`}
         aria-label="Year"
       >

@@ -105,19 +105,17 @@ module "api_gateway" {
 
 locals {
   lambda_env = {
-    ENVIRONMENT              = var.environment
-    JWT_SECRET               = var.jwt_secret
-    SES_FROM_EMAIL           = var.ses_from_email
-    S3_MEDIA_BUCKET          = module.s3_media.bucket_id
-    CORS_ALLOWED_ORIGINS     = join(",", var.cors_allowed_origins)
-    STRIPE_SECRET_KEY        = var.stripe_secret_key
-    STRIPE_WEBHOOK_SECRET    = var.stripe_webhook_secret
-    WHATSAPP_PHONE_NUMBER_ID = var.whatsapp_phone_number_id
-    WHATSAPP_API_TOKEN       = var.whatsapp_api_token
-    WHATSAPP_TEMPLATE_NAME   = var.whatsapp_template_name
-    TWILIO_ACCOUNT_SID       = var.twilio_account_sid
-    TWILIO_AUTH_TOKEN        = var.twilio_auth_token
-    FRONTEND_URL             = "https://${var.domain_name}"
+    ENVIRONMENT           = var.environment
+    JWT_SECRET            = var.jwt_secret
+    SES_FROM_EMAIL        = var.ses_from_email
+    S3_MEDIA_BUCKET       = module.s3_media.bucket_id
+    CORS_ALLOWED_ORIGINS  = join(",", var.cors_allowed_origins)
+    STRIPE_SECRET_KEY     = var.stripe_secret_key
+    STRIPE_WEBHOOK_SECRET = var.stripe_webhook_secret
+    TWILIO_ACCOUNT_SID    = var.twilio_account_sid
+    TWILIO_AUTH_TOKEN     = var.twilio_auth_token
+    TWILIO_WHATSAPP_FROM  = var.twilio_whatsapp_from
+    FRONTEND_URL          = "https://${var.domain_name}"
   }
 
   dynamodb_arns = [

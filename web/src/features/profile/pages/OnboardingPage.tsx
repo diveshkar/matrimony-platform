@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth/auth-context';
 import { ROUTES } from '@/lib/constants/routes';
 import { useCreateProfile } from '../hooks/useProfile';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { apiClient } from '@/lib/api/client';
 import type { ProfileData } from '../api/profile-api';
 
 import { StepProfileFor } from '../components/onboarding/StepProfileFor';
@@ -81,12 +82,38 @@ export default function OnboardingPage() {
     return Object.keys(errors).length === 0;
   }, [currentStep, draft]);
 
-  const handleNext = useCallback(() => {
+  const [phoneValidating, setPhoneValidating] = useState(false);
+
+  const handleNext = useCallback(async () => {
     if (!validateStep()) return;
+
+    // Phone step (step 3) — validate via API before proceeding
+    if (currentStep === 3 && draft.phoneNumber) {
+      const existingPhone = user?.phone;
+      if (existingPhone === draft.phoneNumber) {
+        // WhatsApp login user — already verified, skip
+        setCurrentStep((s) => s + 1);
+        return;
+      }
+
+      setPhoneValidating(true);
+      try {
+        await apiClient.post('/me/validate-phone', { phoneNumber: draft.phoneNumber });
+        setCurrentStep((s) => s + 1);
+      } catch (err) {
+        const axiosErr = err as { response?: { data?: { error?: { message?: string } } } };
+        const msg = axiosErr?.response?.data?.error?.message || 'Phone validation failed';
+        setStepErrors({ phoneNumber: msg });
+      } finally {
+        setPhoneValidating(false);
+      }
+      return;
+    }
+
     if (currentStep < STEPS.length - 1) {
       setCurrentStep((s) => s + 1);
     }
-  }, [currentStep, validateStep]);
+  }, [currentStep, validateStep, draft.phoneNumber, user?.phone]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleBack = useCallback(() => {
     if (currentStep > 0) {
@@ -259,9 +286,18 @@ export default function OnboardingPage() {
               )}
             </Button>
           ) : (
-            <Button onClick={handleNext} className="gap-2 rounded-xl" size="lg">
-              Continue
-              <ArrowRight className="h-4 w-4" />
+            <Button onClick={handleNext} disabled={phoneValidating} className="gap-2 rounded-xl" size="lg">
+              {phoneValidating ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Verifying...
+                </>
+              ) : (
+                <>
+                  Continue
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
             </Button>
           )}
         </div>

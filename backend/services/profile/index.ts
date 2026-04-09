@@ -5,6 +5,7 @@ import { main as updateProfile } from './handlers/update-profile.js';
 import { main as getProfile } from './handlers/get-profile.js';
 import { main as boostProfile } from './handlers/boost-profile.js';
 import { main as getBoostStatus } from './handlers/get-boost-status.js';
+import { main as validatePhone } from './handlers/validate-phone.js';
 
 const routes: Record<string, (e: APIGatewayProxyEventV2, c: Context) => Promise<unknown>> = {
   'POST /profiles': createProfile,
@@ -13,6 +14,7 @@ const routes: Record<string, (e: APIGatewayProxyEventV2, c: Context) => Promise<
   'GET /profiles/{id}': getProfile,
   'POST /me/boost': boostProfile,
   'GET /me/boost': getBoostStatus,
+  'POST /me/validate-phone': validatePhone,
 };
 
 export const main = async (event: APIGatewayProxyEventV2, context: Context) => {

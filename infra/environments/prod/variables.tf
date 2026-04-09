@@ -48,34 +48,21 @@ variable "stripe_webhook_secret" {
   sensitive = true
 }
 
-variable "whatsapp_phone_number_id" {
-  type        = string
-  default     = ""
-  description = "Meta WhatsApp Business API phone number ID"
-}
-
-variable "whatsapp_api_token" {
-  type        = string
-  default     = ""
-  sensitive   = true
-  description = "Meta WhatsApp Business API access token"
-}
-
-variable "whatsapp_template_name" {
-  type        = string
-  default     = "matrimony_otp"
-  description = "WhatsApp OTP message template name"
-}
-
 variable "twilio_account_sid" {
   type        = string
   default     = ""
-  description = "Twilio Account SID for phone number validation"
+  description = "Twilio Account SID for phone validation + WhatsApp OTP"
 }
 
 variable "twilio_auth_token" {
   type        = string
   default     = ""
   sensitive   = true
-  description = "Twilio Auth Token for phone number validation"
+  description = "Twilio Auth Token for phone validation + WhatsApp OTP"
+}
+
+variable "twilio_whatsapp_from" {
+  type        = string
+  default     = "whatsapp:+14155238886"
+  description = "Twilio WhatsApp sender number (sandbox or production)"
 }
