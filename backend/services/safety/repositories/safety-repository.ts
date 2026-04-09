@@ -6,8 +6,8 @@ export interface BlockRecord {
   PK: string;
   SK: string;
   userId: string;
-  blockedUserId: string;
-  createdAt: string;
+  blockedUserIds: string[];
+  updatedAt: string;
 }
 
 export interface ReportRecord {
@@ -54,29 +54,60 @@ export class SafetyRepository extends BaseRepository {
 
   // ── Block ─────────────────────────────────
 
+  async getBlockRecord(userId: string): Promise<BlockRecord | null> {
+    return this.get<BlockRecord>(`USER#${userId}`, 'BLOCK');
+  }
+
+  async getBlockedUserIds(userId: string): Promise<string[]> {
+    const record = await this.getBlockRecord(userId);
+    return record?.blockedUserIds || [];
+  }
+
   async blockUser(userId: string, blockedUserId: string): Promise<void> {
+    const record = await this.getBlockRecord(userId);
+    const existing = record?.blockedUserIds || [];
+
+    if (existing.includes(blockedUserId)) return;
+
     await this.put({
       PK: `USER#${userId}`,
-      SK: `BLOCK#${blockedUserId}`,
+      SK: 'BLOCK',
       userId,
-      blockedUserId,
-      createdAt: nowISO(),
+      blockedUserIds: [...existing, blockedUserId],
+      updatedAt: nowISO(),
     });
   }
 
   async unblockUser(userId: string, blockedUserId: string): Promise<void> {
-    await this.delete(`USER#${userId}`, `BLOCK#${blockedUserId}`);
+    const record = await this.getBlockRecord(userId);
+    if (!record) return;
+
+    const updated = record.blockedUserIds.filter((id) => id !== blockedUserId);
+
+    if (updated.length === 0) {
+      await this.delete(`USER#${userId}`, 'BLOCK');
+    } else {
+      await this.put({
+        PK: `USER#${userId}`,
+        SK: 'BLOCK',
+        userId,
+        blockedUserIds: updated,
+        updatedAt: nowISO(),
+      });
+    }
   }
 
-  async getBlockedUsers(userId: string): Promise<BlockRecord[]> {
-    const result = await this.query<BlockRecord>(`USER#${userId}`, { limit: 100 });
-    return result.items.filter((i) => i.SK.startsWith('BLOCK#'));
+  async getBlockedUsers(userId: string): Promise<{ blockedUserId: string }[]> {
+    const ids = await this.getBlockedUserIds(userId);
+    return ids.map((id) => ({ blockedUserId: id }));
   }
 
   async isBlocked(userId: string, targetId: string): Promise<boolean> {
-    const b1 = await this.get(`USER#${userId}`, `BLOCK#${targetId}`);
-    const b2 = await this.get(`USER#${targetId}`, `BLOCK#${userId}`);
-    return !!(b1 || b2);
+    const [myBlocks, theirBlocks] = await Promise.all([
+      this.getBlockedUserIds(userId),
+      this.getBlockedUserIds(targetId),
+    ]);
+    return myBlocks.includes(targetId) || theirBlocks.includes(userId);
   }
 
   // ── Report ────────────────────────────────

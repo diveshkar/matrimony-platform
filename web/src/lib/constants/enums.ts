@@ -157,15 +157,45 @@ export const OCCUPATION_OPTIONS = [
   { value: 'other', label: 'Other' },
 ] as const;
 
-export const INCOME_OPTIONS = [
-  { value: 'below_20k', label: 'Below £20,000' },
-  { value: '20k_40k', label: '£20,000 - £40,000' },
-  { value: '40k_60k', label: '£40,000 - £60,000' },
-  { value: '60k_80k', label: '£60,000 - £80,000' },
-  { value: '80k_100k', label: '£80,000 - £100,000' },
-  { value: 'above_100k', label: 'Above £100,000' },
-  { value: 'prefer_not', label: 'Prefer not to say' },
-] as const;
+const CURRENCY_MAP: Record<string, { symbol: string; ranges: number[] }> = {
+  'United Kingdom': { symbol: '£', ranges: [20000, 40000, 60000, 80000, 100000] },
+  'United States': { symbol: '$', ranges: [30000, 50000, 75000, 100000, 150000] },
+  'Canada': { symbol: 'C$', ranges: [30000, 50000, 75000, 100000, 150000] },
+  'Australia': { symbol: 'A$', ranges: [30000, 50000, 75000, 100000, 150000] },
+  'India': { symbol: '₹', ranges: [300000, 600000, 1000000, 1500000, 2500000] },
+  'Sri Lanka': { symbol: 'Rs', ranges: [500000, 1000000, 2000000, 3000000, 5000000] },
+  'Germany': { symbol: '€', ranges: [25000, 40000, 60000, 80000, 100000] },
+  'France': { symbol: '€', ranges: [25000, 40000, 60000, 80000, 100000] },
+  'UAE': { symbol: 'AED', ranges: [50000, 100000, 200000, 300000, 500000] },
+  'Singapore': { symbol: 'S$', ranges: [30000, 50000, 80000, 120000, 200000] },
+  'Malaysia': { symbol: 'RM', ranges: [30000, 60000, 100000, 150000, 250000] },
+  'New Zealand': { symbol: 'NZ$', ranges: [30000, 50000, 75000, 100000, 150000] },
+};
+
+function formatCurrency(symbol: string, amount: number): string {
+  if (amount >= 1000000) return `${symbol}${(amount / 1000000).toFixed(1)}M`;
+  if (amount >= 1000) return `${symbol}${(amount / 1000).toFixed(0)}K`;
+  return `${symbol}${amount}`;
+}
+
+export function getIncomeOptions(country?: string): { value: string; label: string }[] {
+  const config = country ? CURRENCY_MAP[country] : undefined;
+  const sym = config?.symbol || '£';
+  const ranges = config?.ranges || [20000, 40000, 60000, 80000, 100000];
+
+  return [
+    { value: 'range_1', label: `Below ${formatCurrency(sym, ranges[0])}` },
+    { value: 'range_2', label: `${formatCurrency(sym, ranges[0])} - ${formatCurrency(sym, ranges[1])}` },
+    { value: 'range_3', label: `${formatCurrency(sym, ranges[1])} - ${formatCurrency(sym, ranges[2])}` },
+    { value: 'range_4', label: `${formatCurrency(sym, ranges[2])} - ${formatCurrency(sym, ranges[3])}` },
+    { value: 'range_5', label: `${formatCurrency(sym, ranges[3])} - ${formatCurrency(sym, ranges[4])}` },
+    { value: 'range_6', label: `Above ${formatCurrency(sym, ranges[4])}` },
+    { value: 'prefer_not', label: 'Prefer not to say' },
+  ];
+}
+
+// Default for backward compatibility
+export const INCOME_OPTIONS = getIncomeOptions('United Kingdom');
 
 export const COUNTRY_OPTIONS = [
   { value: 'United Kingdom', label: 'United Kingdom' },

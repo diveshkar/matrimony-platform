@@ -4,8 +4,9 @@ const WHATSAPP_API_URL = 'https://graph.facebook.com/v21.0';
 
 export async function sendWhatsAppOtp(phone: string, otp: string): Promise<void> {
   const isLocal = process.env.ENVIRONMENT === 'dev' || !process.env.ENVIRONMENT;
+  const forceReal = process.env.FORCE_REAL_OTP === 'true';
 
-  if (isLocal) {
+  if (isLocal && !forceReal) {
     logger.info('WhatsApp OTP (dev mode)', { phone, otp });
     return;
   }

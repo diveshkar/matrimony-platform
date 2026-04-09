@@ -22,11 +22,11 @@ import { StepAboutMe } from '../components/onboarding/StepAboutMe';
 const STEPS = [
   { title: 'Profile For', subtitle: 'Who is this profile for?' },
   { title: 'Basic Info', subtitle: "Let's start with you" },
+  { title: 'Location', subtitle: 'Where you call home' },
+  { title: 'Verify Phone', subtitle: 'Build trust with your number' },
   { title: 'Cultural Roots', subtitle: 'Your heritage matters' },
   { title: 'Education & Career', subtitle: 'Your achievements' },
-  { title: 'Location', subtitle: 'Where you call home' },
   { title: 'Family', subtitle: 'Your family story' },
-  { title: 'Verify Phone', subtitle: 'Build trust with your number' },
   { title: 'Partner Preferences', subtitle: 'Who you are looking for' },
   { title: 'About You', subtitle: 'In your own words' },
 ];
@@ -52,28 +52,28 @@ export default function OnboardingPage() {
     const errors: Record<string, string> = {};
 
     switch (currentStep) {
-      case 0:
+      case 0: // Profile For
         if (!draft.profileFor) errors.profileFor = 'Please select who this profile is for';
         break;
-      case 1:
+      case 1: // Basic Info
         if (!draft.name?.trim()) errors.name = 'Name is required';
         if (!draft.dateOfBirth) errors.dateOfBirth = 'Date of birth is required';
         if (!draft.gender) errors.gender = 'Gender is required';
         if (!draft.height) errors.height = 'Height is required';
         if (!draft.maritalStatus) errors.maritalStatus = 'Marital status is required';
         break;
-      case 2:
+      case 2: // Location
+        if (!draft.country) errors.country = 'Country is required';
+        break;
+      case 3: // Verify Phone
+        if (!draft.phoneNumber || draft.phoneNumber.length < 8) errors.phoneNumber = 'A valid phone number is required';
+        break;
+      case 4: // Cultural Roots
         if (!draft.religion) errors.religion = 'Religion is required';
         if (!draft.motherTongue) errors.motherTongue = 'Mother tongue is required';
         break;
-      case 3:
+      case 5: // Education & Career
         if (!draft.education) errors.education = 'Education is required';
-        break;
-      case 4:
-        if (!draft.country) errors.country = 'Country is required';
-        break;
-      case 6:
-        if (!draft.phoneNumber || draft.phoneNumber.length < 8) errors.phoneNumber = 'A valid phone number is required';
         break;
     }
 
@@ -204,19 +204,19 @@ export default function OnboardingPage() {
               <StepBasicInfo data={draft} onChange={updateDraft} errors={stepErrors} />
             )}
             {currentStep === 2 && (
-              <StepCulturalRoots data={draft} onChange={updateDraft} errors={stepErrors} />
-            )}
-            {currentStep === 3 && (
-              <StepEducationCareer data={draft} onChange={updateDraft} errors={stepErrors} />
-            )}
-            {currentStep === 4 && (
               <StepLocation data={draft} onChange={updateDraft} errors={stepErrors} />
             )}
+            {currentStep === 3 && (
+              <StepPhoneVerify data={draft} onChange={updateDraft} errors={stepErrors} />
+            )}
+            {currentStep === 4 && (
+              <StepCulturalRoots data={draft} onChange={updateDraft} errors={stepErrors} />
+            )}
             {currentStep === 5 && (
-              <StepFamily data={draft} onChange={updateDraft} errors={stepErrors} />
+              <StepEducationCareer data={draft} onChange={updateDraft} errors={stepErrors} />
             )}
             {currentStep === 6 && (
-              <StepPhoneVerify data={draft} onChange={updateDraft} errors={stepErrors} />
+              <StepFamily data={draft} onChange={updateDraft} errors={stepErrors} />
             )}
             {currentStep === 7 && (
               <StepPreferences data={draft} onChange={updateDraft} errors={stepErrors} />

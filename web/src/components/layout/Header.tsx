@@ -42,6 +42,10 @@ export function Header() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
+
   const navLinks = isAuthenticated ? authNavLinks : publicNavLinks;
 
   return (

@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
 
-type EntityPrefix = 'USR' | 'PRF' | 'PHT' | 'INT' | 'MSG' | 'CNV' | 'SUB' | 'NTF' | 'RPT' | 'BLK';
+type EntityPrefix = 'USR' | 'PRF' | 'PHT' | 'INT' | 'MSG' | 'CNV' | 'SUB' | 'NTF' | 'RPT' | 'BLK' | 'STR';
 
 export function generateId(prefix: EntityPrefix): string {
   return `${prefix}_${nanoid(16)}`;

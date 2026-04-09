@@ -72,6 +72,28 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
     } catch (err) {
       logger.warn('Failed to record profile view', { error: String(err) });
     }
+
+    // Mark profile as "seen" for discovery freshness
+    try {
+      const { BaseRepository } = await import('../../shared/repositories/base-repository.js');
+      const seenRepo = new BaseRepository('core');
+      const today = new Date().toISOString().split('T')[0];
+      const seenRecord = await seenRepo.get<{ seenUserIds?: string[] }>(
+        `USER#${authedEvent.auth.userId}`,
+        `SEEN#${today}`,
+      );
+      const existing = seenRecord?.seenUserIds || [];
+      if (!existing.includes(profileId)) {
+        await seenRepo.put({
+          PK: `USER#${authedEvent.auth.userId}`,
+          SK: `SEEN#${today}`,
+          seenUserIds: [...existing, profileId].slice(-200),
+          ttl: Math.floor(Date.now() / 1000) + 86400,
+        });
+      }
+    } catch (err) {
+      logger.warn('Failed to save seen profile', { error: String(err) });
+    }
   }
 
   return success(profile, requestId);

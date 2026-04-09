@@ -690,6 +690,59 @@ module "route_privacy_patch" {
   lambda_function_name = module.lambda_safety.function_name
 }
 
+module "route_success_stories" {
+  source               = "../../modules/api_gateway_route"
+  api_id               = module.api_gateway.api_id
+  api_execution_arn    = module.api_gateway.execution_arn
+  route_key            = "GET /success-stories"
+  lambda_invoke_arn    = module.lambda_safety.invoke_arn
+  lambda_function_name = module.lambda_safety.function_name
+}
+
+module "route_my_story_get" {
+  source               = "../../modules/api_gateway_route"
+  api_id               = module.api_gateway.api_id
+  api_execution_arn    = module.api_gateway.execution_arn
+  route_key            = "GET /my-story"
+  lambda_invoke_arn    = module.lambda_safety.invoke_arn
+  lambda_function_name = module.lambda_safety.function_name
+}
+
+module "route_my_story_matches" {
+  source               = "../../modules/api_gateway_route"
+  api_id               = module.api_gateway.api_id
+  api_execution_arn    = module.api_gateway.execution_arn
+  route_key            = "GET /my-story/matches"
+  lambda_invoke_arn    = module.lambda_safety.invoke_arn
+  lambda_function_name = module.lambda_safety.function_name
+}
+
+module "route_my_story_post" {
+  source               = "../../modules/api_gateway_route"
+  api_id               = module.api_gateway.api_id
+  api_execution_arn    = module.api_gateway.execution_arn
+  route_key            = "POST /my-story"
+  lambda_invoke_arn    = module.lambda_safety.invoke_arn
+  lambda_function_name = module.lambda_safety.function_name
+}
+
+module "route_my_story_approve" {
+  source               = "../../modules/api_gateway_route"
+  api_id               = module.api_gateway.api_id
+  api_execution_arn    = module.api_gateway.execution_arn
+  route_key            = "POST /my-story/approve"
+  lambda_invoke_arn    = module.lambda_safety.invoke_arn
+  lambda_function_name = module.lambda_safety.function_name
+}
+
+module "route_my_story_delete" {
+  source               = "../../modules/api_gateway_route"
+  api_id               = module.api_gateway.api_id
+  api_execution_arn    = module.api_gateway.execution_arn
+  route_key            = "DELETE /my-story"
+  lambda_invoke_arn    = module.lambda_safety.invoke_arn
+  lambda_function_name = module.lambda_safety.function_name
+}
 
 # ──────────────────────────────────────────────
 # SES (Email OTP)

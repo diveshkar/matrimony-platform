@@ -3,7 +3,7 @@ import {
   EDUCATION_OPTIONS,
   EDUCATION_FIELD_OPTIONS,
   OCCUPATION_OPTIONS,
-  INCOME_OPTIONS,
+  getIncomeOptions,
 } from '@/lib/constants/enums';
 import type { ProfileData } from '../../api/profile-api';
 
@@ -17,6 +17,8 @@ const selectClass =
   'flex h-11 w-full rounded-lg border border-input bg-white px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring hover:border-primary-300';
 
 export function StepEducationCareer({ data, onChange, errors }: StepProps) {
+  const incomeOptions = getIncomeOptions(data.country);
+
   return (
     <div className="space-y-5">
       {/* Education */}
@@ -94,7 +96,7 @@ export function StepEducationCareer({ data, onChange, errors }: StepProps) {
           className={selectClass}
         >
           <option value="">Prefer not to say</option>
-          {INCOME_OPTIONS.map((opt) => (
+          {incomeOptions.map((opt) => (
             <option key={opt.value} value={opt.value}>
               {opt.label}
             </option>

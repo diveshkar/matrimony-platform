@@ -1,5 +1,6 @@
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils/cn';
+import { DateOfBirthInput } from '@/components/common/DateOfBirthInput';
 import { GENDER_OPTIONS, MARITAL_STATUS_OPTIONS, HEIGHT_OPTIONS } from '@/lib/constants/enums';
 import type { ProfileData } from '../../api/profile-api';
 
@@ -27,16 +28,10 @@ export function StepBasicInfo({ data, onChange, errors }: StepProps) {
       {/* DOB */}
       <div>
         <label className="text-sm font-medium text-foreground mb-1.5 block">Date of Birth *</label>
-        <Input
-          type="date"
+        <DateOfBirthInput
           value={data.dateOfBirth || ''}
-          onChange={(e) => onChange({ dateOfBirth: e.target.value })}
+          onChange={(val) => onChange({ dateOfBirth: val })}
           error={!!errors.dateOfBirth}
-          max={
-            new Date(new Date().setFullYear(new Date().getFullYear() - 18))
-              .toISOString()
-              .split('T')[0]
-          }
         />
         {errors.dateOfBirth && (
           <p className="mt-1 text-sm text-destructive">{errors.dateOfBirth}</p>

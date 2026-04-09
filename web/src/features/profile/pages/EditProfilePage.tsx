@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { DateOfBirthInput } from '@/components/common/DateOfBirthInput';
 import { useMyProfile, useUpdateProfile } from '../hooks/useProfile';
 import { useAuth } from '@/lib/auth/auth-context';
 import { useToast } from '@/components/ui/toaster';
@@ -19,7 +20,7 @@ import {
   EDUCATION_OPTIONS,
   EDUCATION_FIELD_OPTIONS,
   OCCUPATION_OPTIONS,
-  INCOME_OPTIONS,
+  getIncomeOptions,
   COUNTRY_OPTIONS,
   FAMILY_TYPE_OPTIONS,
   FAMILY_STATUS_OPTIONS,
@@ -98,6 +99,7 @@ export default function EditProfilePage() {
   }
 
   const casteOptions = form.religion ? CASTE_OPTIONS[form.religion as string] || [] : [];
+  const incomeOptions = getIncomeOptions((form.country as string) || undefined);
   const denomOptions = form.religion ? DENOMINATION_OPTIONS[form.religion as string] || [] : [];
 
   return (
@@ -119,7 +121,7 @@ export default function EditProfilePage() {
             <Input value={(form.name as string) || ''} onChange={(e) => update('name', e.target.value)} className="h-11 rounded-xl" />
           </Field>
           <Field label="Date of Birth">
-            <Input type="date" value={(form.dateOfBirth as string) || ''} onChange={(e) => update('dateOfBirth', e.target.value)} className="h-11 rounded-xl" />
+            <DateOfBirthInput value={(form.dateOfBirth as string) || ''} onChange={(val) => update('dateOfBirth', val)} />
           </Field>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Gender">
@@ -272,7 +274,7 @@ export default function EditProfilePage() {
             <Field label="Income">
               <select value={(form.incomeRange as string) || ''} onChange={(e) => update('incomeRange', e.target.value)} className={selectClass}>
                 <option value="">Prefer not to say</option>
-                {INCOME_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                {incomeOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
             </Field>
           </div>

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import {
   Heart,
@@ -21,6 +22,7 @@ import {
   StaggerItem,
 } from '@/components/common/AnimatedSection';
 import { AnimatedCounter } from '@/components/common/AnimatedCounter';
+import { apiClient, type ApiResponse } from '@/lib/api/client';
 import { ROUTES } from '@/lib/constants/routes';
 import { CONFIG } from '@/lib/constants/config';
 
@@ -66,29 +68,7 @@ const stats = [
   { value: 98, suffix: '%', label: 'Verified Profiles' },
 ];
 
-const successStories = [
-  {
-    names: 'Priya & Karthik',
-    location: 'London, UK',
-    story:
-      'We both grew up in London but never crossed paths. Matrimony matched us based on our shared values and Tamil roots. Six months later, our families met and the rest is history.',
-    initials: 'PK',
-  },
-  {
-    names: 'Anitha & Raveen',
-    location: 'Toronto, Canada',
-    story:
-      'Being in the diaspora, finding someone who understands our culture felt impossible. This platform brought us together across continents. We got married last spring.',
-    initials: 'AR',
-  },
-  {
-    names: 'Meena & Suresh',
-    location: 'Colombo, Sri Lanka',
-    story:
-      'My parents created my profile and found Suresh within weeks. The smart matching understood exactly what our family was looking for. We could not be happier.',
-    initials: 'MS',
-  },
-];
+// Success stories fetched from API — empty until real couples share their stories
 
 const plans = [
   {
@@ -414,7 +394,26 @@ function HowItWorksSection() {
 /*  Success Stories                             */
 /* ─────────────────────────────────────────── */
 
+interface SuccessStory {
+  storyId: string;
+  names: string;
+  location: string;
+  story: string;
+  initials: string;
+}
+
 function SuccessStoriesSection() {
+  const { data: response } = useQuery({
+    queryKey: ['success-stories'],
+    queryFn: () =>
+      apiClient
+        .get<ApiResponse<{ items: SuccessStory[]; count: number }>>('/success-stories')
+        .then((r) => r.data),
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const stories = response?.success ? response.data.items : [];
+
   return (
     <section className="section-spacing bg-warm-50" id="success-stories">
       <div className="page-container">
@@ -431,35 +430,59 @@ function SuccessStoriesSection() {
           </p>
         </AnimatedSection>
 
-        <StaggerContainer className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {successStories.map((story) => (
-            <StaggerItem key={story.names}>
-              <Card className="h-full border-0 shadow-soft hover-lift">
-                <CardContent className="pt-8 pb-6">
-                  <Quote className="h-8 w-8 text-primary-200 mb-4" />
-                  <p className="text-sm text-muted-foreground leading-relaxed italic">
-                    &ldquo;{story.story}&rdquo;
-                  </p>
-                  <Separator className="my-5" />
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-primary text-white font-heading font-bold text-sm">
-                      {story.initials}
+        {stories.length > 0 ? (
+          <StaggerContainer className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {stories.map((story) => (
+              <StaggerItem key={story.storyId || story.names}>
+                <Card className="h-full border-0 shadow-soft hover-lift">
+                  <CardContent className="pt-8 pb-6">
+                    <Quote className="h-8 w-8 text-primary-200 mb-4" />
+                    <p className="text-sm text-muted-foreground leading-relaxed italic">
+                      &ldquo;{story.story}&rdquo;
+                    </p>
+                    <Separator className="my-5" />
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-primary text-white font-heading font-bold text-sm">
+                        {story.initials}
+                      </div>
+                      <div>
+                        <p className="font-heading font-semibold text-sm">{story.names}</p>
+                        <p className="text-xs text-muted-foreground">{story.location}</p>
+                      </div>
+                      <div className="ml-auto flex gap-0.5">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className="h-3.5 w-3.5 fill-accent-400 text-accent-400" />
+                        ))}
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-heading font-semibold text-sm">{story.names}</p>
-                      <p className="text-xs text-muted-foreground">{story.location}</p>
-                    </div>
-                    <div className="ml-auto flex gap-0.5">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="h-3.5 w-3.5 fill-accent-400 text-accent-400" />
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </StaggerItem>
-          ))}
-        </StaggerContainer>
+                  </CardContent>
+                </Card>
+              </StaggerItem>
+            ))}
+          </StaggerContainer>
+        ) : (
+          <AnimatedSection>
+            <Card className="border-0 shadow-soft max-w-lg mx-auto">
+              <CardContent className="py-12 text-center">
+                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-50">
+                  <Heart className="h-7 w-7 text-primary-300" />
+                </div>
+                <h3 className="font-heading text-lg font-semibold text-foreground">
+                  Your Story Could Be Here
+                </h3>
+                <p className="mt-2 text-sm text-muted-foreground max-w-sm mx-auto">
+                  We are a new platform building meaningful connections for the Tamil community. Join us and be part of our first success stories.
+                </p>
+                <Button className="mt-6 rounded-xl" asChild>
+                  <Link to={ROUTES.LOGIN}>
+                    <Heart className="mr-2 h-4 w-4" />
+                    Start Your Journey
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </AnimatedSection>
+        )}
       </div>
     </section>
   );

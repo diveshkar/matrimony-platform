@@ -20,7 +20,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils/cn';
 import { useToast } from '@/components/ui/toaster';
@@ -297,18 +296,18 @@ export default function PlansPage() {
               </table>
             </div>
 
-            <Separator />
-
-            {/* Price row */}
-            <div className="flex items-center bg-warm-50/50">
-              <div className="py-3 px-4 w-[200px] text-xs font-semibold text-foreground">Monthly price</div>
-              <div className="flex-1 grid grid-cols-4 text-center">
-                <span className="py-3 text-xs font-bold text-foreground">Free</span>
-                <span className="py-3 text-xs font-bold text-foreground">£9.99</span>
-                <span className="py-3 text-xs font-bold text-accent-700">£19.99</span>
-                <span className="py-3 text-xs font-bold text-violet-700">£29.99</span>
-              </div>
-            </div>
+            {/* Price row — uses same table structure for alignment */}
+            <table className="w-full text-sm">
+              <tbody>
+                <tr className="bg-warm-50/50 border-t">
+                  <td className="py-3 px-4 text-xs font-semibold text-foreground w-[200px]">Monthly price</td>
+                  <td className="text-center py-3 px-3 text-xs font-bold text-foreground w-[80px]">Free</td>
+                  <td className="text-center py-3 px-3 text-xs font-bold text-foreground w-[80px]">£9.99</td>
+                  <td className="text-center py-3 px-3 text-xs font-bold text-accent-700 w-[80px]">£19.99</td>
+                  <td className="text-center py-3 px-3 text-xs font-bold text-violet-700 w-[80px]">£29.99</td>
+                </tr>
+              </tbody>
+            </table>
           </Card>
         </motion.div>
       )}

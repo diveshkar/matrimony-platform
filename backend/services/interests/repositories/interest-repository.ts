@@ -161,8 +161,10 @@ export class InterestRepository extends BaseRepository {
   // ── Block check ───────────────────────────
 
   async isBlocked(userId: string, targetUserId: string): Promise<boolean> {
-    const block1 = await this.get(`USER#${userId}`, `BLOCK#${targetUserId}`);
-    const block2 = await this.get(`USER#${targetUserId}`, `BLOCK#${userId}`);
-    return !!(block1 || block2);
+    const [block1, block2] = await Promise.all([
+      this.get<{ blockedUserIds?: string[] }>(`USER#${userId}`, 'BLOCK'),
+      this.get<{ blockedUserIds?: string[] }>(`USER#${targetUserId}`, 'BLOCK'),
+    ]);
+    return (block1?.blockedUserIds || []).includes(targetUserId) || (block2?.blockedUserIds || []).includes(userId);
   }
 }

@@ -92,10 +92,10 @@ export class InterestService {
     // Check if either user has blocked the other
     const coreRepo = new BaseRepository('core');
     const [block1, block2] = await Promise.all([
-      coreRepo.get(`USER#${receiverId}`, `BLOCK#${senderId}`),
-      coreRepo.get(`USER#${senderId}`, `BLOCK#${receiverId}`),
+      coreRepo.get<{ blockedUserIds?: string[] }>(`USER#${receiverId}`, 'BLOCK'),
+      coreRepo.get<{ blockedUserIds?: string[] }>(`USER#${senderId}`, 'BLOCK'),
     ]);
-    if (block1 || block2) {
+    if ((block1?.blockedUserIds || []).includes(senderId) || (block2?.blockedUserIds || []).includes(receiverId)) {
       throw new ForbiddenError('Cannot accept interest from a blocked user');
     }
 
@@ -217,13 +217,8 @@ export class InterestService {
   async getShortlist(userId: string): Promise<{ items: unknown[] }> {
     const allItems = await this.repo.getShortlist(userId);
 
-    const blockedResult = await this.coreRepo.query<{ SK: string }>(`USER#${userId}`, { limit: 200 });
-    const blockedIds = new Set<string>();
-    for (const item of blockedResult.items) {
-      if (item.SK.startsWith('BLOCK#')) {
-        blockedIds.add(item.SK.replace('BLOCK#', ''));
-      }
-    }
+    const blockRecord = await this.coreRepo.get<{ blockedUserIds?: string[] }>(`USER#${userId}`, 'BLOCK');
+    const blockedIds = new Set<string>(blockRecord?.blockedUserIds || []);
 
     const items = allItems.filter((item) => {
       const targetId = (item as unknown as Record<string, unknown>).targetUserId as string;

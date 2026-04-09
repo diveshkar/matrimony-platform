@@ -25,6 +25,21 @@ const countryCodes = [
   { code: '+64', country: 'NZ', flag: '🇳🇿' },
 ];
 
+const countryToCode: Record<string, string> = {
+  'United Kingdom': '+44',
+  'Sri Lanka': '+94',
+  'India': '+91',
+  'United States': '+1',
+  'Canada': '+1',
+  'Australia': '+61',
+  'UAE': '+971',
+  'Germany': '+49',
+  'France': '+33',
+  'Singapore': '+65',
+  'Malaysia': '+60',
+  'New Zealand': '+64',
+};
+
 export function StepPhoneVerify({ data, onChange, errors }: StepProps) {
   const { user } = useAuth();
 
@@ -39,6 +54,9 @@ export function StepPhoneVerify({ data, onChange, errors }: StepProps) {
     if (existingPhone) {
       const match = countryCodes.find((cc) => existingPhone.startsWith(cc.code));
       return match?.code || '+44';
+    }
+    if (data.country) {
+      return countryToCode[data.country] || '+44';
     }
     return '+44';
   });

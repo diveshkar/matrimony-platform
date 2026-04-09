@@ -70,6 +70,7 @@ import { main as reportUserHandler } from './safety/handlers/report-user.js';
 import { main as whoViewedMeHandler } from './safety/handlers/who-viewed-me.js';
 import { main as notificationsHandler } from './safety/handlers/notifications.js';
 import { main as privacySettingsHandler } from './safety/handlers/privacy-settings.js';
+import { main as successStoriesHandler } from './safety/handlers/success-stories.js';
 import { main as getUsageHandler } from './subscriptions/handlers/get-usage.js';
 import { main as cancelSubscriptionHandler } from './subscriptions/handlers/cancel-subscription.js';
 import fs from 'fs';
@@ -249,18 +250,18 @@ app.use('/uploads/local', express.static(UPLOADS_DIR));
 route('get', '/discover', getRecommendationsHandler);
 route('get', '/discover/search', searchProfilesHandler);
 
-route('post', '/interests', sendInterestHandler);
-route('post', '/interests/:senderId/respond', respondInterestHandler);
-route('delete', '/interests/:receiverId', withdrawInterestHandler);
-route('get', '/interests', getInterestsHandler);
+// route('post', '/interests', sendInterestHandler);
+// route('post', '/interests/:senderId/respond', respondInterestHandler);
+// route('delete', '/interests/:receiverId', withdrawInterestHandler);
+// route('get', '/interests', getInterestsHandler);
 route('get', '/shortlist', shortlistHandler);
 route('post', '/shortlist', shortlistHandler);
 route('delete', '/shortlist/:userId', shortlistHandler);
 
-route('get', '/chats', getConversationsHandler);
-route('post', '/chats', createConversationHandler);
-route('get', '/chats/:conversationId/messages', getMessagesHandler);
-route('post', '/chats/:conversationId/messages', sendMessageHandler);
+// route('get', '/chats', getConversationsHandler);
+// route('post', '/chats', createConversationHandler);
+// route('get', '/chats/:conversationId/messages', getMessagesHandler);
+// route('post', '/chats/:conversationId/messages', sendMessageHandler);
 
 route('get', '/subscriptions/plans', getPlansHandler);
 route('post', '/subscriptions/checkout', createCheckoutHandler);
@@ -277,6 +278,12 @@ route('get', '/notifications', notificationsHandler);
 route('patch', '/notifications', notificationsHandler);
 route('get', '/settings/privacy', privacySettingsHandler);
 route('patch', '/settings/privacy', privacySettingsHandler);
+route('get', '/success-stories', successStoriesHandler);
+route('get', '/my-story', successStoriesHandler);
+route('get', '/my-story/matches', successStoriesHandler);
+route('post', '/my-story', successStoriesHandler);
+route('post', '/my-story/approve', successStoriesHandler);
+route('delete', '/my-story', successStoriesHandler);
 route('get', '/subscriptions/usage', getUsageHandler);
 
 // ── Start ───────────────────────────────────

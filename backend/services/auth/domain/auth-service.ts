@@ -30,7 +30,8 @@ function generateOtp(): string {
 }
 
 async function sendOtpEmail(email: string, otp: string): Promise<void> {
-  if (isDev) {
+  const forceReal = process.env.FORCE_REAL_OTP === 'true';
+  if (isDev && !forceReal) {
     logger.info('Email OTP (dev mode)', { email, otp });
     return;
   }

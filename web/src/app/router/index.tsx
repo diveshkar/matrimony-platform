@@ -55,6 +55,8 @@ const PrivacySettingsPage = lazy(() => import('@/features/settings/pages/Privacy
 const BlockedUsersPage = lazy(() => import('@/features/settings/pages/BlockedUsersPage'));
 const WhoViewedMePage = lazy(() => import('@/features/settings/pages/WhoViewedMePage'));
 const NotificationsPage = lazy(() => import('@/features/settings/pages/NotificationsPage'));
+const ShareStoryPage = lazy(() => import('@/features/settings/pages/ShareStoryPage'));
+const ApproveStoryPage = lazy(() => import('@/features/settings/pages/ApproveStoryPage'));
 
 function SuspenseWrapper({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<LoadingScreen message="Loading..." />}>{children}</Suspense>;
@@ -116,6 +118,8 @@ export function AppRouter() {
           <Route path={ROUTES.SETTINGS} element={<SettingsPage />} />
           <Route path={ROUTES.PRIVACY_SETTINGS} element={<PrivacySettingsPage />} />
           <Route path={ROUTES.BLOCKED_USERS} element={<BlockedUsersPage />} />
+          <Route path={ROUTES.SHARE_STORY} element={<ShareStoryPage />} />
+          <Route path={ROUTES.APPROVE_STORY} element={<ApproveStoryPage />} />
           <Route path={ROUTES.NOTIFICATIONS} element={<NotificationsPage />} />
           <Route path={ROUTES.PAYMENT_SUCCESS} element={<PaymentSuccessPage />} />
           <Route path={ROUTES.PAYMENT_CANCEL} element={<PaymentCancelPage />} />

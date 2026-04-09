@@ -13,10 +13,10 @@ export class ChatService {
 
   private async isBlocked(userId1: string, userId2: string): Promise<boolean> {
     const [block1, block2] = await Promise.all([
-      this.coreRepo.get(`USER#${userId1}`, `BLOCK#${userId2}`),
-      this.coreRepo.get(`USER#${userId2}`, `BLOCK#${userId1}`),
+      this.coreRepo.get<{ blockedUserIds?: string[] }>(`USER#${userId1}`, 'BLOCK'),
+      this.coreRepo.get<{ blockedUserIds?: string[] }>(`USER#${userId2}`, 'BLOCK'),
     ]);
-    return !!(block1 || block2);
+    return (block1?.blockedUserIds || []).includes(userId2) || (block2?.blockedUserIds || []).includes(userId1);
   }
 
   async createConversation(user1Id: string, user2Id: string): Promise<{ conversationId: string }> {

@@ -37,6 +37,8 @@ export const ROUTES = {
   SETTINGS: '/settings',
   PRIVACY_SETTINGS: '/settings/privacy',
   BLOCKED_USERS: '/settings/blocked',
+  SHARE_STORY: '/settings/share-story',
+  APPROVE_STORY: '/success-story/approve/:storyId',
   NOTIFICATIONS: '/notifications',
 
   NOT_FOUND: '*',

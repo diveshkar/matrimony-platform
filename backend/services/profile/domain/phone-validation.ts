@@ -50,7 +50,8 @@ export async function validatePhoneNumber(phone: string): Promise<PhoneValidatio
 
   const isDev = process.env.ENVIRONMENT === 'dev' || !process.env.ENVIRONMENT;
 
-  if (isDev) {
+  const forceReal = process.env.FORCE_REAL_OTP === 'true';
+  if (isDev && !forceReal) {
     logger.info('Phone validation (dev mode — Twilio skipped)', {
       phone: formattedPhone,
       country,

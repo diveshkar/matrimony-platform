@@ -14,8 +14,9 @@ variable "domain_name" {
 }
 
 variable "cors_allowed_origins" {
-  type    = list(string)
-  default = ["https://stage.matrimony.com", "http://localhost:3000"]
+  type        = list(string)
+  default     = ["https://stage.matrimony.com", "http://localhost:3000"]
+  description = "After first deploy, add your CloudFront URL (e.g. https://d13g8w11hvs9mg.cloudfront.net) to terraform.tfvars"
 }
 
 variable "certificate_arn" {

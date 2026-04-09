@@ -4,6 +4,7 @@ import { main as reportUser } from './handlers/report-user.js';
 import { main as whoViewedMe } from './handlers/who-viewed-me.js';
 import { main as notifications } from './handlers/notifications.js';
 import { main as privacySettings } from './handlers/privacy-settings.js';
+import { main as successStories } from './handlers/success-stories.js';
 
 const routes: Record<string, (e: APIGatewayProxyEventV2, c: Context) => Promise<unknown>> = {
   'GET /blocks': blockUser,
@@ -15,6 +16,12 @@ const routes: Record<string, (e: APIGatewayProxyEventV2, c: Context) => Promise<
   'PATCH /notifications': notifications,
   'GET /settings/privacy': privacySettings,
   'PATCH /settings/privacy': privacySettings,
+  'GET /success-stories': successStories,
+  'GET /my-story': successStories,
+  'GET /my-story/matches': successStories,
+  'POST /my-story': successStories,
+  'POST /my-story/approve': successStories,
+  'DELETE /my-story': successStories,
 };
 
 export const main = async (event: APIGatewayProxyEventV2, context: Context) => {

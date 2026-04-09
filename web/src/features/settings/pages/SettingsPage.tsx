@@ -61,6 +61,12 @@ const sections = [
         icon: Bell,
         desc: 'Your notifications',
       },
+      {
+        label: 'Share Your Story',
+        href: ROUTES.SHARE_STORY,
+        icon: Heart,
+        desc: 'Share your success story',
+      },
     ],
   },
   {
