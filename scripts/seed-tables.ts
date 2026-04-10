@@ -31,6 +31,7 @@ const tables: TableDef[] = [
     gsis: [
       { name: 'GSI1', hashKey: 'GSI1PK', rangeKey: 'GSI1SK' },
       { name: 'GSI2', hashKey: 'GSI2PK', rangeKey: 'GSI2SK' },
+      { name: 'GSI3', hashKey: 'GSI3PK', rangeKey: 'GSI3SK' },
     ],
   },
   { name: `matrimony_events_${env}` },

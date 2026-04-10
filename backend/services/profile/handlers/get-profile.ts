@@ -43,11 +43,17 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
           ttl: Math.floor(Date.now() / 1000) + 86400 * 2,
         });
 
-        const viewerProfile = await coreRepo.get<Record<string, unknown>>(
-          `USER#${authedEvent.auth.userId}`,
-          'PROFILE#v1',
-        );
-        await repo.recordView(profileId, authedEvent.auth.userId, viewerProfile || undefined);
+        // Fetch viewer profile + discovery context in parallel
+        const { getDiscoveryContext } = await import('../../discovery/domain/discovery-context.js');
+        const [viewerProfile, discoveryCtx] = await Promise.all([
+          coreRepo.get<Record<string, unknown>>(
+            `USER#${authedEvent.auth.userId}`,
+            'PROFILE#v1',
+          ),
+          getDiscoveryContext(coreRepo, authedEvent.auth.userId, profileId),
+        ]);
+
+        await repo.recordView(profileId, authedEvent.auth.userId, viewerProfile || undefined, discoveryCtx || undefined);
 
         const viewerName = (viewerProfile?.name as string) || 'Someone';
         const { SubscriptionRepository } = await import('../../subscriptions/repositories/subscription-repository.js');
@@ -73,27 +79,16 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
       logger.warn('Failed to record profile view', { error: String(err) });
     }
 
-    // Mark profile as "seen" for discovery freshness
+    // Mark profile as "viewed" for tiered discovery cooldown (3-day cooldown)
     try {
+      const { recordSeenAction } = await import('../../discovery/domain/seen-tracking.js');
       const { BaseRepository } = await import('../../shared/repositories/base-repository.js');
       const seenRepo = new BaseRepository('core');
-      const today = new Date().toISOString().split('T')[0];
-      const seenRecord = await seenRepo.get<{ seenUserIds?: string[] }>(
-        `USER#${authedEvent.auth.userId}`,
-        `SEEN#${today}`,
-      );
-      const existing = seenRecord?.seenUserIds || [];
-      if (!existing.includes(profileId)) {
-        await seenRepo.put({
-          PK: `USER#${authedEvent.auth.userId}`,
-          SK: `SEEN#${today}`,
-          seenUserIds: [...existing, profileId].slice(-200),
-          ttl: Math.floor(Date.now() / 1000) + 86400,
-        });
-      }
+      await recordSeenAction(seenRepo, authedEvent.auth.userId, profileId, 'viewed');
     } catch (err) {
-      logger.warn('Failed to save seen profile', { error: String(err) });
+      logger.warn('Failed to record seen profile', { error: String(err) });
     }
+
   }
 
   return success(profile, requestId);

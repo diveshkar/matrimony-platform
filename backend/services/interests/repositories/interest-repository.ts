@@ -48,6 +48,8 @@ export class InterestRepository extends BaseRepository {
     senderPhoto?: string;
     receiverPhoto?: string;
     message?: string;
+    discoveryScore?: number;
+    discoveryRank?: number;
   }): Promise<InterestRecord> {
     const now = nowISO();
     const interest: InterestRecord = {
@@ -65,11 +67,17 @@ export class InterestRepository extends BaseRepository {
       updatedAt: now,
     };
 
-    await this.put(interest as unknown as Record<string, unknown>);
+    // Discovery algorithm context (present when interest originated from discovery feed)
+    const discoveryFields = data.discoveryScore !== undefined ? {
+      discoveryScore: data.discoveryScore,
+      discoveryRank: data.discoveryRank,
+    } : {};
 
+    await this.put({ ...interest, ...discoveryFields } as unknown as Record<string, unknown>);
 
     await this.put({
       ...interest,
+      ...discoveryFields,
       PK: `USER#${data.receiverId}`,
       SK: `INTEREST#IN#${data.senderId}`,
     } as unknown as Record<string, unknown>);

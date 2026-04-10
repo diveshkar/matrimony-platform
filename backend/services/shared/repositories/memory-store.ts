@@ -38,6 +38,10 @@ class MemoryStore {
 
     if (options?.indexName === 'GSI1') {
       results = table.filter((i) => i.GSI1PK === pk);
+    } else if (options?.indexName === 'GSI2') {
+      results = table.filter((i) => i.GSI2PK === pk);
+    } else if (options?.indexName === 'GSI3') {
+      results = table.filter((i) => i.GSI3PK === pk);
     } else {
       results = table.filter((i) => i.PK === pk);
     }

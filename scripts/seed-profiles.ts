@@ -775,6 +775,10 @@ async function seed() {
           GSI1SK: `AGE#${String(age).padStart(3, '0')}#${userId}`,
           GSI2PK: `RELIGION#${p.religion}#GENDER#${p.gender}`,
           GSI2SK: `AGE#${String(age).padStart(3, '0')}#${userId}`,
+          ...(p.caste ? {
+            GSI3PK: `CASTE#${p.caste}#GENDER#${p.gender}`,
+            GSI3SK: `AGE#${String(age).padStart(3, '0')}#${userId}`,
+          } : {}),
         },
       }),
     );
@@ -807,6 +811,10 @@ async function seed() {
           GSI1SK: `AGE#${String(age).padStart(3, '0')}#${userId}`,
           GSI2PK: `RELIGION#${p.religion}#GENDER#${p.gender}`,
           GSI2SK: `AGE#${String(age).padStart(3, '0')}#${userId}`,
+          ...(p.caste ? {
+            GSI3PK: `CASTE#${p.caste}#GENDER#${p.gender}`,
+            GSI3SK: `AGE#${String(age).padStart(3, '0')}#${userId}`,
+          } : {}),
         },
       }),
     );

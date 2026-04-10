@@ -44,9 +44,12 @@ export class InterestService {
       throw new ConflictError('Please wait before sending another interest to this user');
     }
 
-    const [senderProfile, receiverProfile] = await Promise.all([
+    // Fetch profiles + discovery context in parallel
+    const { getDiscoveryContext } = await import('../../discovery/domain/discovery-context.js');
+    const [senderProfile, receiverProfile, discoveryCtx] = await Promise.all([
       this.coreRepo.get<Record<string, unknown>>(`USER#${senderId}`, 'PROFILE#v1'),
       this.coreRepo.get<Record<string, unknown>>(`USER#${receiverId}`, 'PROFILE#v1'),
+      getDiscoveryContext(this.coreRepo, senderId, receiverId),
     ]);
 
     if (!receiverProfile) {
@@ -61,6 +64,8 @@ export class InterestService {
       senderPhoto: senderProfile?.primaryPhotoUrl as string | undefined,
       receiverPhoto: receiverProfile?.primaryPhotoUrl as string | undefined,
       message,
+      discoveryScore: discoveryCtx?.matchScore,
+      discoveryRank: discoveryCtx?.rank,
     });
 
     try {
@@ -101,6 +106,14 @@ export class InterestService {
 
     await this.repo.updateInterestStatus(senderId, receiverId, 'accepted');
 
+    // Record mutual match — both users permanently hidden from each other's discovery
+    try {
+      const { recordMutualMatch } = await import('../../discovery/domain/seen-tracking.js');
+      await recordMutualMatch(this.coreRepo, senderId, receiverId);
+    } catch (err) {
+      logger.warn('Failed to record mutual match in seen tracking', { error: String(err) });
+    }
+
     try {
       const { ChatService } = await import('../../chat/domain/chat-service.js');
       const chatService = new ChatService();
@@ -136,6 +149,15 @@ export class InterestService {
     }
 
     await this.repo.updateInterestStatus(senderId, receiverId, 'declined');
+
+    // Record declined — sender hidden from receiver's discovery for 30 days
+    try {
+      const { recordSeenAction } = await import('../../discovery/domain/seen-tracking.js');
+      await recordSeenAction(this.coreRepo, receiverId, senderId, 'declined');
+    } catch (err) {
+      logger.warn('Failed to record decline in seen tracking', { error: String(err) });
+    }
+
     return { status: 'interest_declined' };
   }
 

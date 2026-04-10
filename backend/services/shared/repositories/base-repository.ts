@@ -152,7 +152,7 @@ export class BaseRepository {
       return { items: result.items as T[], lastKey: undefined };
     }
 
-    const gsiKeyMap: Record<string, string> = { GSI1: 'GSI1PK', GSI2: 'GSI2PK' };
+    const gsiKeyMap: Record<string, string> = { GSI1: 'GSI1PK', GSI2: 'GSI2PK', GSI3: 'GSI3PK' };
     const hashKeyName = options.indexName ? gsiKeyMap[options.indexName] || 'PK' : 'PK';
 
     const result = await this.client.send(

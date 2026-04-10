@@ -26,6 +26,8 @@ export interface DiscoveryProfile {
   GSI1SK?: string;
   GSI2PK?: string;
   GSI2SK?: string;
+  GSI3PK?: string;
+  GSI3SK?: string;
 }
 
 export class DiscoveryRepository extends BaseRepository {
@@ -69,6 +71,19 @@ export class DiscoveryRepository extends BaseRepository {
     });
   }
 
+  async searchByCasteAndGender(
+    caste: string,
+    gender: string,
+    options: { limit?: number },
+  ): Promise<{ items: DiscoveryProfile[]; lastKey?: Record<string, unknown> }> {
+    const gsiPk = `CASTE#${caste}#GENDER#${gender}`;
+    return this.query<DiscoveryProfile>(gsiPk, {
+      indexName: 'GSI3',
+      limit: options.limit || 20,
+      scanForward: false,
+    });
+  }
+
   async getAllProfiles(
     limit = 50,
   ): Promise<{ items: DiscoveryProfile[]; lastKey?: Record<string, unknown> }> {
@@ -76,5 +91,24 @@ export class DiscoveryRepository extends BaseRepository {
       limit,
       scanForward: false,
     });
+  }
+
+  /**
+   * Fetch specific profiles by userId (parallel individual gets).
+   * Returns profiles in the same order as the input IDs; missing profiles are omitted.
+   */
+  async getProfilesByIds(userIds: string[]): Promise<Map<string, DiscoveryProfile>> {
+    const results = await Promise.all(
+      userIds.map(async (id) => {
+        const profile = await this.get<DiscoveryProfile>(`PROFILE#${id}`, 'DISCOVERY#v1');
+        return { id, profile };
+      }),
+    );
+
+    const map = new Map<string, DiscoveryProfile>();
+    for (const { id, profile } of results) {
+      if (profile) map.set(id, profile);
+    }
+    return map;
   }
 }
