@@ -151,9 +151,7 @@ export default function OnboardingPage() {
     try {
       await createProfile.mutateAsync(profileData);
       localStorage.removeItem(DRAFT_KEY);
-    } catch {
-      /* handled by mutation */
-    }
+    } catch {}
   }, [draft, validateStep, createProfile]);
 
   const isLastStep = currentStep === STEPS.length - 1;

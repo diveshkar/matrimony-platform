@@ -1,15 +1,10 @@
 import { BaseRepository } from '../../shared/repositories/base-repository.js';
 
-// ═══════════════════════════════════════════════════════════════
-// TIERED SEEN TRACKING
-// viewed: 3 days, declined: 30 days, matched: permanent
-// ═══════════════════════════════════════════════════════════════
-
 export type SeenAction = 'viewed' | 'declined' | 'matched';
 
 export interface SeenEntry {
   action: SeenAction;
-  at: string; // ISO timestamp
+  at: string;
 }
 
 interface SeenCooldownRecord {
@@ -19,12 +14,11 @@ interface SeenCooldownRecord {
 }
 
 const COOLDOWN_MS: Record<SeenAction, number> = {
-  viewed: 3 * 24 * 60 * 60 * 1000,    // 3 days
-  declined: 30 * 24 * 60 * 60 * 1000,  // 30 days
-  matched: Infinity,                     // permanent
+  viewed: 3 * 24 * 60 * 60 * 1000,
+  declined: 30 * 24 * 60 * 60 * 1000,
+  matched: Infinity,
 };
 
-// Higher number = higher priority — never downgrade an action
 const ACTION_PRIORITY: Record<SeenAction, number> = {
   viewed: 1,
   declined: 2,
@@ -33,27 +27,15 @@ const ACTION_PRIORITY: Record<SeenAction, number> = {
 
 const SEEN_SK = 'SEEN#COOLDOWN';
 
-// Hard cap on total entries to prevent unbounded DynamoDB item growth.
-// Matched entries are permanent but also redundant with the interactedIds filter,
-// so oldest matched entries are evicted first when the cap is reached.
 const MAX_ENTRIES = 500;
 
-/**
- * Check whether a single entry's cooldown is still active.
- */
 function isOnCooldown(entry: SeenEntry, now: number): boolean {
   if (entry.action === 'matched') return true;
   const elapsed = now - new Date(entry.at).getTime();
   return elapsed < COOLDOWN_MS[entry.action];
 }
 
-/**
- * Prune expired entries and enforce size cap to keep DynamoDB item manageable.
- * When over MAX_ENTRIES, evicts oldest matched entries first (they're redundant
- * with the interactedIds hard filter), then oldest viewed/declined.
- */
 function pruneExpired(entries: Record<string, SeenEntry>, now: number): Record<string, SeenEntry> {
-  // Step 1: Remove expired entries
   const active: [string, SeenEntry][] = [];
   for (const [userId, entry] of Object.entries(entries)) {
     if (isOnCooldown(entry, now)) {
@@ -61,14 +43,11 @@ function pruneExpired(entries: Record<string, SeenEntry>, now: number): Record<s
     }
   }
 
-  // Step 2: If still over cap, evict oldest matched first, then oldest others
   if (active.length > MAX_ENTRIES) {
     active.sort((a, b) => {
-      // Matched entries are least important to keep (interactedIds already excludes them)
       const priorityA = a[1].action === 'matched' ? 0 : 1;
       const priorityB = b[1].action === 'matched' ? 0 : 1;
       if (priorityA !== priorityB) return priorityB - priorityA;
-      // Among same priority, keep newer entries
       return new Date(b[1].at).getTime() - new Date(a[1].at).getTime();
     });
     active.length = MAX_ENTRIES;
@@ -77,10 +56,6 @@ function pruneExpired(entries: Record<string, SeenEntry>, now: number): Record<s
   return Object.fromEntries(active);
 }
 
-/**
- * Get the set of user IDs currently on cooldown for a given viewer.
- * Also prunes expired entries and writes back if any were removed.
- */
 export async function getActiveCooldowns(
   coreRepo: BaseRepository,
   userId: string,
@@ -97,7 +72,6 @@ export async function getActiveCooldowns(
     }
   }
 
-  // Prune in background if >10% of entries are expired (don't block the read)
   const totalEntries = Object.keys(record.entries).length;
   if (totalEntries > activeIds.size && totalEntries - activeIds.size > totalEntries * 0.1) {
     const pruned = pruneExpired(record.entries, now);
@@ -105,16 +79,12 @@ export async function getActiveCooldowns(
       PK: `USER#${userId}`,
       SK: SEEN_SK,
       entries: pruned,
-    }).catch(() => { /* fire-and-forget prune */ });
+    }).catch(() => {});
   }
 
   return activeIds;
 }
 
-/**
- * Record a seen action for a single target profile.
- * Respects action priority — never downgrades (e.g. matched → viewed).
- */
 export async function recordSeenAction(
   coreRepo: BaseRepository,
   userId: string,
@@ -125,18 +95,11 @@ export async function recordSeenAction(
   const entries = record?.entries ? { ...record.entries } : {};
   const now = Date.now();
 
-  // Check existing — don't downgrade action priority
   const existing = entries[targetUserId];
-  if (existing) {
-    const existingPriority = ACTION_PRIORITY[existing.action];
-    const newPriority = ACTION_PRIORITY[action];
-    if (newPriority < existingPriority) return; // don't downgrade
-    // Same or higher priority: update timestamp and action
-  }
+  if (existing && ACTION_PRIORITY[action] < ACTION_PRIORITY[existing.action]) return;
 
   entries[targetUserId] = { action, at: new Date().toISOString() };
 
-  // Prune expired entries on every write to prevent unbounded growth
   const cleaned = pruneExpired(entries, now);
 
   await coreRepo.put({
@@ -146,10 +109,6 @@ export async function recordSeenAction(
   });
 }
 
-/**
- * Record matched action for BOTH users (mutual exclusion).
- * Called when an interest is accepted — both sides should never see each other in discovery again.
- */
 export async function recordMutualMatch(
   coreRepo: BaseRepository,
   userA: string,

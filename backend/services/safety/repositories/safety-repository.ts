@@ -157,7 +157,6 @@ export class SafetyRepository extends BaseRepository {
       viewerAge: age,
       viewerCity: viewerProfile?.city as string | undefined,
       viewerCountry: viewerProfile?.country as string | undefined,
-      // Discovery algorithm context (null if profile found via search or direct URL)
       ...(discoveryCtx ? {
         discoveryScore: discoveryCtx.matchScore,
         discoveryRank: discoveryCtx.rank,

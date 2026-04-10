@@ -93,10 +93,6 @@ export class DiscoveryRepository extends BaseRepository {
     });
   }
 
-  /**
-   * Fetch specific profiles by userId (parallel individual gets).
-   * Returns profiles in the same order as the input IDs; missing profiles are omitted.
-   */
   async getProfilesByIds(userIds: string[]): Promise<Map<string, DiscoveryProfile>> {
     const results = await Promise.all(
       userIds.map(async (id) => {

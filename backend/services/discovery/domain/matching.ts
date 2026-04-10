@@ -9,10 +9,6 @@ export function calculateAge(dob: string): number {
   return age;
 }
 
-// ═══════════════════════════════════════════════════════════════
-// CASTE COMPATIBILITY GROUPS (Tamil matrimony context)
-// ═══════════════════════════════════════════════════════════════
-
 export const CASTE_GROUPS: Record<string, string[]> = {
   Brahmin: ['Iyer', 'Iyengar'],
   Agricultural: ['Vellalar', 'Pillai', 'Mudaliar', 'Gounder', 'Naicker'],
@@ -27,24 +23,12 @@ for (const [group, castes] of Object.entries(CASTE_GROUPS)) {
   }
 }
 
-/**
- * Get all castes in the same compatibility group as the given caste.
- * Returns only the OTHER castes (excludes the input caste itself).
- * Returns empty array if caste is not in any group.
- */
 export function getRelatedCastes(caste: string): string[] {
   const group = casteToGroup.get(caste.toLowerCase());
   if (!group) return [];
   return CASTE_GROUPS[group].filter((c) => c.toLowerCase() !== caste.toLowerCase());
 }
 
-/**
- * Score caste compatibility between two profiles.
- * - Exact match: 13 (full points)
- * - Same compatibility group: 9
- * - One or both castes not specified / not in any group: 3 (neutral)
- * - Different groups: 0
- */
 export function scoreCasteMatch(casteA?: string, casteB?: string): number {
   if (!casteA || !casteB) return 3;
 
@@ -62,19 +46,11 @@ export function scoreCasteMatch(casteA?: string, casteB?: string): number {
   return 0;
 }
 
-/**
- * Score age proximity between viewer and candidate.
- * 0 diff → 16, 1 → 14, 2 → 12, 3 → 10, 4 → 8, 5 → 6, 6 → 4, 7 → 2, 8+ → 0
- */
 export function scoreAgeProximity(viewerAge: number, candidateAge: number): number {
   const diff = Math.abs(viewerAge - candidateAge);
   return Math.max(0, 16 - diff * 2);
 }
 
-/**
- * Score location match (tiered).
- * Same city: 12, Same state: 8, Same country: 4, Different: 0
- */
 export function scoreLocation(
   viewer: { city?: string; state?: string; country?: string },
   candidate: { city?: string; state?: string; country?: string },
@@ -85,10 +61,6 @@ export function scoreLocation(
   return 0;
 }
 
-/**
- * Score religion match.
- * Exact match with preference: 12, Same as viewer (no preference set): 6, Different: 0
- */
 export function scoreReligion(
   candidateReligion: string,
   viewerReligion: string,
@@ -110,14 +82,6 @@ export interface CandidatePreferences {
   maritalStatuses?: string[];
 }
 
-/**
- * Mutual compatibility: does the candidate's preferences match the viewer?
- * Checks age, religion, caste, education, country, marital status.
- * Each matching dimension adds points; total capped at 12.
- *
- * 6 dimensions checked → 2 points each = 12 max.
- * If candidate has no preferences set at all → 6 (neutral, don't penalize).
- */
 export function scoreMutualCompatibility(
   viewerProfile: {
     age: number;
@@ -166,16 +130,11 @@ export function scoreMutualCompatibility(
     if (candidatePrefs.maritalStatuses.includes(viewerProfile.maritalStatus)) score += 2;
   }
 
-  // If candidate set no preferences at all, give neutral score
   if (dimensionsSet === 0) return 6;
 
   return score;
 }
 
-/**
- * Score marital status match.
- * Exact match with preference: 7, Same as viewer (no pref): 4, Different: 0
- */
 export function scoreMaritalStatus(
   candidateStatus: string,
   viewerStatus: string,
@@ -187,11 +146,6 @@ export function scoreMaritalStatus(
   return candidateStatus === viewerStatus ? 4 : 0;
 }
 
-/**
- * Score education match.
- * Match with preference: 6, Different: 0
- * No preference set: 3 (neutral)
- */
 export function scoreEducation(
   candidateEducation: string,
   preferredEducations?: string[],
@@ -200,10 +154,6 @@ export function scoreEducation(
   return preferredEducations.includes(candidateEducation) ? 6 : 0;
 }
 
-/**
- * Profile quality signals (max 6).
- * Photo: 2, Phone verified: 2, Completion bonus: 0-2
- */
 export function scoreQuality(profile: {
   primaryPhotoUrl?: string;
   phoneVerified?: boolean;
@@ -212,15 +162,10 @@ export function scoreQuality(profile: {
   let score = 0;
   if (profile.primaryPhotoUrl) score += 2;
   if (profile.phoneVerified) score += 2;
-  // 0-100 completion → 0-2 points
   score += Math.min(2, Math.floor(profile.profileCompletion / 50));
   return score;
 }
 
-/**
- * Recency bonus (max 4).
- * Active <24h: 4, <72h: 3, <168h (1 week): 2, <720h (30 days): 1, else: 0
- */
 export function scoreRecency(lastActiveAt?: string): number {
   if (!lastActiveAt) return 0;
   const hours = (Date.now() - new Date(lastActiveAt).getTime()) / 3_600_000;

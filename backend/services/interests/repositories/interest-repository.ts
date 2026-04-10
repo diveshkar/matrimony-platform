@@ -69,7 +69,6 @@ export class InterestRepository extends BaseRepository {
       updatedAt: now,
     };
 
-    // Discovery algorithm context (present when interest originated from discovery feed)
     const discoveryFields = data.discoveryScore !== undefined ? {
       discoveryScore: data.discoveryScore,
       discoveryRank: data.discoveryRank,

@@ -49,7 +49,6 @@ export function ProfileCard({ profile, className, compact }: ProfileCardProps) {
           className,
         )}
       >
-        {/* Photo */}
         <div className="aspect-[3/4] relative bg-muted overflow-hidden">
           {profile.primaryPhotoUrl ? (
             <img
@@ -64,10 +63,8 @@ export function ProfileCard({ profile, className, compact }: ProfileCardProps) {
             </div>
           )}
 
-          {/* Gradient overlay at bottom */}
           <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/60 to-transparent" />
 
-          {/* Name + age on photo */}
           <div className="absolute bottom-0 left-0 right-0 p-3">
             <h3
               className="font-heading font-bold text-white text-sm sm:text-base truncate"
@@ -84,14 +81,12 @@ export function ProfileCard({ profile, className, compact }: ProfileCardProps) {
             </div>
           </div>
 
-          {/* Like button overlay */}
           <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-soft backdrop-blur-sm">
               <Heart className="h-4 w-4 text-primary-700" />
             </div>
           </div>
 
-          {/* Badges */}
           <div className="absolute top-2 left-2 flex gap-1">
             {(profile as unknown as { phoneVerified?: boolean }).phoneVerified && (
               <Badge
@@ -111,7 +106,6 @@ export function ProfileCard({ profile, className, compact }: ProfileCardProps) {
           </div>
         </div>
 
-        {/* Details */}
         <CardContent className="p-3 sm:p-4">
           <div className="space-y-1.5">
             <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">

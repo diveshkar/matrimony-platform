@@ -120,20 +120,12 @@ export class DiscoveryService {
     } as unknown as Record<string, unknown>);
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // DISCOVERY ALGORITHM v3
-  // 100-point scoring: Age(16) Caste(13) Location(12) Religion(12)
-  // Mutual(12) Marital(7) Boost(7) Education(6) Quality(6)
-  // Platinum(5) Recency(4) — with mutual compatibility + caste groups
-  // ═══════════════════════════════════════════════════════════════
-
   async getRecommendations(
     userId: string,
     limit = 20,
     cursor?: string,
   ): Promise<{ items: (DiscoveryProfile & { isBoosted: boolean; matchScore: number; rank: number })[]; nextCursor?: string }> {
 
-    // ── Snapshot pagination: serve from cache for page > 0 ──
     const parsed = decodeCursor(cursor);
     if (parsed && parsed.p > 0) {
       const snapshot = await this.coreRepo.get<FeedSnapshot>(
@@ -143,12 +135,8 @@ export class DiscoveryService {
       if (snapshot) {
         return this.serveFromSnapshot(userId, snapshot, parsed.s, parsed.p, limit);
       }
-      // Snapshot expired or missing — fall through to full rebuild
     }
 
-    // ── Full pipeline (page 0 or expired snapshot) ──────────
-
-    // ── Step 1: Fetch user context (all parallel) ────────────
     const [prefs, myProfile, blockRecord, cooldownIds, interactedResult] = await Promise.all([
       this.coreRepo.get<UserPreferences>(`USER#${userId}`, 'PREFERENCE#v1'),
       this.coreRepo.get<Record<string, unknown>>(`USER#${userId}`, 'PROFILE#v1'),
@@ -161,10 +149,8 @@ export class DiscoveryService {
       return { items: [] };
     }
 
-    // Build exclusion sets
     const blockedIds = new Set<string>(blockRecord?.blockedUserIds || []);
 
-    // Build interacted set (interests sent/received + conversations)
     const interactedIds = new Set<string>();
     for (const item of interactedResult.items) {
       if (item.SK.startsWith('INTEREST#OUT#')) {
@@ -178,13 +164,11 @@ export class DiscoveryService {
     const myAge = myProfile.dateOfBirth ? calculateAge(myProfile.dateOfBirth as string) : 0;
     const lookingForGender = myGender === 'male' ? 'female' : myGender === 'female' ? 'male' : undefined;
 
-    // ── Step 2: Parallel multi-source fetch (priority: caste > country > religion > all) ─
     const bufferMultiplier = 3;
     const fetchLimit = (limit + blockedIds.size + interactedIds.size) * bufferMultiplier;
 
     const fetchPromises: Promise<DiscoveryProfile[]>[] = [];
 
-    // Source 1 (highest priority): Preferred castes + related castes from same group
     if (prefs?.castes?.length && lookingForGender) {
       const castesToFetch = new Set<string>();
       for (const caste of prefs.castes.slice(0, 3)) {
@@ -202,7 +186,6 @@ export class DiscoveryService {
       }
     }
 
-    // Source 2: Preferred countries (parallel, max 3)
     if (prefs?.countries?.length && lookingForGender) {
       for (const country of prefs.countries.slice(0, 3)) {
         fetchPromises.push(
@@ -212,7 +195,6 @@ export class DiscoveryService {
       }
     }
 
-    // Source 3: Preferred religions (parallel, max 3)
     if (prefs?.religions?.length && lookingForGender) {
       for (const religion of prefs.religions.slice(0, 3)) {
         fetchPromises.push(
@@ -222,7 +204,6 @@ export class DiscoveryService {
       }
     }
 
-    // Source 4 (fallback): All profiles — always included for diversity
     fetchPromises.push(
       this.discoveryRepo.getAllProfiles(fetchLimit).then(r => r.items),
     );
@@ -230,7 +211,6 @@ export class DiscoveryService {
     const pools = await Promise.all(fetchPromises);
     const allResults = pools.flat();
 
-    // ── Step 3: Deduplicate ──────────────────────────────────
     const seen = new Set<string>();
     const unique = allResults.filter((p) => {
       if (seen.has(p.userId)) return false;
@@ -238,7 +218,6 @@ export class DiscoveryService {
       return true;
     });
 
-    // ── Step 4: Hard filter (remove self, blocked, wrong gender, interacted) ─
     let filtered = unique.filter((p) => {
       if (p.userId === userId) return false;
       if (blockedIds.has(p.userId)) return false;
@@ -247,8 +226,7 @@ export class DiscoveryService {
       return true;
     });
 
-    // Exclude profiles on cooldown (viewed 3d, declined 30d, matched permanent)
-    // Graceful: if filtering leaves too few results, keep cooldown profiles
+    // Graceful cooldown: if filtering leaves too few results, keep cooldown profiles
     if (cooldownIds.size > 0) {
       const withoutCooldown = filtered.filter((p) => !cooldownIds.has(p.userId));
       if (withoutCooldown.length >= limit / 2) {
@@ -256,7 +234,6 @@ export class DiscoveryService {
       }
     }
 
-    // ── Step 5: Soft filter (age — only remove if WAY outside range) ─
     if (prefs) {
       filtered = filtered.filter((p) => {
         const ageBuffer = 5;
@@ -266,7 +243,6 @@ export class DiscoveryService {
       });
     }
 
-    // ── Step 6: Batch fetch boost + subscription + candidate prefs (parallel) ─
     const profileIds = filtered.map(p => p.userId);
     const [boostMap, subMap, candidatePrefsMap] = await batchGetStatus(this.coreRepo, profileIds);
 
@@ -279,9 +255,6 @@ export class DiscoveryService {
       maritalStatus: myProfile.maritalStatus as string,
     };
 
-    // ── Step 7: Score each profile (100-point system) ────────
-    // Age(16) + Caste(13) + Location(12) + Religion(12) + Mutual(12)
-    // + Marital(7) + Boost(7) + Education(6) + Quality(6) + Platinum(5) + Recency(4) = 100
     const scored = filtered.map((p) => {
       let score = 0;
 
@@ -303,13 +276,10 @@ export class DiscoveryService {
       return { ...p, _matchScore: score, _isBoosted: boostMap.has(p.userId) };
     });
 
-    // ── Step 8: Sort by score (highest first) ────────────────
     scored.sort((a, b) => b._matchScore - a._matchScore);
 
-    // ── Step 8.5: Diversity shaping ─────────────────────────
     const shaped = shapeFeedDiversity(scored);
 
-    // ── Step 9: Save snapshot + serve page 0 ─────────────────
     const snapshotId = Date.now().toString(36);
     const rankedUserIds = shaped.map(p => p.userId);
     const boostedUserIds = shaped.filter(p => p._isBoosted).map(p => p.userId);
@@ -320,7 +290,6 @@ export class DiscoveryService {
 
     const ttl = Math.floor(Date.now() / 1000) + SNAPSHOT_TTL_SEC;
 
-    // Fire-and-forget — don't block the response for snapshot save
     Promise.all([
       this.coreRepo.put({
         PK: `USER#${userId}`,
@@ -330,7 +299,6 @@ export class DiscoveryService {
         scores,
         ttl,
       }),
-      // Pointer so other services (views, interests) can find the latest snapshot
       this.coreRepo.put({
         PK: `USER#${userId}`,
         SK: 'SNAPSHOT#LATEST',
@@ -353,10 +321,6 @@ export class DiscoveryService {
     return { items, nextCursor };
   }
 
-  /**
-   * Serve a page from a stored snapshot. Fetches only the profiles needed
-   * for this page, applies safety re-checks (blocks), and preserves order.
-   */
   private async serveFromSnapshot(
     userId: string,
     snapshot: FeedSnapshot,
@@ -371,22 +335,18 @@ export class DiscoveryService {
       return { items: [] };
     }
 
-    // Fetch only the profiles needed for this page (parallel gets)
     const [profileMap, blockRecord] = await Promise.all([
       this.discoveryRepo.getProfilesByIds(pageUserIds),
       this.coreRepo.get<{ blockedUserIds?: string[] }>(`USER#${userId}`, 'BLOCK'),
     ]);
 
-    // Safety: filter out profiles blocked since the snapshot was created
     const blockedIds = new Set<string>(blockRecord?.blockedUserIds || []);
     const boostedSet = new Set<string>(snapshot.boostedUserIds);
-
-    // Rebuild page in snapshot order with score/rank from snapshot
     const items: (DiscoveryProfile & { isBoosted: boolean; matchScore: number; rank: number })[] = [];
     for (const uid of pageUserIds) {
       if (blockedIds.has(uid)) continue;
       const profile = profileMap.get(uid);
-      if (!profile) continue; // profile deleted since snapshot
+      if (!profile) continue;
       const globalIndex = snapshot.rankedUserIds.indexOf(uid);
       items.push({
         ...profile,
@@ -401,10 +361,6 @@ export class DiscoveryService {
 
     return { items, nextCursor };
   }
-
-  // ═══════════════════════════════════════════════════════════════
-  // SEARCH (unchanged except block fix)
-  // ═══════════════════════════════════════════════════════════════
 
   async search(
     userId: string,
@@ -468,13 +424,7 @@ export class DiscoveryService {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// HELPER FUNCTIONS
-// ═══════════════════════════════════════════════════════════════
-
-// ── Snapshot pagination ──────────────────────────────────────
-
-const SNAPSHOT_TTL_SEC = 15 * 60; // 15 minutes
+const SNAPSHOT_TTL_SEC = 15 * 60;
 
 interface FeedSnapshot {
   rankedUserIds: string[];
@@ -484,8 +434,8 @@ interface FeedSnapshot {
 }
 
 interface CursorPayload {
-  s: string; // snapshot ID
-  p: number; // page number
+  s: string;
+  p: number;
 }
 
 function encodeCursor(snapshotId: string, page: number): string {
@@ -496,20 +446,15 @@ function decodeCursor(cursor?: string): CursorPayload | null {
   if (!cursor) return null;
   try {
     const parsed = JSON.parse(Buffer.from(cursor, 'base64').toString());
-    // Validate shape — must have snapshot ID and page number
     if (typeof parsed.s === 'string' && typeof parsed.p === 'number') {
       return parsed as CursorPayload;
     }
-    return null; // old-format cursor or malformed — treat as page 0
+    return null;
   } catch {
     return null;
   }
 }
 
-// ── Diversity shaping ────────────────────────────────────────
-
-// Diversity caps: within any sliding window of WINDOW profiles,
-// allow at most MAX_CITY from the same city and MAX_RELIGION from the same religion.
 const DIVERSITY_WINDOW = 10;
 const MAX_SAME_CITY = 3;
 const MAX_SAME_RELIGION = 4;
@@ -519,24 +464,16 @@ interface ScoredProfile extends DiscoveryProfile {
   _isBoosted: boolean;
 }
 
-/**
- * Reorder a score-sorted list to enforce diversity within every sliding window.
- * Profiles that exceed city/religion caps are deferred and appended after
- * all conforming profiles, preserving their relative score order.
- * Boosted profiles are exempt from caps (they paid for visibility).
- */
 function shapeFeedDiversity(sorted: ScoredProfile[]): ScoredProfile[] {
   const result: ScoredProfile[] = [];
   const deferred: ScoredProfile[] = [];
 
   for (const profile of sorted) {
-    // Boosted profiles always keep their position
     if (profile._isBoosted) {
       result.push(profile);
       continue;
     }
 
-    // Count same-city and same-religion within the trailing window
     const windowStart = Math.max(0, result.length - (DIVERSITY_WINDOW - 1));
     const window = result.slice(windowStart);
 
@@ -562,16 +499,11 @@ function shapeFeedDiversity(sorted: ScoredProfile[]): ScoredProfile[] {
     }
   }
 
-  // Append deferred profiles — they keep their relative score order
   result.push(...deferred);
 
   return result;
 }
 
-/**
- * Batch fetch boost, subscription, and preferences for all candidate profiles in parallel.
- * Returns: [Set of boosted userIds, Map of userId → planId, Map of userId → CandidatePreferences]
- */
 async function batchGetStatus(
   coreRepo: BaseRepository,
   userIds: string[],
@@ -581,7 +513,6 @@ async function batchGetStatus(
   const planMap = new Map<string, string>();
   const prefsMap = new Map<string, CandidatePreferences>();
 
-  // Fetch boost + subscription + preferences in parallel per user
   const results = await Promise.all(
     userIds.map(async (uid) => {
       const [boost, sub, prefs] = await Promise.all([

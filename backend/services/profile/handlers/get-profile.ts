@@ -27,7 +27,6 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
     const { BaseRepository } = await import('../../shared/repositories/base-repository.js');
     const coreRepo = new BaseRepository('core');
 
-    // Record profile view (deduped per day)
     try {
       const { SafetyRepository } = await import('../../safety/repositories/safety-repository.js');
       const repo = new SafetyRepository();
@@ -45,7 +44,6 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
           ttl: Math.floor(Date.now() / 1000) + 86400 * 2,
         });
 
-        // Fetch viewer profile + discovery context in parallel
         const { getDiscoveryContext } = await import('../../discovery/domain/discovery-context.js');
         const [viewerProfile, discoveryCtx] = await Promise.all([
           coreRepo.get<Record<string, unknown>>(
@@ -81,7 +79,6 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
       logger.warn('Failed to record profile view', { error: String(err) });
     }
 
-    // Mark profile as "viewed" for tiered discovery cooldown (3-day cooldown)
     try {
       const { recordSeenAction } = await import('../../discovery/domain/seen-tracking.js');
       await recordSeenAction(coreRepo, authedEvent.auth.userId, profileId, 'viewed');
