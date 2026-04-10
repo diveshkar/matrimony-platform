@@ -126,6 +126,7 @@ locals {
     TWILIO_ACCOUNT_SID    = var.twilio_account_sid
     TWILIO_AUTH_TOKEN     = var.twilio_auth_token
     TWILIO_WHATSAPP_FROM  = var.twilio_whatsapp_from
+    TWILIO_SMS_FROM       = var.twilio_sms_from
     FRONTEND_URL          = "https://${var.domain_name}"
   }
 
