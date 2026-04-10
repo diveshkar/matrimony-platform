@@ -397,6 +397,33 @@ module "route_boost_get" {
   lambda_function_name = module.lambda_profile.function_name
 }
 
+module "route_account_deactivate" {
+  source               = "../../modules/api_gateway_route"
+  api_id               = module.api_gateway.api_id
+  api_execution_arn    = module.api_gateway.execution_arn
+  route_key            = "POST /me/deactivate"
+  lambda_invoke_arn    = module.lambda_profile.invoke_arn
+  lambda_function_name = module.lambda_profile.function_name
+}
+
+module "route_account_reactivate" {
+  source               = "../../modules/api_gateway_route"
+  api_id               = module.api_gateway.api_id
+  api_execution_arn    = module.api_gateway.execution_arn
+  route_key            = "POST /me/reactivate"
+  lambda_invoke_arn    = module.lambda_profile.invoke_arn
+  lambda_function_name = module.lambda_profile.function_name
+}
+
+module "route_account_delete" {
+  source               = "../../modules/api_gateway_route"
+  api_id               = module.api_gateway.api_id
+  api_execution_arn    = module.api_gateway.execution_arn
+  route_key            = "DELETE /me"
+  lambda_invoke_arn    = module.lambda_profile.invoke_arn
+  lambda_function_name = module.lambda_profile.function_name
+}
+
 module "route_upload_url" {
   source               = "../../modules/api_gateway_route"
   api_id               = module.api_gateway.api_id

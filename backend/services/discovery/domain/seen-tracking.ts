@@ -33,6 +33,11 @@ const ACTION_PRIORITY: Record<SeenAction, number> = {
 
 const SEEN_SK = 'SEEN#COOLDOWN';
 
+// Hard cap on total entries to prevent unbounded DynamoDB item growth.
+// Matched entries are permanent but also redundant with the interactedIds filter,
+// so oldest matched entries are evicted first when the cap is reached.
+const MAX_ENTRIES = 500;
+
 /**
  * Check whether a single entry's cooldown is still active.
  */
@@ -43,17 +48,33 @@ function isOnCooldown(entry: SeenEntry, now: number): boolean {
 }
 
 /**
- * Prune expired entries from the record to keep DynamoDB item size manageable.
- * Returns a new entries map with only active cooldowns.
+ * Prune expired entries and enforce size cap to keep DynamoDB item manageable.
+ * When over MAX_ENTRIES, evicts oldest matched entries first (they're redundant
+ * with the interactedIds hard filter), then oldest viewed/declined.
  */
 function pruneExpired(entries: Record<string, SeenEntry>, now: number): Record<string, SeenEntry> {
-  const pruned: Record<string, SeenEntry> = {};
+  // Step 1: Remove expired entries
+  const active: [string, SeenEntry][] = [];
   for (const [userId, entry] of Object.entries(entries)) {
     if (isOnCooldown(entry, now)) {
-      pruned[userId] = entry;
+      active.push([userId, entry]);
     }
   }
-  return pruned;
+
+  // Step 2: If still over cap, evict oldest matched first, then oldest others
+  if (active.length > MAX_ENTRIES) {
+    active.sort((a, b) => {
+      // Matched entries are least important to keep (interactedIds already excludes them)
+      const priorityA = a[1].action === 'matched' ? 0 : 1;
+      const priorityB = b[1].action === 'matched' ? 0 : 1;
+      if (priorityA !== priorityB) return priorityB - priorityA;
+      // Among same priority, keep newer entries
+      return new Date(b[1].at).getTime() - new Date(a[1].at).getTime();
+    });
+    active.length = MAX_ENTRIES;
+  }
+
+  return Object.fromEntries(active);
 }
 
 /**

@@ -12,6 +12,8 @@ export interface InterestRecord {
   receiverPhoto?: string;
   message?: string;
   status: 'pending' | 'accepted' | 'declined';
+  discoveryScore?: number;
+  discoveryRank?: number;
   createdAt: string;
   updatedAt: string;
 }

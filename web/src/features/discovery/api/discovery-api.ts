@@ -19,6 +19,9 @@ export interface DiscoveryProfile {
   profileCompletion: number;
   aboutMe?: string;
   lastActiveAt: string;
+  isBoosted?: boolean;
+  matchScore?: number;
+  rank?: number;
 }
 
 export interface DiscoveryResponse {

@@ -24,11 +24,13 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
   const profile = await profileService.getPublicProfile(profileId, authedEvent.auth.userId);
 
   if (profileId !== authedEvent.auth.userId) {
+    const { BaseRepository } = await import('../../shared/repositories/base-repository.js');
+    const coreRepo = new BaseRepository('core');
+
+    // Record profile view (deduped per day)
     try {
       const { SafetyRepository } = await import('../../safety/repositories/safety-repository.js');
-      const { BaseRepository } = await import('../../shared/repositories/base-repository.js');
       const repo = new SafetyRepository();
-      const coreRepo = new BaseRepository('core');
 
       const today = new Date().toISOString().split('T')[0];
       const dedupKey = `VIEWDEDUP#${authedEvent.auth.userId}#${today}`;
@@ -82,9 +84,7 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
     // Mark profile as "viewed" for tiered discovery cooldown (3-day cooldown)
     try {
       const { recordSeenAction } = await import('../../discovery/domain/seen-tracking.js');
-      const { BaseRepository } = await import('../../shared/repositories/base-repository.js');
-      const seenRepo = new BaseRepository('core');
-      await recordSeenAction(seenRepo, authedEvent.auth.userId, profileId, 'viewed');
+      await recordSeenAction(coreRepo, authedEvent.auth.userId, profileId, 'viewed');
     } catch (err) {
       logger.warn('Failed to record seen profile', { error: String(err) });
     }

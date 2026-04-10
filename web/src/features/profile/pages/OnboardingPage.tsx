@@ -75,6 +75,19 @@ export default function OnboardingPage() {
       case 5: // Education & Career
         if (!draft.education) errors.education = 'Education is required';
         break;
+      // Step 6 (Family) — all fields optional, no validation needed
+      case 7: // Partner Preferences
+        if (!draft.preferences?.ageMin || !draft.preferences?.ageMax) {
+          errors.preferences = 'Please set your preferred age range';
+        } else if (draft.preferences.ageMin > draft.preferences.ageMax) {
+          errors.preferences = 'Minimum age cannot be greater than maximum age';
+        }
+        break;
+      case 8: // About Me
+        if (draft.aboutMe && draft.aboutMe.length > 2000) {
+          errors.aboutMe = 'About me must be under 2000 characters';
+        }
+        break;
     }
 
     setStepErrors(errors);

@@ -102,7 +102,7 @@ export function ProfileCard({ profile, className, compact }: ProfileCardProps) {
                 Verified
               </Badge>
             )}
-            {(profile as unknown as { isBoosted?: boolean }).isBoosted && (
+            {profile.isBoosted && (
               <Badge className="text-[9px] backdrop-blur-sm bg-accent-500/90 border-0 text-white">
                 <Zap className="mr-0.5 h-2.5 w-2.5 fill-current" />
                 Boosted

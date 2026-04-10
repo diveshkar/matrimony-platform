@@ -18,6 +18,7 @@ import {
   type CandidatePreferences,
 } from './matching.js';
 import { getActiveCooldowns } from './seen-tracking.js';
+import { logger } from '../../shared/utils/logger.js';
 
 interface SearchFilters {
   gender?: string;
@@ -336,7 +337,7 @@ export class DiscoveryService {
         snapshotId,
         ttl,
       }),
-    ]).catch(() => { /* snapshot save failure is non-fatal */ });
+    ]).catch((err) => { logger.warn('Failed to save discovery snapshot', { error: String(err) }); });
 
     const pageItems = shaped.slice(0, limit);
     const items = pageItems.map(({ _matchScore, _isBoosted, ...p }, index) => ({
