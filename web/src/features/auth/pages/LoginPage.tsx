@@ -29,7 +29,7 @@ const countryCodes = [
 
 const trustSignals = [
   { icon: Shield, text: 'Verified profiles' },
-  { icon: Users, text: '15,000+ members' },
+  { icon: Users, text: 'Growing community' },
   { icon: Sparkles, text: 'Smart matching' },
 ];
 

@@ -75,6 +75,12 @@ variable "twilio_whatsapp_from" {
   description = "Twilio WhatsApp sender number (sandbox or production)"
 }
 
+variable "frontend_url" {
+  type        = string
+  default     = "https://stage.matrimony.com"
+  description = "Frontend URL for Stripe redirects and CORS"
+}
+
 variable "sns_sms_monthly_spend_limit" {
   type        = number
   default     = 10

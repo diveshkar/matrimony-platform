@@ -72,6 +72,12 @@ variable "ses_from_email" {
   default = ""
 }
 
+variable "frontend_url" {
+  type        = string
+  default     = "https://matrimony.com"
+  description = "Frontend URL for Stripe redirects and CORS"
+}
+
 variable "sns_sms_monthly_spend_limit" {
   type        = number
   default     = 50

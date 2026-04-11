@@ -33,6 +33,7 @@ import { resetClient } from './shared/repositories/dynamodb-client.js';
 resetClient();
 
 import { main as healthHandler } from './health/handlers/health-check.js';
+import { main as platformStatsHandler } from './health/handlers/platform-stats.js';
 import { main as authStartHandler } from './auth/handlers/auth-start.js';
 import { main as authVerifyHandler } from './auth/handlers/auth-verify.js';
 import { main as authRefreshHandler } from './auth/handlers/auth-refresh.js';
@@ -218,6 +219,7 @@ function route(method: 'get' | 'post' | 'patch' | 'delete', path: string, handle
 // ── Routes ──────────────────────────────────
 
 route('get', '/health', healthHandler);
+route('get', '/stats', platformStatsHandler);
 route('post', '/auth/start', authStartHandler);
 route('post', '/auth/verify', authVerifyHandler);
 route('post', '/auth/refresh', authRefreshHandler);

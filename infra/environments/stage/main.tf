@@ -122,7 +122,7 @@ locals {
     TWILIO_ACCOUNT_SID    = var.twilio_account_sid
     TWILIO_AUTH_TOKEN     = var.twilio_auth_token
     TWILIO_WHATSAPP_FROM  = var.twilio_whatsapp_from
-    FRONTEND_URL          = "https://${var.domain_name}"
+    FRONTEND_URL          = var.frontend_url
   }
 
   dynamodb_arns = [
@@ -316,6 +316,15 @@ module "route_health" {
   api_id               = module.api_gateway.api_id
   api_execution_arn    = module.api_gateway.execution_arn
   route_key            = "GET /health"
+  lambda_invoke_arn    = module.lambda_health.invoke_arn
+  lambda_function_name = module.lambda_health.function_name
+}
+
+module "route_stats" {
+  source               = "../../modules/api_gateway_route"
+  api_id               = module.api_gateway.api_id
+  api_execution_arn    = module.api_gateway.execution_arn
+  route_key            = "GET /stats"
   lambda_invoke_arn    = module.lambda_health.invoke_arn
   lambda_function_name = module.lambda_health.function_name
 }

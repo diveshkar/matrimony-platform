@@ -61,11 +61,22 @@ const features = [
   },
 ];
 
-const stats = [
-  { value: 15000, suffix: '+', label: 'Registered Profiles' },
-  { value: 2500, suffix: '+', label: 'Successful Matches' },
-  { value: 45, suffix: '+', label: 'Countries Reached' },
-  { value: 98, suffix: '%', label: 'Verified Profiles' },
+function useStats() {
+  return useQuery({
+    queryKey: ['platform-stats'],
+    queryFn: () =>
+      apiClient
+        .get<ApiResponse<{ totalProfiles: number; successfulMatches: number; countriesReached: number; verifiedPercentage: number }>>('/stats')
+        .then((r) => r.data),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+const fallbackStats = [
+  { value: 0, suffix: '+', label: 'Registered Profiles' },
+  { value: 0, suffix: '+', label: 'Successful Matches' },
+  { value: 0, suffix: '+', label: 'Countries Reached' },
+  { value: 100, suffix: '%', label: 'Verified Profiles' },
 ];
 
 // Success stories fetched from API — empty until real couples share their stories
@@ -246,6 +257,16 @@ function HeroSection() {
 /* ─────────────────────────────────────────── */
 
 function StatsSection() {
+  const { data } = useStats();
+  const stats = data?.success
+    ? [
+        { value: data.data.totalProfiles, suffix: '+', label: 'Registered Profiles' },
+        { value: data.data.successfulMatches, suffix: '+', label: 'Successful Matches' },
+        { value: data.data.countriesReached, suffix: '+', label: 'Countries Reached' },
+        { value: data.data.verifiedPercentage, suffix: '%', label: 'Verified Profiles' },
+      ]
+    : fallbackStats;
+
   return (
     <section className="relative -mt-12 z-10">
       <div className="page-container">
@@ -605,7 +626,7 @@ function CTASection() {
           </h2>
 
           <p className="mt-6 text-lg text-white/60 max-w-xl mx-auto leading-relaxed">
-            Join thousands of Tamil families who found their happily ever after. Your story could be
+            Join Tamil families worldwide who are finding their happily ever after. Your story could be
             next.
           </p>
 
