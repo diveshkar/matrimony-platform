@@ -2,6 +2,7 @@ import type { APIGatewayProxyEventV2, Context } from 'aws-lambda';
 import { createHandler, withAuth, type AuthenticatedEvent } from '../../shared/middleware/index.js';
 import { success } from '../../shared/utils/response.js';
 import { SafetyRepository } from '../repositories/safety-repository.js';
+import { parseBody } from '../../shared/utils/parse-body.js';
 
 const repo = new SafetyRepository();
 
@@ -19,7 +20,7 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
   }
 
   if (method === 'PATCH') {
-    const body = event.body ? JSON.parse(event.body) : {};
+    const body = parseBody(event);
     if (body.markAllRead) {
       await repo.markAllNotificationsRead(authedEvent.auth.userId);
     } else if (body.sk) {

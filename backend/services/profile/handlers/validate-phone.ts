@@ -2,6 +2,7 @@ import type { APIGatewayProxyEventV2, Context } from 'aws-lambda';
 import { createHandler, withAuth, type AuthenticatedEvent } from '../../shared/middleware/index.js';
 import { success } from '../../shared/utils/response.js';
 import { ValidationError, RateLimitError } from '../../shared/errors/app-errors.js';
+import { parseBody } from '../../shared/utils/parse-body.js';
 import { validatePhoneNumber } from '../domain/phone-validation.js';
 import { ensurePhoneAvailable, registerPhone } from '../domain/phone-registry.js';
 import { BaseRepository } from '../../shared/repositories/base-repository.js';
@@ -19,7 +20,7 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
   const authedEvent = event as AuthenticatedEvent;
   const userId = authedEvent.auth.userId;
 
-  const body = event.body ? JSON.parse(event.body) : {};
+  const body = parseBody(event);
   const { phoneNumber, action, otp } = body;
 
   if (!phoneNumber) throw new ValidationError('phoneNumber is required');

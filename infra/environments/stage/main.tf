@@ -122,7 +122,6 @@ locals {
     TWILIO_ACCOUNT_SID    = var.twilio_account_sid
     TWILIO_AUTH_TOKEN     = var.twilio_auth_token
     TWILIO_WHATSAPP_FROM  = var.twilio_whatsapp_from
-    TWILIO_SMS_FROM       = var.twilio_sms_from
     FRONTEND_URL          = "https://${var.domain_name}"
   }
 
@@ -418,6 +417,15 @@ module "route_boost_get" {
   api_id               = module.api_gateway.api_id
   api_execution_arn    = module.api_gateway.execution_arn
   route_key            = "GET /me/boost"
+  lambda_invoke_arn    = module.lambda_profile.invoke_arn
+  lambda_function_name = module.lambda_profile.function_name
+}
+
+module "route_validate_phone" {
+  source               = "../../modules/api_gateway_route"
+  api_id               = module.api_gateway.api_id
+  api_execution_arn    = module.api_gateway.execution_arn
+  route_key            = "POST /me/validate-phone"
   lambda_invoke_arn    = module.lambda_profile.invoke_arn
   lambda_function_name = module.lambda_profile.function_name
 }
@@ -825,6 +833,17 @@ module "ses" {
   from_email  = "noreply@${var.domain_name}"
   environment = var.environment
   tags        = local.common_tags
+}
+
+# ──────────────────────────────────────────────
+# SNS SMS (Phone Verification OTP)
+# ──────────────────────────────────────────────
+
+resource "aws_sns_sms_preferences" "sms" {
+  monthly_spend_limit           = var.sns_sms_monthly_spend_limit
+  default_sms_type              = "Transactional"
+  default_sender_id             = "Matrimony"
+  delivery_status_success_sampling_rate = 100
 }
 
 # ──────────────────────────────────────────────

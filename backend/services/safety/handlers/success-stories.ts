@@ -2,6 +2,7 @@ import type { APIGatewayProxyEventV2, Context } from 'aws-lambda';
 import { createHandler, withAuth, type AuthenticatedEvent } from '../../shared/middleware/index.js';
 import { success } from '../../shared/utils/response.js';
 import { ValidationError, ForbiddenError } from '../../shared/errors/app-errors.js';
+import { parseBody } from '../../shared/utils/parse-body.js';
 import { BaseRepository } from '../../shared/repositories/base-repository.js';
 import { SafetyRepository } from '../repositories/safety-repository.js';
 import { nowISO } from '../../shared/utils/date.js';
@@ -94,7 +95,7 @@ async function submitStory(event: APIGatewayProxyEventV2, context: Context) {
   const authedEvent = event as AuthenticatedEvent;
   const userId = authedEvent.auth.userId;
 
-  const body = event.body ? JSON.parse(event.body) : {};
+  const body = parseBody(event);
   const { partnerId, story } = body;
 
   if (!partnerId) throw new ValidationError('Please select your partner');
@@ -177,7 +178,7 @@ async function approveStory(event: APIGatewayProxyEventV2, context: Context) {
   const authedEvent = event as AuthenticatedEvent;
   const userId = authedEvent.auth.userId;
 
-  const body = event.body ? JSON.parse(event.body) : {};
+  const body = parseBody(event);
   const { storyId, action } = body;
 
   if (!storyId) throw new ValidationError('storyId is required');

@@ -2,6 +2,7 @@ import type { APIGatewayProxyEventV2, Context } from 'aws-lambda';
 import { createHandler, withAuth, type AuthenticatedEvent } from '../../shared/middleware/index.js';
 import { success } from '../../shared/utils/response.js';
 import { ValidationError } from '../../shared/errors/app-errors.js';
+import { parseBody } from '../../shared/utils/parse-body.js';
 import { SubscriptionRepository } from '../repositories/subscription-repository.js';
 import { nowISO } from '../../shared/utils/date.js';
 import { logger } from '../../shared/utils/logger.js';
@@ -23,7 +24,7 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
   const requestId = event.requestContext?.requestId || context.awsRequestId;
   const authedEvent = event as AuthenticatedEvent;
 
-  const body = event.body ? JSON.parse(event.body) : {};
+  const body = parseBody(event);
   if (!body.sessionId) throw new ValidationError('sessionId is required');
 
   const session = await getStripe().checkout.sessions.retrieve(body.sessionId);

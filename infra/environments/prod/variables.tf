@@ -67,13 +67,13 @@ variable "twilio_whatsapp_from" {
   description = "Twilio WhatsApp sender number (sandbox or production)"
 }
 
-variable "twilio_sms_from" {
-  type        = string
-  default     = ""
-  description = "Twilio SMS sender number for phone verification OTP"
-}
-
 variable "ses_from_email" {
   type    = string
   default = ""
+}
+
+variable "sns_sms_monthly_spend_limit" {
+  type        = number
+  default     = 50
+  description = "Monthly SNS SMS spend limit in USD (default $50 for prod)"
 }

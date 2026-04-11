@@ -2,6 +2,7 @@ import type { APIGatewayProxyEventV2, Context } from 'aws-lambda';
 import { createHandler } from '../../shared/middleware/index.js';
 import { success } from '../../shared/utils/response.js';
 import { ValidationError } from '../../shared/errors/app-errors.js';
+import { parseBody } from '../../shared/utils/parse-body.js';
 import { AuthService } from '../domain/auth-service.js';
 import { authStartSchema } from '../../../packages/shared-schemas/index.js';
 
@@ -10,7 +11,7 @@ const authService = new AuthService();
 async function handler(event: APIGatewayProxyEventV2, context: Context) {
   const requestId = event.requestContext?.requestId || context.awsRequestId;
 
-  const body = event.body ? JSON.parse(event.body) : {};
+  const body = parseBody(event);
   const parsed = authStartSchema.safeParse(body);
 
   if (!parsed.success) {

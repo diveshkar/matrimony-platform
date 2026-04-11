@@ -3,6 +3,7 @@ import { createHandler, withAuth, type AuthenticatedEvent } from '../../shared/m
 import { success } from '../../shared/utils/response.js';
 import { SafetyRepository } from '../repositories/safety-repository.js';
 import { privacySettingsSchema } from '../../../packages/shared-schemas/index.js';
+import { parseBody } from '../../shared/utils/parse-body.js';
 
 const repo = new SafetyRepository();
 
@@ -17,7 +18,7 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
   }
 
   if (method === 'PATCH') {
-    const body = event.body ? JSON.parse(event.body) : {};
+    const body = parseBody(event);
     const parsed = privacySettingsSchema.partial().safeParse(body);
     if (parsed.success) {
       await repo.updatePrivacy(authedEvent.auth.userId, parsed.data);
