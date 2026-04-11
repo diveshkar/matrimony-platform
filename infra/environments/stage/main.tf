@@ -4,6 +4,7 @@ locals {
     Project     = "matrimony"
     Environment = var.environment
   }
+  lambda_packages_dir = "${path.module}/../../lambda-packages"
 }
 
 # ──────────────────────────────────────────────
@@ -175,26 +176,28 @@ data "aws_iam_policy_document" "lambda_service" {
 # ──────────────────────────────────────────────
 
 module "lambda_health" {
-  source        = "../../modules/lambda_function"
-  function_name = "${local.prefix}-health"
-  handler       = "index.main"
-  memory_size   = 128
-  timeout       = 10
-  s3_bucket     = "thamizhakal-matrimony-state"
-  s3_key        = "lambda-packages/health.zip"
+  source           = "../../modules/lambda_function"
+  function_name    = "${local.prefix}-health"
+  handler          = "index.main"
+  memory_size      = 128
+  timeout          = 10
+  s3_bucket        = "thamizhakal-matrimony-state"
+  s3_key           = "lambda-packages/health.zip"
+  source_code_hash = filebase64sha256("${local.lambda_packages_dir}/health.zip")
 
   environment_variables = local.lambda_env
   tags                  = local.common_tags
 }
 
 module "lambda_auth" {
-  source        = "../../modules/lambda_function"
-  function_name = "${local.prefix}-auth"
-  handler       = "index.main"
-  memory_size   = 256
-  timeout       = 30
-  s3_bucket     = "thamizhakal-matrimony-state"
-  s3_key        = "lambda-packages/auth.zip"
+  source           = "../../modules/lambda_function"
+  function_name    = "${local.prefix}-auth"
+  handler          = "index.main"
+  memory_size      = 256
+  timeout          = 30
+  s3_bucket        = "thamizhakal-matrimony-state"
+  s3_key           = "lambda-packages/auth.zip"
+  source_code_hash = filebase64sha256("${local.lambda_packages_dir}/auth.zip")
 
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
@@ -203,13 +206,14 @@ module "lambda_auth" {
 }
 
 module "lambda_profile" {
-  source        = "../../modules/lambda_function"
-  function_name = "${local.prefix}-profile"
-  handler       = "index.main"
-  memory_size   = 256
-  timeout       = 30
-  s3_bucket     = "thamizhakal-matrimony-state"
-  s3_key        = "lambda-packages/profile.zip"
+  source           = "../../modules/lambda_function"
+  function_name    = "${local.prefix}-profile"
+  handler          = "index.main"
+  memory_size      = 256
+  timeout          = 30
+  s3_bucket        = "thamizhakal-matrimony-state"
+  s3_key           = "lambda-packages/profile.zip"
+  source_code_hash = filebase64sha256("${local.lambda_packages_dir}/profile.zip")
 
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
@@ -218,13 +222,14 @@ module "lambda_profile" {
 }
 
 module "lambda_uploads" {
-  source        = "../../modules/lambda_function"
-  function_name = "${local.prefix}-uploads"
-  handler       = "index.main"
-  memory_size   = 256
-  timeout       = 30
-  s3_bucket     = "thamizhakal-matrimony-state"
-  s3_key        = "lambda-packages/uploads.zip"
+  source           = "../../modules/lambda_function"
+  function_name    = "${local.prefix}-uploads"
+  handler          = "index.main"
+  memory_size      = 256
+  timeout          = 30
+  s3_bucket        = "thamizhakal-matrimony-state"
+  s3_key           = "lambda-packages/uploads.zip"
+  source_code_hash = filebase64sha256("${local.lambda_packages_dir}/uploads.zip")
 
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
@@ -233,13 +238,14 @@ module "lambda_uploads" {
 }
 
 module "lambda_discovery" {
-  source        = "../../modules/lambda_function"
-  function_name = "${local.prefix}-discovery"
-  handler       = "index.main"
-  memory_size   = 256
-  timeout       = 30
-  s3_bucket     = "thamizhakal-matrimony-state"
-  s3_key        = "lambda-packages/discovery.zip"
+  source           = "../../modules/lambda_function"
+  function_name    = "${local.prefix}-discovery"
+  handler          = "index.main"
+  memory_size      = 256
+  timeout          = 30
+  s3_bucket        = "thamizhakal-matrimony-state"
+  s3_key           = "lambda-packages/discovery.zip"
+  source_code_hash = filebase64sha256("${local.lambda_packages_dir}/discovery.zip")
 
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
@@ -248,13 +254,14 @@ module "lambda_discovery" {
 }
 
 module "lambda_interests" {
-  source        = "../../modules/lambda_function"
-  function_name = "${local.prefix}-interests"
-  handler       = "index.main"
-  memory_size   = 256
-  timeout       = 30
-  s3_bucket     = "thamizhakal-matrimony-state"
-  s3_key        = "lambda-packages/interests.zip"
+  source           = "../../modules/lambda_function"
+  function_name    = "${local.prefix}-interests"
+  handler          = "index.main"
+  memory_size      = 256
+  timeout          = 30
+  s3_bucket        = "thamizhakal-matrimony-state"
+  s3_key           = "lambda-packages/interests.zip"
+  source_code_hash = filebase64sha256("${local.lambda_packages_dir}/interests.zip")
 
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
@@ -263,13 +270,14 @@ module "lambda_interests" {
 }
 
 module "lambda_chat" {
-  source        = "../../modules/lambda_function"
-  function_name = "${local.prefix}-chat"
-  handler       = "index.main"
-  memory_size   = 256
-  timeout       = 30
-  s3_bucket     = "thamizhakal-matrimony-state"
-  s3_key        = "lambda-packages/chat.zip"
+  source           = "../../modules/lambda_function"
+  function_name    = "${local.prefix}-chat"
+  handler          = "index.main"
+  memory_size      = 256
+  timeout          = 30
+  s3_bucket        = "thamizhakal-matrimony-state"
+  s3_key           = "lambda-packages/chat.zip"
+  source_code_hash = filebase64sha256("${local.lambda_packages_dir}/chat.zip")
 
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
@@ -278,13 +286,14 @@ module "lambda_chat" {
 }
 
 module "lambda_subscriptions" {
-  source        = "../../modules/lambda_function"
-  function_name = "${local.prefix}-subscriptions"
-  handler       = "index.main"
-  memory_size   = 256
-  timeout       = 30
-  s3_bucket     = "thamizhakal-matrimony-state"
-  s3_key        = "lambda-packages/subscriptions.zip"
+  source           = "../../modules/lambda_function"
+  function_name    = "${local.prefix}-subscriptions"
+  handler          = "index.main"
+  memory_size      = 256
+  timeout          = 30
+  s3_bucket        = "thamizhakal-matrimony-state"
+  s3_key           = "lambda-packages/subscriptions.zip"
+  source_code_hash = filebase64sha256("${local.lambda_packages_dir}/subscriptions.zip")
 
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
@@ -293,13 +302,14 @@ module "lambda_subscriptions" {
 }
 
 module "lambda_safety" {
-  source        = "../../modules/lambda_function"
-  function_name = "${local.prefix}-safety"
-  handler       = "index.main"
-  memory_size   = 256
-  timeout       = 30
-  s3_bucket     = "thamizhakal-matrimony-state"
-  s3_key        = "lambda-packages/safety.zip"
+  source           = "../../modules/lambda_function"
+  function_name    = "${local.prefix}-safety"
+  handler          = "index.main"
+  memory_size      = 256
+  timeout          = 30
+  s3_bucket        = "thamizhakal-matrimony-state"
+  s3_key           = "lambda-packages/safety.zip"
+  source_code_hash = filebase64sha256("${local.lambda_packages_dir}/safety.zip")
 
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
