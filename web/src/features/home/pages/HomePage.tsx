@@ -251,10 +251,10 @@ function HeroSection() {
 /* ─────────────────────────────────────────── */
 
 const EARLY_STAGE_STATS = [
-  { text: 'New Platform', label: 'Just Launched' },
-  { text: 'Be Among the First', label: 'Early Members' },
-  { text: 'Global Tamil Community', label: 'Worldwide' },
-  { text: '100%', label: 'Verified Profiles' },
+  { text: 'Just Launched', label: 'Join Today' },
+  { text: 'Create Profile', label: 'Be the First Match' },
+  { text: 'Tamil Worldwide', label: 'UK · India · LK' },
+  { text: '100%', label: 'Verified & Safe' },
 ];
 
 function StatsSection() {
