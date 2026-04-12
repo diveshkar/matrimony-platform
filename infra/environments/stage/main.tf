@@ -186,6 +186,8 @@ module "lambda_health" {
   source_code_hash = filebase64sha256("${local.lambda_packages_dir}/health.zip")
 
   environment_variables = local.lambda_env
+  policy_json           = data.aws_iam_policy_document.lambda_service.json
+  attach_policy         = true
   tags                  = local.common_tags
 }
 

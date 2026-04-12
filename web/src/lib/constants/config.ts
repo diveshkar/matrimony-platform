@@ -2,8 +2,6 @@ export const CONFIG = {
   API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000',
   S3_BUCKET_URL: import.meta.env.VITE_S3_BUCKET_URL || '',
   STRIPE_PUBLISHABLE_KEY: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '',
-  COGNITO_USER_POOL_ID: import.meta.env.VITE_COGNITO_USER_POOL_ID || '',
-  COGNITO_CLIENT_ID: import.meta.env.VITE_COGNITO_CLIENT_ID || '',
   APP_NAME: 'Matrimony',
   APP_TAGLINE: 'Where Tamil Hearts Find Home',
   SUPPORT_EMAIL: 'support@matrimony.com',

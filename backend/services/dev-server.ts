@@ -46,6 +46,7 @@ import { main as getProfileHandler } from './profile/handlers/get-profile.js';
 import { main as boostProfileHandler } from './profile/handlers/boost-profile.js';
 import { main as getBoostStatusHandler } from './profile/handlers/get-boost-status.js';
 import { main as validatePhoneHandler } from './profile/handlers/validate-phone.js';
+import { main as accountActionsHandler } from './profile/handlers/account-actions.js';
 import { main as getUploadUrlHandler } from './uploads/handlers/get-upload-url.js';
 import { main as confirmUploadHandler } from './uploads/handlers/confirm-upload.js';
 import { main as getPhotosHandler } from './uploads/handlers/get-photos.js';
@@ -233,6 +234,9 @@ route('get', '/profiles/:id', getProfileHandler);
 route('post', '/me/boost', boostProfileHandler);
 route('get', '/me/boost', getBoostStatusHandler);
 route('post', '/me/validate-phone', validatePhoneHandler);
+route('post', '/me/deactivate', accountActionsHandler);
+route('post', '/me/reactivate', accountActionsHandler);
+route('delete', '/me', accountActionsHandler);
 
 route('post', '/uploads/photo-url', getUploadUrlHandler);
 route('post', '/uploads/photo-confirm', confirmUploadHandler);
@@ -254,18 +258,18 @@ app.use('/uploads/local', express.static(UPLOADS_DIR));
 route('get', '/discover', getRecommendationsHandler);
 route('get', '/discover/search', searchProfilesHandler);
 
-// route('post', '/interests', sendInterestHandler);
-// route('post', '/interests/:senderId/respond', respondInterestHandler);
-// route('delete', '/interests/:receiverId', withdrawInterestHandler);
-// route('get', '/interests', getInterestsHandler);
+route('post', '/interests', sendInterestHandler);
+route('post', '/interests/:senderId/respond', respondInterestHandler);
+route('delete', '/interests/:receiverId', withdrawInterestHandler);
+route('get', '/interests', getInterestsHandler);
 route('get', '/shortlist', shortlistHandler);
 route('post', '/shortlist', shortlistHandler);
 route('delete', '/shortlist/:userId', shortlistHandler);
 
-// route('get', '/chats', getConversationsHandler);
-// route('post', '/chats', createConversationHandler);
-// route('get', '/chats/:conversationId/messages', getMessagesHandler);
-// route('post', '/chats/:conversationId/messages', sendMessageHandler);
+route('get', '/chats', getConversationsHandler);
+route('post', '/chats', createConversationHandler);
+route('get', '/chats/:conversationId/messages', getMessagesHandler);
+route('post', '/chats/:conversationId/messages', sendMessageHandler);
 
 route('get', '/subscriptions/plans', getPlansHandler);
 route('post', '/subscriptions/checkout', createCheckoutHandler);
