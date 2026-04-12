@@ -1,10 +1,11 @@
-import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils/cn';
 import {
   RELIGION_OPTIONS,
   MOTHER_TONGUE_OPTIONS,
   CASTE_OPTIONS,
   DENOMINATION_OPTIONS,
+  RAASI_OPTIONS,
+  NATCHATHIRAM_OPTIONS,
 } from '@/lib/constants/enums';
 import type { ProfileData } from '../../api/profile-api';
 
@@ -112,14 +113,34 @@ export function StepCulturalRoots({ data, onChange, errors }: StepProps) {
         </div>
       )}
 
-      {/* Gothram */}
+      {/* Raasi */}
       <div>
-        <label className="text-sm font-medium text-foreground mb-1.5 block">Gothram</label>
-        <Input
-          value={data.gothram || ''}
-          onChange={(e) => onChange({ gothram: e.target.value })}
-          placeholder="Optional"
-        />
+        <label className="text-sm font-medium text-foreground mb-1.5 block">Raasi (Zodiac Sign)</label>
+        <select
+          value={data.raasi || ''}
+          onChange={(e) => onChange({ raasi: e.target.value })}
+          className="flex h-11 w-full rounded-lg border border-input bg-white px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+        >
+          <option value="">Select raasi</option>
+          {RAASI_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Natchathiram */}
+      <div>
+        <label className="text-sm font-medium text-foreground mb-1.5 block">Natchathiram (Birth Star)</label>
+        <select
+          value={data.natchathiram || ''}
+          onChange={(e) => onChange({ natchathiram: e.target.value })}
+          className="flex h-11 w-full rounded-lg border border-input bg-white px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+        >
+          <option value="">Select natchathiram</option>
+          {NATCHATHIRAM_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
       </div>
     </div>
   );

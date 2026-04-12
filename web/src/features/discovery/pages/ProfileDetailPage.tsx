@@ -403,6 +403,8 @@ export default function ProfileDetailPage() {
           <InfoRow label="Religion" value={formatEnum(s('religion'))} />
           {s('caste') && <InfoRow label="Caste" value={s('caste')} />}
           <InfoRow label="Mother Tongue" value={formatEnum(s('motherTongue'))} />
+          {s('raasi') && <InfoRow label="Raasi" value={s('raasi')} />}
+          {s('natchathiram') && <InfoRow label="Natchathiram" value={s('natchathiram')} />}
         </CardContent>
       </Card>
       </div> {/* close grid */}

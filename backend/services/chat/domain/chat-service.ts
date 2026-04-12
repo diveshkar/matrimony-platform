@@ -1,6 +1,7 @@
 import { ChatRepository } from '../repositories/chat-repository.js';
 import { BaseRepository } from '../../shared/repositories/base-repository.js';
 import { ForbiddenError, NotFoundError, ValidationError } from '../../shared/errors/app-errors.js';
+import { logger } from '../../shared/utils/logger.js';
 
 export class ChatService {
   private chatRepo: ChatRepository;
@@ -123,6 +124,23 @@ export class ChatService {
         true,
       ),
     ]);
+
+    try {
+      const senderProfile = await this.coreRepo.get<{ name?: string }>(`USER#${userId}`, 'PROFILE#v1');
+      const senderName = (senderProfile?.name as string) || 'Someone';
+      const preview = content.trim().length > 50 ? content.trim().slice(0, 50) + '...' : content.trim();
+
+      const { SafetyRepository } = await import('../../safety/repositories/safety-repository.js');
+      const repo = new SafetyRepository();
+      await repo.createNotification(otherUser, {
+        type: 'new_message',
+        title: `New message from ${senderName}`,
+        message: preview,
+        actionUrl: `/chats/${conversationId}`,
+      });
+    } catch (err) {
+      logger.warn('Failed to create chat notification', { error: String(err) });
+    }
 
     return { message };
   }

@@ -1,11 +1,19 @@
 import { Link } from 'react-router-dom';
-import { MapPin, GraduationCap, Briefcase, User, Heart, Zap, ShieldCheck } from 'lucide-react';
+import { MapPin, GraduationCap, Briefcase, User, Heart, Zap, ShieldCheck, Clock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils/cn';
-import { formatHeight } from '@/lib/utils/format';
+import { formatHeight, formatRelativeTime } from '@/lib/utils/format';
 import { profileDetailPath } from '@/lib/constants/routes';
 import type { DiscoveryProfile } from '../api/discovery-api';
+
+function activeStatus(lastActiveAt?: string): { text: string; isOnline: boolean } | null {
+  if (!lastActiveAt) return null;
+  const ms = Date.now() - new Date(lastActiveAt).getTime();
+  if (ms < 5 * 60 * 1000) return { text: 'Online now', isOnline: true };
+  if (ms < 30 * 24 * 60 * 60 * 1000) return { text: `Active ${formatRelativeTime(lastActiveAt)}`, isOnline: false };
+  return null;
+}
 
 interface ProfileCardProps {
   profile: DiscoveryProfile;
@@ -119,6 +127,22 @@ export function ProfileCard({ profile, className, compact }: ProfileCardProps) {
                 <span className="truncate">{formatEnum(profile.occupation)}</span>
               </div>
             )}
+            {(() => {
+              const status = activeStatus(profile.lastActiveAt);
+              if (!status) return null;
+              return (
+                <div className="flex items-center gap-1.5 text-[11px]">
+                  {status.isOnline ? (
+                    <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 shrink-0" />
+                  ) : (
+                    <Clock className="h-3 w-3 shrink-0 text-muted-foreground/60" />
+                  )}
+                  <span className={status.isOnline ? 'text-emerald-600 font-medium' : 'text-muted-foreground/60'}>
+                    {status.text}
+                  </span>
+                </div>
+              );
+            })()}
           </div>
 
           <div className="mt-2.5 flex items-center gap-1.5 flex-wrap">

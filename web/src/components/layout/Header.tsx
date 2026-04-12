@@ -19,6 +19,7 @@ import { useAuth } from '@/lib/auth/auth-context';
 import { useLogout } from '@/features/auth/hooks/useAuthMutation';
 import { useMySubscription } from '@/features/subscription/hooks/useSubscription';
 import { useNotifications, useMarkAllRead } from '@/features/settings/hooks/useSettings';
+import { useConversations } from '@/features/chat/hooks/useChat';
 import { formatRelativeTime } from '@/lib/utils/format';
 import { ROUTES } from '@/lib/constants/routes';
 import { cn } from '@/lib/utils/cn';
@@ -34,7 +35,6 @@ const publicNavLinks = [
 const authNavLinks = [
   { label: 'Discover', href: ROUTES.DISCOVER, icon: Heart },
   { label: 'Interests', href: ROUTES.INTERESTS, icon: Heart },
-  { label: 'Chats', href: ROUTES.CHATS, icon: MessageCircle },
 ];
 
 export function Header() {
@@ -77,6 +77,7 @@ export function Header() {
           {isAuthenticated ? (
             <>
               <PlanBadge />
+              <ChatBadge />
               <NotificationBell />
               <SettingsDropdown />
             </>
@@ -94,6 +95,7 @@ export function Header() {
 
         {/* Mobile actions */}
         <div className="flex md:hidden items-center gap-1">
+          {isAuthenticated && <ChatBadge />}
           {isAuthenticated && <NotificationBell />}
           <Button variant="ghost" size="icon" onClick={() => setMobileOpen(!mobileOpen)}>
             <Menu className="h-5 w-5" />
@@ -275,6 +277,36 @@ function SettingsDropdown() {
 }
 
 /* ── Plan Badge ───────────────────────────── */
+
+function ChatBadge() {
+  const { isAuthenticated } = useAuth();
+  const { data: subResponse } = useMySubscription();
+  const planId = subResponse?.success ? subResponse.data.subscription.planId : 'free';
+  const hasChatAccess = planId !== 'free';
+  const { data } = useConversations();
+
+  if (!isAuthenticated) return null;
+
+  const totalUnread = data?.success
+    ? data.data.items.reduce((sum: number, c: { unreadCount: number }) => sum + (c.unreadCount || 0), 0)
+    : 0;
+
+  return (
+    <Link to={hasChatAccess ? ROUTES.CHATS : ROUTES.PLANS}>
+      <Button variant="ghost" size="icon" className="relative">
+        <MessageCircle className="h-5 w-5" />
+        {totalUnread > 0 && (
+          <span className={cn(
+            "absolute -top-0.5 -right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full text-[10px] font-bold text-white px-1",
+            hasChatAccess ? "bg-primary-700" : "bg-muted-foreground",
+          )}>
+            {totalUnread > 9 ? '9+' : totalUnread}
+          </span>
+        )}
+      </Button>
+    </Link>
+  );
+}
 
 function PlanBadge() {
   const { data: subResponse } = useMySubscription();

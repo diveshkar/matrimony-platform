@@ -1,14 +1,16 @@
 import { useState, useRef, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Send, User, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/common/EmptyState';
 import { UpgradePrompt } from '@/features/subscription/components/UpgradePrompt';
 import { useAuth } from '@/lib/auth/auth-context';
-import { formatDate } from '@/lib/utils/format';
+import { formatDate, formatRelativeTime } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/cn';
 import { ROUTES } from '@/lib/constants/routes';
+import { profileApi } from '@/features/profile/api/profile-api';
 import { useMessages, useSendMessage, useConversations } from '../hooks/useChat';
 import type { MessageItem } from '../api/chat-api';
 
@@ -30,6 +32,17 @@ export default function ChatDetailPage() {
   const currentConv = conversations.find((c) => c.conversationId === conversationId);
   const otherName = currentConv?.otherUserName || 'Chat';
   const otherPhoto = currentConv?.otherUserPhoto;
+  const otherUserId = currentConv?.otherUserId;
+
+  const { data: otherProfile } = useQuery({
+    queryKey: ['profile', otherUserId],
+    queryFn: () => profileApi.getProfile(otherUserId!),
+    enabled: !!otherUserId,
+    staleTime: 60_000,
+  });
+
+  const lastActiveAt = otherProfile?.success ? (otherProfile.data as Record<string, unknown>).lastActiveAt as string : undefined;
+  const isRecentlyActive = lastActiveAt ? Date.now() - new Date(lastActiveAt).getTime() < 5 * 60 * 1000 : false;
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -85,8 +98,10 @@ export default function ChatDetailPage() {
         <div className="min-w-0 flex-1">
           <h2 className="font-heading font-semibold text-sm truncate">{otherName}</h2>
           <div className="flex items-center gap-1.5">
-            <div className="h-2 w-2 rounded-full bg-emerald-500" />
-            <p className="text-[10px] text-emerald-600 font-medium">Online</p>
+            <div className={cn("h-2 w-2 rounded-full", isRecentlyActive ? "bg-emerald-500" : "bg-muted-foreground/40")} />
+            <p className={cn("text-[10px] font-medium", isRecentlyActive ? "text-emerald-600" : "text-muted-foreground")}>
+              {isRecentlyActive ? 'Online' : lastActiveAt ? `Active ${formatRelativeTime(lastActiveAt)}` : ''}
+            </p>
           </div>
         </div>
       </div>

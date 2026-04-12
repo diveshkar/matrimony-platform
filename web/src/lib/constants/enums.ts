@@ -244,6 +244,51 @@ export const MOTHER_TONGUE_OPTIONS = [
   { value: 'english', label: 'English' },
 ] as const;
 
+export const RAASI_OPTIONS = [
+  { value: 'Mesham', label: 'Mesham (Aries)' },
+  { value: 'Rishabam', label: 'Rishabam (Taurus)' },
+  { value: 'Mithunam', label: 'Mithunam (Gemini)' },
+  { value: 'Kadagam', label: 'Kadagam (Cancer)' },
+  { value: 'Simmam', label: 'Simmam (Leo)' },
+  { value: 'Kanni', label: 'Kanni (Virgo)' },
+  { value: 'Thulaam', label: 'Thulaam (Libra)' },
+  { value: 'Virichigam', label: 'Virichigam (Scorpio)' },
+  { value: 'Dhanusu', label: 'Dhanusu (Sagittarius)' },
+  { value: 'Magaram', label: 'Magaram (Capricorn)' },
+  { value: 'Kumbam', label: 'Kumbam (Aquarius)' },
+  { value: 'Meenam', label: 'Meenam (Pisces)' },
+] as const;
+
+export const NATCHATHIRAM_OPTIONS = [
+  { value: 'Ashwini', label: 'Ashwini' },
+  { value: 'Bharani', label: 'Bharani' },
+  { value: 'Karthigai', label: 'Karthigai' },
+  { value: 'Rohini', label: 'Rohini' },
+  { value: 'Mrigashirisham', label: 'Mrigashirisham' },
+  { value: 'Thiruvathirai', label: 'Thiruvathirai' },
+  { value: 'Punarpoosam', label: 'Punarpoosam' },
+  { value: 'Poosam', label: 'Poosam' },
+  { value: 'Ayilyam', label: 'Ayilyam' },
+  { value: 'Magam', label: 'Magam' },
+  { value: 'Pooram', label: 'Pooram' },
+  { value: 'Uthiram', label: 'Uthiram' },
+  { value: 'Hastham', label: 'Hastham' },
+  { value: 'Chithirai', label: 'Chithirai' },
+  { value: 'Swathi', label: 'Swathi' },
+  { value: 'Vishakam', label: 'Vishakam' },
+  { value: 'Anusham', label: 'Anusham' },
+  { value: 'Kettai', label: 'Kettai' },
+  { value: 'Moolam', label: 'Moolam' },
+  { value: 'Pooradam', label: 'Pooradam' },
+  { value: 'Uthiradam', label: 'Uthiradam' },
+  { value: 'Thiruvonam', label: 'Thiruvonam' },
+  { value: 'Avittam', label: 'Avittam' },
+  { value: 'Sathayam', label: 'Sathayam' },
+  { value: 'Poorattathi', label: 'Poorattathi' },
+  { value: 'Uthirattathi', label: 'Uthirattathi' },
+  { value: 'Revathi', label: 'Revathi' },
+] as const;
+
 export const PHOTO_VISIBILITY_OPTIONS = [
   { value: 'all', label: 'Everyone' },
   { value: 'contacts', label: 'Contacts Only' },

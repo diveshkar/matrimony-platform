@@ -15,7 +15,8 @@ export interface ProfileData {
   subCaste?: string;
   denomination?: string;
   motherTongue: string;
-  gothram?: string;
+  raasi?: string;
+  natchathiram?: string;
   education: string;
   educationField?: string;
   occupation?: string;

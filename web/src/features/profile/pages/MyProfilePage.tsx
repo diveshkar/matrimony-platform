@@ -245,7 +245,8 @@ export default function MyProfilePage() {
           <InfoRow label="Caste" value={formatEnum(profile.caste) || '-'} />
           <InfoRow label="Denomination" value={formatEnum(profile.denomination) || '-'} />
           <InfoRow label="Mother Tongue" value={capitalize(profile.motherTongue)} />
-          {profile.gothram && <InfoRow label="Gothram" value={profile.gothram} />}
+          {profile.raasi && <InfoRow label="Raasi" value={profile.raasi} />}
+          {profile.natchathiram && <InfoRow label="Natchathiram" value={profile.natchathiram} />}
         </SectionCard>
 
         {/* Education */}

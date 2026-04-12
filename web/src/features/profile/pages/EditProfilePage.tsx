@@ -29,6 +29,8 @@ import {
   HEIGHT_OPTIONS,
   MARITAL_STATUS_OPTIONS,
   GENDER_OPTIONS,
+  RAASI_OPTIONS,
+  NATCHATHIRAM_OPTIONS,
 } from '@/lib/constants/enums';
 
 const selectClass =
@@ -188,8 +190,17 @@ export default function EditProfilePage() {
               {MOTHER_TONGUE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </Field>
-          <Field label="Gothram">
-            <Input value={(form.gothram as string) || ''} onChange={(e) => update('gothram', e.target.value)} placeholder="Optional" className="h-11 rounded-xl" />
+          <Field label="Raasi (Zodiac Sign)">
+            <select value={(form.raasi as string) || ''} onChange={(e) => update('raasi', e.target.value)} className={selectClass}>
+              <option value="">Select raasi</option>
+              {RAASI_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </Field>
+          <Field label="Natchathiram (Birth Star)">
+            <select value={(form.natchathiram as string) || ''} onChange={(e) => update('natchathiram', e.target.value)} className={selectClass}>
+              <option value="">Select natchathiram</option>
+              {NATCHATHIRAM_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
           </Field>
         </SectionCard>
 

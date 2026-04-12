@@ -76,19 +76,7 @@ export default function PrivacySettingsPage() {
             </select>
           </div>
 
-          <div>
-            <label className="text-sm font-medium block mb-1.5">Horoscope Visibility</label>
-            <p className="text-xs text-muted-foreground mb-2">Who can see your horoscope</p>
-            <select
-              value={privacy?.horoscopeVisibility ?? 'all'}
-              onChange={(e) => updatePrivacy.mutate({ horoscopeVisibility: e.target.value })}
-              className="h-10 w-full rounded-lg border border-input bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            >
-              <option value="all">Everyone</option>
-              <option value="contacts">Contacts Only</option>
-              <option value="hidden">Hidden</option>
-            </select>
-          </div>
+          {/* Horoscope visibility — coming soon */}
         </CardContent>
       </Card>
     </div>

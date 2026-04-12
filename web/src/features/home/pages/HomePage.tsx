@@ -72,12 +72,6 @@ function useStats() {
   });
 }
 
-const fallbackStats = [
-  { value: 0, suffix: '+', label: 'Registered Profiles' },
-  { value: 0, suffix: '+', label: 'Successful Matches' },
-  { value: 0, suffix: '+', label: 'Countries Reached' },
-  { value: 100, suffix: '%', label: 'Verified Profiles' },
-];
 
 // Success stories fetched from API — empty until real couples share their stories
 
@@ -256,16 +250,47 @@ function HeroSection() {
 /*  Stats                                       */
 /* ─────────────────────────────────────────── */
 
+const EARLY_STAGE_STATS = [
+  { text: 'New Platform', label: 'Just Launched' },
+  { text: 'Be Among the First', label: 'Early Members' },
+  { text: 'Global Tamil Community', label: 'Worldwide' },
+  { text: '100%', label: 'Verified Profiles' },
+];
+
 function StatsSection() {
   const { data } = useStats();
-  const stats = data?.success
-    ? [
-        { value: data.data.totalProfiles, suffix: '+', label: 'Registered Profiles' },
-        { value: data.data.successfulMatches, suffix: '+', label: 'Successful Matches' },
-        { value: data.data.countriesReached, suffix: '+', label: 'Countries Reached' },
-        { value: data.data.verifiedPercentage, suffix: '%', label: 'Verified Profiles' },
-      ]
-    : fallbackStats;
+  const totalProfiles = data?.success ? data.data.totalProfiles : 0;
+  const isEarlyStage = totalProfiles < 50;
+
+  if (isEarlyStage) {
+    return (
+      <section className="relative -mt-12 z-10">
+        <div className="page-container">
+          <AnimatedSection>
+            <div className="rounded-2xl bg-white shadow-soft-xl border border-border/50 p-8 sm:p-10">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                {EARLY_STAGE_STATS.map((stat) => (
+                  <div key={stat.label} className="text-center">
+                    <div className="font-heading text-xl sm:text-2xl font-bold text-primary-800">
+                      {stat.text}
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">{stat.label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </AnimatedSection>
+        </div>
+      </section>
+    );
+  }
+
+  const stats = [
+    { value: data!.data.totalProfiles, suffix: '+', label: 'Registered Profiles' },
+    { value: data!.data.successfulMatches, suffix: '+', label: 'Successful Matches' },
+    { value: data!.data.countriesReached, suffix: '+', label: 'Countries Reached' },
+    { value: data!.data.verifiedPercentage, suffix: '%', label: 'Verified Profiles' },
+  ];
 
   return (
     <section className="relative -mt-12 z-10">

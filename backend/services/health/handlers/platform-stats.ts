@@ -4,6 +4,7 @@ import { success } from '../../shared/utils/response.js';
 import { BaseRepository } from '../../shared/repositories/base-repository.js';
 
 const coreRepo = new BaseRepository('core');
+const discoveryRepo = new BaseRepository('discovery');
 const CACHE_TTL_MS = 5 * 60 * 1000;
 let cached: { data: Record<string, unknown>; at: number } | null = null;
 
@@ -15,8 +16,8 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
   }
 
   const [allProfiles, allStories] = await Promise.all([
-    coreRepo.query<{ SK: string }>('DISCOVERY#ALL', { limit: 1000 }),
-    coreRepo.query<{ status: string }>('STORIES#PUBLIC', { limit: 500 }),
+    discoveryRepo.query<{ country?: string }>('DISCOVERY#ALL', { limit: 1000 }),
+    coreRepo.query<{ status?: string }>('SUCCESS_STORIES', { limit: 500 }),
   ]);
 
   const totalProfiles = allProfiles.items.length;
@@ -24,8 +25,7 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
 
   const countries = new Set<string>();
   for (const item of allProfiles.items) {
-    const profile = item as unknown as { country?: string };
-    if (profile.country) countries.add(profile.country);
+    if (item.country) countries.add(item.country);
   }
 
   const stats = {
