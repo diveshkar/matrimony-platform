@@ -251,10 +251,10 @@ function HeroSection() {
 /* ─────────────────────────────────────────── */
 
 const EARLY_STAGE_STATS = [
-  { text: 'Just Launched', label: 'Join Today' },
-  { text: 'Create Profile', label: 'Be the First Match' },
-  { text: 'Tamil Worldwide', label: 'UK · India · LK' },
-  { text: '100%', label: 'Verified & Safe' },
+  { text: 'Exclusive Launch', label: 'Founded 2026' },
+  { text: 'Phone Verified', label: 'Every Single Profile' },
+  { text: '12+ Countries', label: 'Global Tamil Diaspora' },
+  { text: 'Family First', label: 'Built for Tamil Families' },
 ];
 
 function StatsSection() {
