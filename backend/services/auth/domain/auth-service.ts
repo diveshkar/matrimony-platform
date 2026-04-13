@@ -8,6 +8,7 @@ import {
   RateLimitError,
 } from '../../shared/errors/app-errors.js';
 import { logger } from '../../shared/utils/logger.js';
+import { generateOtp } from '../../shared/utils/id-generator.js';
 
 const isDev = process.env.ENVIRONMENT === 'dev' || !process.env.ENVIRONMENT;
 const JWT_SECRET = process.env.JWT_SECRET || (isDev ? 'dev-secret-do-not-use-in-prod' : '');
@@ -25,14 +26,12 @@ function verifyToken(token: string): Record<string, unknown> {
   return jwt.verify(token, JWT_SECRET, { issuer: JWT_ISSUER }) as Record<string, unknown>;
 }
 
-function generateOtp(): string {
-  return String(Math.floor(100000 + Math.random() * 900000));
-}
-
 async function sendOtpEmail(email: string, otp: string): Promise<void> {
   const forceReal = process.env.FORCE_REAL_OTP === 'true';
   if (isDev && !forceReal) {
-    logger.info('Email OTP (dev mode)', { email, otp });
+    logger.info('Email OTP (dev mode — check terminal)', { email });
+    // eslint-disable-next-line no-console
+    console.log(`\n  [DEV] Email OTP for ${email}: ${otp}\n`);
     return;
   }
 

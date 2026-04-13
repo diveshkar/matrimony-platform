@@ -24,18 +24,24 @@ async function getDailyUsage(userId: string, action: string): Promise<number> {
   return item?.count || 0;
 }
 
-async function incrementDailyUsage(userId: string, action: string): Promise<void> {
+async function checkAndIncrementUsage(userId: string, action: string, limit: number): Promise<void> {
   const date = todayKey();
   const pk = `USAGE#${userId}`;
   const sk = `${action}#${date}`;
-  const existing = await coreRepo.get<UsageRecord>(pk, sk);
-
   const ttl = Math.floor(Date.now() / 1000) + 86400 * 2;
 
-  if (existing) {
-    await coreRepo.update(pk, sk, { count: (existing.count || 0) + 1 });
-  } else {
-    await coreRepo.put({ PK: pk, SK: sk, count: 1, date, ttl, createdAt: nowISO() });
+  const result = await coreRepo.incrementIfBelow(pk, sk, 'count', limit, {
+    date,
+    ttl,
+    createdAt: nowISO(),
+  });
+
+  if (!result.success) {
+    const labels: Record<string, string> = {
+      profile_view: `You have reached your daily profile view limit (${limit}). Upgrade your plan to view more profiles.`,
+      send_interest: `You have reached your daily interest limit (${limit}). Upgrade your plan to send more interests.`,
+    };
+    throw new ForbiddenError(labels[action] || `Daily limit reached (${limit}).`);
   }
 }
 
@@ -49,26 +55,14 @@ export async function checkEntitlement(
     case 'profile_view': {
       const limit = entitlement.profileViewsPerDay;
       if (limit === -1) return;
-      const used = await getDailyUsage(userId, 'profile_view');
-      if (used >= limit) {
-        throw new ForbiddenError(
-          `You have reached your daily profile view limit (${limit}). Upgrade your plan to view more profiles.`,
-        );
-      }
-      await incrementDailyUsage(userId, 'profile_view');
+      await checkAndIncrementUsage(userId, 'profile_view', limit);
       return;
     }
 
     case 'send_interest': {
       const limit = entitlement.interestsPerDay;
       if (limit === -1) return;
-      const used = await getDailyUsage(userId, 'send_interest');
-      if (used >= limit) {
-        throw new ForbiddenError(
-          `You have reached your daily interest limit (${limit}). Upgrade your plan to send more interests.`,
-        );
-      }
-      await incrementDailyUsage(userId, 'send_interest');
+      await checkAndIncrementUsage(userId, 'send_interest', limit);
       return;
     }
 

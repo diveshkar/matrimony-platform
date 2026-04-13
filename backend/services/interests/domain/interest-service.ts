@@ -44,6 +44,19 @@ export class InterestService {
       throw new ConflictError('Please wait before sending another interest to this user');
     }
 
+    const [receiverAccount, receiverPrivacy] = await Promise.all([
+      this.coreRepo.get(`USER#${receiverId}`, 'ACCOUNT#v1'),
+      this.coreRepo.get<{ showInSearch?: boolean }>(`USER#${receiverId}`, 'PRIVACY#v1'),
+    ]);
+
+    if (!receiverAccount) {
+      throw new NotFoundError('Profile');
+    }
+
+    if (receiverPrivacy?.showInSearch === false) {
+      throw new ForbiddenError('This user is not accepting interests at this time');
+    }
+
     const { getDiscoveryContext } = await import('../../discovery/domain/discovery-context.js');
     const [senderProfile, receiverProfile, discoveryCtx] = await Promise.all([
       this.coreRepo.get<Record<string, unknown>>(`USER#${senderId}`, 'PROFILE#v1'),
@@ -93,17 +106,29 @@ export class InterestService {
       throw new ConflictError(`Interest already ${interest.status}`);
     }
 
-    // Check if either user has blocked the other
-    const coreRepo = new BaseRepository('core');
     const [block1, block2] = await Promise.all([
-      coreRepo.get<{ blockedUserIds?: string[] }>(`USER#${receiverId}`, 'BLOCK'),
-      coreRepo.get<{ blockedUserIds?: string[] }>(`USER#${senderId}`, 'BLOCK'),
+      this.coreRepo.get<{ blockedUserIds?: string[] }>(`USER#${receiverId}`, 'BLOCK'),
+      this.coreRepo.get<{ blockedUserIds?: string[] }>(`USER#${senderId}`, 'BLOCK'),
     ]);
     if ((block1?.blockedUserIds || []).includes(senderId) || (block2?.blockedUserIds || []).includes(receiverId)) {
       throw new ForbiddenError('Cannot accept interest from a blocked user');
     }
 
-    await this.repo.updateInterestStatus(senderId, receiverId, 'accepted');
+    const now = new Date().toISOString();
+    const updated = await this.coreRepo.conditionalUpdate(
+      `USER#${senderId}`,
+      `INTEREST#OUT#${receiverId}`,
+      { status: 'accepted', updatedAt: now },
+      'status',
+      'pending',
+    );
+    if (!updated) {
+      throw new ConflictError('Interest already responded to');
+    }
+    await this.coreRepo.update(`USER#${receiverId}`, `INTEREST#IN#${senderId}`, {
+      status: 'accepted',
+      updatedAt: now,
+    });
 
     try {
       const { recordMutualMatch } = await import('../../discovery/domain/seen-tracking.js');
@@ -146,7 +171,21 @@ export class InterestService {
       throw new ConflictError(`Interest already ${interest.status}`);
     }
 
-    await this.repo.updateInterestStatus(senderId, receiverId, 'declined');
+    const now = new Date().toISOString();
+    const updated = await this.coreRepo.conditionalUpdate(
+      `USER#${senderId}`,
+      `INTEREST#OUT#${receiverId}`,
+      { status: 'declined', updatedAt: now },
+      'status',
+      'pending',
+    );
+    if (!updated) {
+      throw new ConflictError('Interest already responded to');
+    }
+    await this.coreRepo.update(`USER#${receiverId}`, `INTEREST#IN#${senderId}`, {
+      status: 'declined',
+      updatedAt: now,
+    });
 
     try {
       const { recordSeenAction } = await import('../../discovery/domain/seen-tracking.js');

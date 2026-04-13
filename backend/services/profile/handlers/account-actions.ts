@@ -89,6 +89,23 @@ async function handleDeleteAccount(userId: string, requestId: string) {
   }
 
   try {
+    const blockRecord = await coreRepo.get<{ blockedUserIds?: string[] }>(`USER#${userId}`, 'BLOCK');
+    const blockedByMe = blockRecord?.blockedUserIds || [];
+    for (const otherUserId of blockedByMe) {
+      try {
+        const otherBlock = await coreRepo.get<{ blockedUserIds?: string[] }>(`USER#${otherUserId}`, 'BLOCK');
+        const otherList = otherBlock?.blockedUserIds || [];
+        const cleaned = otherList.filter((id) => id !== userId);
+        if (cleaned.length !== otherList.length) {
+          await coreRepo.update(`USER#${otherUserId}`, 'BLOCK', { blockedUserIds: cleaned });
+        }
+      } catch {}
+    }
+  } catch (err) {
+    logger.warn('Failed to clean blocks on delete', { userId, error: String(err) });
+  }
+
+  try {
     let lastKey: Record<string, unknown> | undefined;
     do {
       const result = await coreRepo.query<{ PK: string; SK: string }>(

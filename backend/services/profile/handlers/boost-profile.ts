@@ -22,18 +22,6 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
   const now = new Date();
   const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-  const usageRecord = await coreRepo.get<{ count: number }>(
-    `USER#${userId}`,
-    `BOOST_USAGE#${monthKey}`,
-  );
-  const usedThisMonth = usageRecord?.count || 0;
-
-  if (usedThisMonth >= entitlement.boostsPerMonth) {
-    throw new ValidationError(
-      `You've used all ${entitlement.boostsPerMonth} boost${entitlement.boostsPerMonth > 1 ? 's' : ''} this month. Resets next month.`,
-    );
-  }
-
   const activeBoost = await coreRepo.get<{ expiresAt: string }>(
     `USER#${userId}`,
     'BOOST#ACTIVE',
@@ -44,6 +32,20 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
       const hoursLeft = Math.ceil((expiresAt.getTime() - now.getTime()) / 3600000);
       throw new ValidationError(`Your profile is already boosted. ${hoursLeft} hours remaining.`);
     }
+  }
+
+  const result = await coreRepo.incrementIfBelow(
+    `USER#${userId}`,
+    `BOOST_USAGE#${monthKey}`,
+    'count',
+    entitlement.boostsPerMonth,
+    { monthKey, ttl: Math.floor(Date.now() / 1000) + 86400 * 60 },
+  );
+
+  if (!result.success) {
+    throw new ValidationError(
+      `You've used all ${entitlement.boostsPerMonth} boost${entitlement.boostsPerMonth > 1 ? 's' : ''} this month. Resets next month.`,
+    );
   }
 
   const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
@@ -57,26 +59,12 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
     ttl: Math.floor(expiresAt.getTime() / 1000) + 3600,
   });
 
-  if (usageRecord) {
-    await coreRepo.update(`USER#${userId}`, `BOOST_USAGE#${monthKey}`, {
-      count: usedThisMonth + 1,
-    });
-  } else {
-    await coreRepo.put({
-      PK: `USER#${userId}`,
-      SK: `BOOST_USAGE#${monthKey}`,
-      count: 1,
-      monthKey,
-      ttl: Math.floor(Date.now() / 1000) + 86400 * 60,
-    });
-  }
-
-  logger.info('Profile boosted', { userId, expiresAt: expiresAt.toISOString(), usedThisMonth: usedThisMonth + 1 });
+  logger.info('Profile boosted', { userId, expiresAt: expiresAt.toISOString(), boostsUsed: result.newValue });
 
   return success({
     status: 'boosted',
     expiresAt: expiresAt.toISOString(),
-    boostsUsed: usedThisMonth + 1,
+    boostsUsed: result.newValue,
     boostsTotal: entitlement.boostsPerMonth,
   }, requestId);
 }

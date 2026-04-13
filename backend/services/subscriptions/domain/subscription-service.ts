@@ -1,5 +1,6 @@
 import Stripe from 'stripe';
 import { SubscriptionRepository } from '../repositories/subscription-repository.js';
+import { BaseRepository } from '../../shared/repositories/base-repository.js';
 import { ValidationError } from '../../shared/errors/app-errors.js';
 import { nowISO } from '../../shared/utils/date.js';
 import { logger } from '../../shared/utils/logger.js';
@@ -28,9 +29,11 @@ const PLANS: Record<string, PlanConfig> = {
 
 export class SubscriptionService {
   private repo: SubscriptionRepository;
+  private coreRepo: BaseRepository;
 
   constructor() {
     this.repo = new SubscriptionRepository();
+    this.coreRepo = new BaseRepository('core');
   }
 
   async getPlans(): Promise<unknown[]> {
@@ -103,15 +106,25 @@ export class SubscriptionService {
 
     let event: Stripe.Event;
 
-    const isDevEnv = process.env.ENVIRONMENT === 'dev' || !process.env.ENVIRONMENT;
-    if (webhookSecret) {
-      event = getStripe().webhooks.constructEvent(payload, signature, webhookSecret);
-    } else if (isDevEnv) {
-      event = JSON.parse(payload) as Stripe.Event;
-      logger.warn('Webhook signature verification skipped (dev mode)');
-    } else {
-      throw new ValidationError('STRIPE_WEBHOOK_SECRET is required in stage/prod');
+    if (!webhookSecret) {
+      throw new ValidationError('STRIPE_WEBHOOK_SECRET is not configured');
     }
+
+    event = getStripe().webhooks.constructEvent(payload, signature, webhookSecret);
+
+    const eventKey = `STRIPE_EVENT#${event.id}`;
+    const alreadyProcessed = await this.coreRepo.get(eventKey, 'PROCESSED');
+    if (alreadyProcessed) {
+      logger.info('Duplicate webhook ignored', { eventId: event.id });
+      return;
+    }
+    await this.coreRepo.put({
+      PK: eventKey,
+      SK: 'PROCESSED',
+      eventType: event.type,
+      processedAt: nowISO(),
+      ttl: Math.floor(Date.now() / 1000) + 86400 * 7,
+    });
 
     logger.info('Stripe webhook received', { type: event.type, id: event.id });
 

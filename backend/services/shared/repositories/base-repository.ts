@@ -10,7 +10,8 @@ import { getDynamoClient, getTableName } from './dynamodb-client.js';
 import { memoryStore } from './memory-store.js';
 import { NotFoundError } from '../errors/app-errors.js';
 
-const USE_MEMORY = process.env.USE_MEMORY_STORE === 'true';
+const isDev = process.env.ENVIRONMENT === 'dev' || !process.env.ENVIRONMENT;
+const USE_MEMORY = isDev && process.env.USE_MEMORY_STORE === 'true';
 
 export interface QueryOptions {
   indexName?: string;
@@ -129,6 +130,102 @@ export class BaseRepository {
     );
 
     return result.Attributes || {};
+  }
+
+  async incrementIfBelow(
+    pk: string,
+    sk: string,
+    field: string,
+    limit: number,
+    defaults?: Record<string, unknown>,
+  ): Promise<{ success: boolean; newValue: number }> {
+    if (USE_MEMORY) {
+      const item = memoryStore.get(this.tableName, pk, sk) || { PK: pk, SK: sk, [field]: 0, ...defaults };
+      const current = (item[field] as number) || 0;
+      if (current >= limit) return { success: false, newValue: current };
+      item[field] = current + 1;
+      memoryStore.put(this.tableName, item as { PK: string; SK: string; [key: string]: unknown });
+      return { success: true, newValue: current + 1 };
+    }
+
+    try {
+      const exprNames: Record<string, string> = { '#cnt': field };
+      const exprValues: Record<string, unknown> = { ':one': 1, ':limit': limit, ':zero': 0 };
+
+      let setDefaults = '';
+      if (defaults) {
+        const entries = Object.entries(defaults);
+        entries.forEach(([key, value], i) => {
+          exprNames[`#def${i}`] = key;
+          exprValues[`:def${i}`] = value;
+        });
+        setDefaults = entries.map((_, i) => `#def${i} = if_not_exists(#def${i}, :def${i})`).join(', ') + ', ';
+      }
+
+      const result = await this.client.send(
+        new UpdateCommand({
+          TableName: this.tableName,
+          Key: { PK: pk, SK: sk },
+          UpdateExpression: `SET ${setDefaults}#cnt = if_not_exists(#cnt, :zero) + :one`,
+          ConditionExpression: 'attribute_not_exists(#cnt) OR #cnt < :limit',
+          ExpressionAttributeNames: exprNames,
+          ExpressionAttributeValues: exprValues,
+          ReturnValues: 'ALL_NEW',
+        }),
+      );
+
+      return { success: true, newValue: (result.Attributes?.[field] as number) || 1 };
+    } catch (err) {
+      if (err instanceof Error && err.name === 'ConditionalCheckFailedException') {
+        return { success: false, newValue: limit };
+      }
+      throw err;
+    }
+  }
+
+  async conditionalUpdate(
+    pk: string,
+    sk: string,
+    updates: Record<string, unknown>,
+    conditionField: string,
+    conditionValue: unknown,
+  ): Promise<boolean> {
+    if (USE_MEMORY) {
+      const item = memoryStore.get(this.tableName, pk, sk);
+      if (!item || item[conditionField] !== conditionValue) return false;
+      memoryStore.update(this.tableName, pk, sk, updates);
+      return true;
+    }
+
+    try {
+      const updateExprParts: string[] = [];
+      const exprNames: Record<string, string> = { '#cond': conditionField };
+      const exprValues: Record<string, unknown> = { ':condVal': conditionValue };
+
+      Object.entries(updates).forEach(([key, value], index) => {
+        exprNames[`#f${index}`] = key;
+        exprValues[`:v${index}`] = value;
+        updateExprParts.push(`#f${index} = :v${index}`);
+      });
+
+      await this.client.send(
+        new UpdateCommand({
+          TableName: this.tableName,
+          Key: { PK: pk, SK: sk },
+          UpdateExpression: `SET ${updateExprParts.join(', ')}`,
+          ConditionExpression: '#cond = :condVal',
+          ExpressionAttributeNames: exprNames,
+          ExpressionAttributeValues: exprValues,
+        }),
+      );
+
+      return true;
+    } catch (err) {
+      if (err instanceof Error && err.name === 'ConditionalCheckFailedException') {
+        return false;
+      }
+      throw err;
+    }
   }
 
   async delete(pk: string, sk: string): Promise<void> {

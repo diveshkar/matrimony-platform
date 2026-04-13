@@ -8,12 +8,9 @@ import { ensurePhoneAvailable, registerPhone } from '../domain/phone-registry.js
 import { BaseRepository } from '../../shared/repositories/base-repository.js';
 import { sendSmsOtp } from '../../auth/domain/sms-otp.js';
 import { nowISO } from '../../shared/utils/date.js';
+import { generateOtp } from '../../shared/utils/id-generator.js';
 
 const coreRepo = new BaseRepository('core');
-
-function generateOtp(): string {
-  return String(Math.floor(100000 + Math.random() * 900000));
-}
 
 async function handler(event: APIGatewayProxyEventV2, context: Context) {
   const requestId = event.requestContext?.requestId || context.awsRequestId;

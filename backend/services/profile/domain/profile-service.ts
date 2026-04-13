@@ -1,4 +1,5 @@
 import { ProfileRepository } from '../repositories/profile-repository.js';
+import { BaseRepository } from '../../shared/repositories/base-repository.js';
 import { ConflictError, NotFoundError } from '../../shared/errors/app-errors.js';
 import { logger } from '../../shared/utils/logger.js';
 import type {
@@ -185,7 +186,10 @@ export class ProfileService {
       throw new NotFoundError('Profile');
     }
 
-    // Handle phone number change
+    delete updates.gender;
+    delete updates.profileFor;
+
+
     const newPhone = updates.phoneNumber as string | undefined;
     if (newPhone) {
       const { validatePhoneNumber } = await import('./phone-validation.js');
@@ -228,15 +232,35 @@ export class ProfileService {
   }
 
   async getPublicProfile(userId: string, viewerId?: string): Promise<Record<string, unknown>> {
-    const profile = await this.repo.getProfile(userId);
-    if (!profile) {
+    const coreRepo = new BaseRepository('core');
+
+    const [profile, account] = await Promise.all([
+      this.repo.getProfile(userId),
+      coreRepo.get(`USER#${userId}`, 'ACCOUNT#v1'),
+    ]);
+
+    if (!profile || !account) {
       throw new NotFoundError('Profile');
     }
 
     const privacy = await this.repo.getPrivacy(userId);
 
-    if (viewerId && viewerId !== userId && privacy?.showInSearch === false) {
-      throw new NotFoundError('Profile');
+    if (viewerId && viewerId !== userId) {
+      if (privacy?.showInSearch === false) {
+        throw new NotFoundError('Profile');
+      }
+
+      const [viewerBlocks, ownerBlocks] = await Promise.all([
+        coreRepo.get<{ blockedUserIds?: string[] }>(`USER#${viewerId}`, 'BLOCK'),
+        coreRepo.get<{ blockedUserIds?: string[] }>(`USER#${userId}`, 'BLOCK'),
+      ]);
+
+      const viewerBlocked = (ownerBlocks?.blockedUserIds || []).includes(viewerId);
+      const ownerBlocked = (viewerBlocks?.blockedUserIds || []).includes(userId);
+
+      if (viewerBlocked || ownerBlocked) {
+        throw new NotFoundError('Profile');
+      }
     }
 
     const publicProfile: Record<string, unknown> = { ...profile };

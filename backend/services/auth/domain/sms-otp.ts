@@ -5,7 +5,9 @@ export async function sendSmsOtp(phone: string, otp: string): Promise<void> {
   const forceReal = process.env.FORCE_REAL_OTP === 'true' || process.env.FORCE_REAL_PHONE_VALIDATION === 'true';
 
   if (isLocal && !forceReal) {
-    logger.info('SMS OTP (dev mode)', { phone, otp });
+    logger.info('SMS OTP (dev mode — check terminal)', { phone });
+    // eslint-disable-next-line no-console
+    console.log(`\n  [DEV] SMS OTP for ${phone}: ${otp}\n`);
     return;
   }
 

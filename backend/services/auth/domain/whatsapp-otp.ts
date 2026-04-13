@@ -21,7 +21,9 @@ export async function sendWhatsAppOtp(phone: string, otp: string): Promise<void>
   const forceReal = process.env.FORCE_REAL_OTP === 'true';
 
   if (isLocal && !forceReal) {
-    logger.info('WhatsApp OTP (dev mode)', { phone, otp });
+    logger.info('WhatsApp OTP (dev mode — check terminal)', { phone });
+    // eslint-disable-next-line no-console
+    console.log(`\n  [DEV] WhatsApp OTP for ${phone}: ${otp}\n`);
     return;
   }
 
