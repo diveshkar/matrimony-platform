@@ -258,18 +258,18 @@ app.use('/uploads/local', express.static(UPLOADS_DIR));
 route('get', '/discover', getRecommendationsHandler);
 route('get', '/discover/search', searchProfilesHandler);
 
-// route('post', '/interests', sendInterestHandler);
+route('post', '/interests', sendInterestHandler);
 route('post', '/interests/:senderId/respond', respondInterestHandler);
-// route('delete', '/interests/:receiverId', withdrawInterestHandler);
+route('delete', '/interests/:receiverId', withdrawInterestHandler);
 route('get', '/interests', getInterestsHandler);
 route('get', '/shortlist', shortlistHandler);
-// route('post', '/shortlist', shortlistHandler);
-// route('delete', '/shortlist/:userId', shortlistHandler);
+route('post', '/shortlist', shortlistHandler);
+route('delete', '/shortlist/:userId', shortlistHandler);
 
 route('get', '/chats', getConversationsHandler);
-// route('post', '/chats', createConversationHandler);
+route('post', '/chats', createConversationHandler);
 route('get', '/chats/:conversationId/messages', getMessagesHandler);
-// route('post', '/chats/:conversationId/messages', sendMessageHandler);
+route('post', '/chats/:conversationId/messages', sendMessageHandler);
 
 route('get', '/subscriptions/plans', getPlansHandler);
 route('post', '/subscriptions/checkout', createCheckoutHandler);

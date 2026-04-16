@@ -81,6 +81,9 @@ export class ProfileService {
       }
     }
 
+    const coreRepo = new BaseRepository('core');
+    const account = await coreRepo.get<{ phone?: string; email?: string }>(`USER#${userId}`, 'ACCOUNT#v1');
+
     const profileData = {
       profileFor: data.profileFor as UserProfile['profileFor'],
       name: data.name as string,
@@ -115,6 +118,8 @@ export class ProfileService {
       familyStatus: data.familyStatus as UserProfile['familyStatus'],
       familyValues: data.familyValues as UserProfile['familyValues'],
       aboutMe: data.aboutMe as string | undefined,
+      whatsappNumber: (data.whatsappNumber as string) || account?.phone || undefined,
+      personalEmail: (data.personalEmail as string) || account?.email || undefined,
       primaryPhotoUrl: undefined,
       profileCompletion: 0,
     };
@@ -267,25 +272,33 @@ export class ProfileService {
     delete publicProfile.PK;
     delete publicProfile.SK;
 
-    // Add phone verified status
     const { getUserPhone } = await import('./phone-registry.js');
     publicProfile.phoneVerified = !!(await getUserPhone(userId));
 
-    if (privacy?.hideWhatsapp) delete publicProfile.whatsappNumber;
-    if (privacy?.hideDob) {
-      delete publicProfile.dateOfBirth;
-    }
-
-    // Load user's photos
     const { PhotoRepository } = await import('../../uploads/repositories/photo-repository.js');
     const photoRepo = new PhotoRepository();
     const allPhotos = await photoRepo.getPhotos(userId);
-    const visiblePhotos = allPhotos.filter((p) => p.visibility === 'all' || p.isPrimary);
 
-    // Determine how many photos the viewer can see based on plan
+    let isContact = false;
+    if (viewerId && viewerId !== userId) {
+      const sentInterest = await coreRepo.get<{ status: string }>(`USER#${viewerId}`, `INTEREST#OUT#${userId}`);
+      const receivedInterest = await coreRepo.get<{ status: string }>(`USER#${viewerId}`, `INTEREST#IN#${userId}`);
+      isContact = sentInterest?.status === 'accepted' || receivedInterest?.status === 'accepted';
+    }
+
+    const isOwner = !viewerId || viewerId === userId;
+    const visiblePhotos = allPhotos.filter((p) => {
+      if (p.isPrimary) return true;
+      if (isOwner) return true;
+      if (p.visibility === 'all') return true;
+      if (p.visibility === 'contacts' && isContact) return true;
+      return false;
+    });
+
     const PHOTO_VIEW_LIMITS: Record<string, number> = { free: 1, silver: 4, gold: 99, platinum: 99 };
     let viewerPlan = 'free';
     let photoViewLimit = 1;
+    let hasContactAccess = false;
 
     if (viewerId && viewerId !== userId) {
       try {
@@ -296,17 +309,25 @@ export class ProfileService {
         const viewerSub = await subRepo.getSubscription(viewerId);
         viewerPlan = viewerSub?.status === 'active' ? viewerSub.planId : 'free';
         photoViewLimit = PHOTO_VIEW_LIMITS[viewerPlan] || 1;
-
-        publicProfile.contactInfoVisible = usage.contactInfoAccess;
-        if (!usage.contactInfoAccess) {
-          delete publicProfile.whatsappNumber;
-          delete publicProfile.personalEmail;
-        }
+        hasContactAccess = usage.contactInfoAccess;
       } catch {
-        publicProfile.contactInfoVisible = false;
+        hasContactAccess = false;
+      }
+
+      publicProfile.contactInfoVisible = hasContactAccess;
+
+      if (!hasContactAccess || privacy?.hideWhatsapp) {
+        delete publicProfile.whatsappNumber;
+      }
+      if (!hasContactAccess) {
+        delete publicProfile.personalEmail;
+      }
+      if (privacy?.hideDob) {
+        delete publicProfile.dateOfBirth;
       }
     } else {
-      photoViewLimit = 99; // own profile sees all
+      photoViewLimit = 99;
+      publicProfile.contactInfoVisible = true;
     }
 
     // Return photos: visible ones up to limit, rest marked as locked

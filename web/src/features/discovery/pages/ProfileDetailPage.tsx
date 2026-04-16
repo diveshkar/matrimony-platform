@@ -39,7 +39,7 @@ import {
 } from '@/features/interests/hooks/useInterests';
 import { useBlockUser } from '@/features/settings/hooks/useSettings';
 import { ReportDialog } from '@/features/settings/components/ReportDialog';
-import { formatHeight, calculateAge } from '@/lib/utils/format';
+import { formatHeight, calculateAge, formatDate } from '@/lib/utils/format';
 import { ROUTES } from '@/lib/constants/routes';
 
 function formatEnum(str?: string): string {
@@ -140,7 +140,7 @@ export default function ProfileDetailPage() {
   const raw = response.data as Record<string, unknown>;
   const s = (key: string): string => String(raw[key] || '');
   const n = (key: string): number => Number(raw[key]) || 0;
-  const age = s('dateOfBirth') ? calculateAge(s('dateOfBirth')) : null;
+  const age = s('dateOfBirth') ? calculateAge(s('dateOfBirth')) : n('age') || null;
   const photos = (raw.photos || []) as { photoId: string; url: string; isPrimary: boolean; locked: boolean }[];
   const totalPhotos = (raw.totalPhotos as number) || 0;
 
@@ -355,6 +355,24 @@ export default function ProfileDetailPage() {
 
       {/* Info grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* Basic Info */}
+      <Card className="border-0 shadow-soft">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-sm">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary-50">
+              <User className="h-3.5 w-3.5 text-primary-700" />
+            </div>
+            Basic Info
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 pt-0">
+          {age && <InfoRow label="Age" value={`${age} years`} />}
+          {s('dateOfBirth') && <InfoRow label="Date of Birth" value={formatDate(s('dateOfBirth'), 'DD MMM YYYY')} />}
+          {n('height') > 0 && <InfoRow label="Height" value={formatHeight(n('height'))} />}
+          <InfoRow label="Marital Status" value={formatEnum(s('maritalStatus'))} />
+        </CardContent>
+      </Card>
+
       {/* Education & Career */}
       <Card className="border-0 shadow-soft">
         <CardHeader className="pb-2">
@@ -572,17 +590,6 @@ function ProfileActions({
   );
 }
 
-function maskPhone(phone: string): string {
-  if (!phone || phone.length < 6) return '●●●●●●●●●';
-  return phone.slice(0, 4) + '●●●●' + phone.slice(-3);
-}
-
-function maskEmail(email: string): string {
-  if (!email || !email.includes('@')) return '●●●@●●●.com';
-  const [name, domain] = email.split('@');
-  return name.slice(0, 2) + '●●●@' + domain;
-}
-
 function ContactInfoCard({
   email,
   whatsapp,
@@ -593,7 +600,6 @@ function ContactInfoCard({
   canView: boolean;
 }) {
   const hasAny = email || whatsapp;
-  if (!hasAny) return null;
 
   return (
     <Card>
@@ -610,27 +616,43 @@ function ContactInfoCard({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {email && (
-          <div className="flex items-center gap-3">
-            <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
-            <span className="text-sm font-medium">{canView ? email : maskEmail(email)}</span>
-          </div>
-        )}
-        {whatsapp && (
-          <div className="flex items-center gap-3">
-            <MessageCircle className="h-4 w-4 text-muted-foreground shrink-0" />
-            <span className="text-sm font-medium">{canView ? whatsapp : maskPhone(whatsapp)}</span>
-            <span className="text-xs text-muted-foreground">WhatsApp</span>
-          </div>
-        )}
-        {!canView && (
-          <Link
-            to={ROUTES.PLANS}
-            className="flex items-center gap-2 mt-3 text-xs text-primary-700 hover:underline font-medium"
-          >
-            <Lock className="h-3 w-3" />
-            Upgrade to Gold to see full contact details
-          </Link>
+        {canView && hasAny ? (
+          <>
+            {whatsapp && (
+              <div className="flex items-center gap-3">
+                <MessageCircle className="h-4 w-4 text-muted-foreground shrink-0" />
+                <span className="text-sm font-medium">{whatsapp}</span>
+                <span className="text-xs text-muted-foreground">WhatsApp</span>
+              </div>
+            )}
+            {email && (
+              <div className="flex items-center gap-3">
+                <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
+                <span className="text-sm font-medium">{email}</span>
+              </div>
+            )}
+          </>
+        ) : canView && !hasAny ? (
+          <p className="text-sm text-muted-foreground">Contact details not shared by this user</p>
+        ) : (
+          <>
+            <div className="flex items-center gap-3">
+              <MessageCircle className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+              <span className="text-sm text-muted-foreground">+●●●●●●●●●●</span>
+              <span className="text-xs text-muted-foreground">WhatsApp</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Mail className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+              <span className="text-sm text-muted-foreground">●●●@●●●.com</span>
+            </div>
+            <Link
+              to={ROUTES.PLANS}
+              className="flex items-center gap-2 mt-3 text-xs text-primary-700 hover:underline font-medium"
+            >
+              <Lock className="h-3 w-3" />
+              Upgrade to Gold to see full contact details
+            </Link>
+          </>
         )}
       </CardContent>
     </Card>
