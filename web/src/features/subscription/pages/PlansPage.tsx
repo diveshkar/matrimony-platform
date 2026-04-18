@@ -35,13 +35,13 @@ interface FeatureRow {
 }
 
 const features: FeatureRow[] = [
-  { label: 'Profile views/day', icon: Eye, free: '10', silver: '30', gold: 'Unlimited', platinum: 'Unlimited' },
-  { label: 'Interests/day', icon: Heart, free: '5', silver: '15', gold: 'Unlimited', platinum: 'Unlimited' },
+  { label: 'Profile views/month', icon: Eye, free: '10', silver: '30', gold: '25', platinum: '30' },
+  { label: 'Interests/month', icon: Heart, free: '5', silver: '15', gold: '25', platinum: '30' },
   { label: 'Chat access', icon: MessageCircle, free: false, silver: true, gold: true, platinum: true },
   { label: 'Contact info visible', icon: Users, free: false, silver: false, gold: true, platinum: true },
   { label: 'Who viewed me', icon: Eye, free: false, silver: 'Count only', gold: 'Full details', platinum: 'Full details' },
   { label: 'Photo uploads', icon: Camera, free: '3 max', silver: '6 max', gold: '6 max', platinum: '6 max' },
-  { label: "View other's photos", icon: Camera, free: '1 photo', silver: '4 photos', gold: 'All photos', platinum: 'All photos' },
+  { label: "View other's photos", icon: Camera, free: '1 photo', silver: '4 photos', gold: '4 photos', platinum: 'All photos' },
   { label: 'Photo visibility controls', icon: Eye, free: false, silver: true, gold: true, platinum: true },
   { label: 'Profile boost', icon: Zap, free: false, silver: false, gold: '1/month', platinum: '3/month' },
   { label: 'Priority in search', icon: Search, free: false, silver: false, gold: false, platinum: true },
@@ -63,7 +63,7 @@ const planConfigs: Record<string, PlanCardConfig> = {
 };
 
 const planHighlights: Record<string, string[]> = {
-  silver: ['Chat with your matches', '30 views + 15 interests daily', 'See who viewed your profile'],
+  silver: ['Chat with your matches', '30 views + 15 interests/month', 'See who viewed your profile'],
   gold: ['See contact info (WhatsApp & email)', 'Unlimited views & interests', '1 profile boost per month'],
   platinum: ['Top search placement always', '3 boosts per month', 'Everything in Gold included'],
 };

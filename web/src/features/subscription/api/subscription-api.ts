@@ -8,6 +8,8 @@ export interface PlanInfo {
   entitlements: {
     profileViewsPerDay: number;
     interestsPerDay: number;
+    profileViewsPerMonth?: number;
+    interestsPerMonth?: number;
     chatAccess: boolean;
     contactInfoAccess: boolean;
     whoViewedMeAccess: boolean;
@@ -25,6 +27,8 @@ export interface MySubscription {
   entitlements: {
     profileViewsPerDay: number;
     interestsPerDay: number;
+    profileViewsPerMonth?: number;
+    interestsPerMonth?: number;
     chatAccess: boolean;
     contactInfoAccess: boolean;
     whoViewedMeAccess: boolean;
@@ -35,6 +39,8 @@ export interface MySubscription {
 export interface UsageData {
   profileViewsRemaining: number;
   interestsRemaining: number;
+  profileViewsPeriod: 'day' | 'month';
+  interestsPeriod: 'day' | 'month';
   chatAccess: boolean;
   whoViewedMeAccess: boolean;
   contactInfoAccess: boolean;

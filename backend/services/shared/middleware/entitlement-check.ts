@@ -18,30 +18,46 @@ function todayKey(): string {
   return new Date().toISOString().split('T')[0];
 }
 
-async function getDailyUsage(userId: string, action: string): Promise<number> {
-  const date = todayKey();
-  const item = await coreRepo.get<UsageRecord>(`USAGE#${userId}`, `${action}#${date}`);
+function monthKey(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+}
+
+async function getUsage(userId: string, action: string, period: string): Promise<number> {
+  const item = await coreRepo.get<UsageRecord>(`USAGE#${userId}`, `${action}#${period}`);
   return item?.count || 0;
 }
 
-async function checkAndIncrementUsage(userId: string, action: string, limit: number): Promise<void> {
-  const date = todayKey();
-  const pk = `USAGE#${userId}`;
-  const sk = `${action}#${date}`;
-  const ttl = Math.floor(Date.now() / 1000) + 86400 * 2;
+async function checkAndIncrementUsage(
+  userId: string,
+  action: string,
+  dailyLimit: number,
+  monthlyLimit: number,
+): Promise<void> {
+  if (dailyLimit !== -1) {
+    const date = todayKey();
+    const result = await coreRepo.incrementIfBelow(`USAGE#${userId}`, `${action}#${date}`, 'count', dailyLimit, {
+      date,
+      ttl: Math.floor(Date.now() / 1000) + 86400 * 2,
+      createdAt: nowISO(),
+    });
+    if (!result.success) {
+      throw new ForbiddenError(`You have reached your daily limit (${dailyLimit}). Upgrade for more.`);
+    }
+    return;
+  }
 
-  const result = await coreRepo.incrementIfBelow(pk, sk, 'count', limit, {
-    date,
-    ttl,
-    createdAt: nowISO(),
-  });
-
-  if (!result.success) {
-    const labels: Record<string, string> = {
-      profile_view: `You have reached your daily profile view limit (${limit}). Upgrade your plan to view more profiles.`,
-      send_interest: `You have reached your daily interest limit (${limit}). Upgrade your plan to send more interests.`,
-    };
-    throw new ForbiddenError(labels[action] || `Daily limit reached (${limit}).`);
+  if (monthlyLimit !== -1) {
+    const month = monthKey();
+    const result = await coreRepo.incrementIfBelow(`USAGE#${userId}`, `${action}#${month}`, 'count', monthlyLimit, {
+      month,
+      ttl: Math.floor(Date.now() / 1000) + 86400 * 35,
+      createdAt: nowISO(),
+    });
+    if (!result.success) {
+      throw new ForbiddenError(`You have reached your monthly limit (${monthlyLimit}). Resets next month.`);
+    }
+    return;
   }
 }
 
@@ -53,16 +69,18 @@ export async function checkEntitlement(
 
   switch (action) {
     case 'profile_view': {
-      const limit = entitlement.profileViewsPerDay;
-      if (limit === -1) return;
-      await checkAndIncrementUsage(userId, 'profile_view', limit);
+      const daily = entitlement.profileViewsPerDay;
+      const monthly = entitlement.profileViewsPerMonth ?? -1;
+      if (daily === -1 && monthly === -1) return;
+      await checkAndIncrementUsage(userId, 'profile_view', daily, monthly);
       return;
     }
 
     case 'send_interest': {
-      const limit = entitlement.interestsPerDay;
-      if (limit === -1) return;
-      await checkAndIncrementUsage(userId, 'send_interest', limit);
+      const daily = entitlement.interestsPerDay;
+      const monthly = entitlement.interestsPerMonth ?? -1;
+      if (daily === -1 && monthly === -1) return;
+      await checkAndIncrementUsage(userId, 'send_interest', daily, monthly);
       return;
     }
 
@@ -98,26 +116,48 @@ export async function checkEntitlement(
 export async function getRemainingUsage(userId: string): Promise<{
   profileViewsRemaining: number;
   interestsRemaining: number;
+  profileViewsPeriod: 'day' | 'month';
+  interestsPeriod: 'day' | 'month';
   chatAccess: boolean;
   whoViewedMeAccess: boolean;
   contactInfoAccess: boolean;
 }> {
   const entitlement = await subRepo.getUserEntitlement(userId);
 
-  const [viewsUsed, interestsUsed] = await Promise.all([
-    getDailyUsage(userId, 'profile_view'),
-    getDailyUsage(userId, 'send_interest'),
-  ]);
+  const viewsDaily = entitlement.profileViewsPerDay;
+  const viewsMonthly = entitlement.profileViewsPerMonth ?? -1;
+  const interestsDaily = entitlement.interestsPerDay;
+  const interestsMonthly = entitlement.interestsPerMonth ?? -1;
+
+  let profileViewsRemaining = -1;
+  let profileViewsPeriod: 'day' | 'month' = 'day';
+  if (viewsDaily !== -1) {
+    const used = await getUsage(userId, 'profile_view', todayKey());
+    profileViewsRemaining = Math.max(0, viewsDaily - used);
+    profileViewsPeriod = 'day';
+  } else if (viewsMonthly !== -1) {
+    const used = await getUsage(userId, 'profile_view', monthKey());
+    profileViewsRemaining = Math.max(0, viewsMonthly - used);
+    profileViewsPeriod = 'month';
+  }
+
+  let interestsRemaining = -1;
+  let interestsPeriod: 'day' | 'month' = 'day';
+  if (interestsDaily !== -1) {
+    const used = await getUsage(userId, 'send_interest', todayKey());
+    interestsRemaining = Math.max(0, interestsDaily - used);
+    interestsPeriod = 'day';
+  } else if (interestsMonthly !== -1) {
+    const used = await getUsage(userId, 'send_interest', monthKey());
+    interestsRemaining = Math.max(0, interestsMonthly - used);
+    interestsPeriod = 'month';
+  }
 
   return {
-    profileViewsRemaining:
-      entitlement.profileViewsPerDay === -1
-        ? -1
-        : Math.max(0, entitlement.profileViewsPerDay - viewsUsed),
-    interestsRemaining:
-      entitlement.interestsPerDay === -1
-        ? -1
-        : Math.max(0, entitlement.interestsPerDay - interestsUsed),
+    profileViewsRemaining,
+    interestsRemaining,
+    profileViewsPeriod,
+    interestsPeriod,
     chatAccess: entitlement.chatAccess,
     whoViewedMeAccess: entitlement.whoViewedMeAccess,
     contactInfoAccess: entitlement.contactInfoAccess,

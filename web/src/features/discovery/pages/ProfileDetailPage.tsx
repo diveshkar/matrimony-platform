@@ -95,9 +95,9 @@ export default function ProfileDetailPage() {
           <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50">
             <Lock className="h-8 w-8 text-amber-600" />
           </div>
-          <h2 className="font-heading text-xl font-bold text-foreground">Daily Limit Reached</h2>
+          <h2 className="font-heading text-xl font-bold text-foreground">Monthly Limit Reached</h2>
           <p className="mt-3 text-sm text-muted-foreground max-w-sm mx-auto">
-            You've used all your profile views for today. Upgrade your plan to view more profiles.
+            You've used all your profile views for this month. Upgrade your plan for more.
           </p>
           <div className="mt-6 flex justify-center gap-3">
             <Button variant="outline" asChild>

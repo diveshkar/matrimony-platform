@@ -22,6 +22,8 @@ export interface EntitlementRecord {
   planId: string;
   profileViewsPerDay: number;
   interestsPerDay: number;
+  profileViewsPerMonth?: number;
+  interestsPerMonth?: number;
   chatAccess: boolean;
   contactInfoAccess: boolean;
   whoViewedMeAccess: boolean;
@@ -67,8 +69,10 @@ export class SubscriptionRepository extends BaseRepository {
         PK: 'PLAN#free',
         SK: 'ENTITLEMENT#v1',
         planId: 'free',
-        profileViewsPerDay: 10,
-        interestsPerDay: 5,
+        profileViewsPerDay: -1,
+        interestsPerDay: -1,
+        profileViewsPerMonth: 10,
+        interestsPerMonth: 5,
         chatAccess: false,
         contactInfoAccess: false,
         whoViewedMeAccess: false,

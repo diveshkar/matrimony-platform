@@ -34,7 +34,7 @@ const trustSignals = [
 ];
 
 export default function LoginPage() {
-  const [mode, setMode] = useState<AuthMode>('whatsapp');
+  const [mode, setMode] = useState<AuthMode>('email');
   const [countryCode, setCountryCode] = useState('+44');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
@@ -159,7 +159,8 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* Mode toggle */}
+          {/* WhatsApp toggle hidden — enable when Twilio WhatsApp Business is set up */}
+          {false && (
           <div className="flex rounded-xl bg-muted/70 p-1.5 mb-6">
             <button
               type="button"
@@ -186,6 +187,7 @@ export default function LoginPage() {
               Email
             </button>
           </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {mode === 'whatsapp' ? (

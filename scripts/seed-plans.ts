@@ -19,8 +19,10 @@ const TABLE = `matrimony_core_${env}`;
 const plans = [
   {
     planId: 'free',
-    profileViewsPerDay: 10,
-    interestsPerDay: 5,
+    profileViewsPerDay: -1,
+    interestsPerDay: -1,
+    profileViewsPerMonth: 10,
+    interestsPerMonth: 5,
     chatAccess: false,
     contactInfoAccess: false,
     whoViewedMeAccess: false,
@@ -32,8 +34,10 @@ const plans = [
   },
   {
     planId: 'silver',
-    profileViewsPerDay: 30,
-    interestsPerDay: 15,
+    profileViewsPerDay: -1,
+    interestsPerDay: -1,
+    profileViewsPerMonth: 30,
+    interestsPerMonth: 15,
     chatAccess: true,
     contactInfoAccess: false,
     whoViewedMeAccess: true,
@@ -47,12 +51,14 @@ const plans = [
     planId: 'gold',
     profileViewsPerDay: -1,
     interestsPerDay: -1,
+    profileViewsPerMonth: 25,
+    interestsPerMonth: 25,
     chatAccess: true,
     contactInfoAccess: true,
     whoViewedMeAccess: true,
     boostsPerMonth: 1,
     maxPhotos: 6,
-    photoViewLimit: -1,
+    photoViewLimit: 4,
     photoVisibilityControl: true,
     prioritySearch: false,
   },
@@ -60,6 +66,8 @@ const plans = [
     planId: 'platinum',
     profileViewsPerDay: -1,
     interestsPerDay: -1,
+    profileViewsPerMonth: 30,
+    interestsPerMonth: 30,
     chatAccess: true,
     contactInfoAccess: true,
     whoViewedMeAccess: true,
@@ -88,7 +96,7 @@ async function seed() {
     );
 
     console.log(
-      `  ✓ ${plan.planId.padEnd(8)}: views=${String(plan.profileViewsPerDay).padEnd(3)} interests=${String(plan.interestsPerDay).padEnd(3)} chat=${String(plan.chatAccess).padEnd(5)} photos=${plan.maxPhotos} viewLimit=${String(plan.photoViewLimit).padEnd(2)} priority=${plan.prioritySearch}`,
+      `  ✓ ${plan.planId.padEnd(8)}: views=${String(plan.profileViewsPerMonth).padEnd(3)}/mo interests=${String(plan.interestsPerMonth).padEnd(3)}/mo chat=${String(plan.chatAccess).padEnd(5)} photos=${plan.maxPhotos} viewLimit=${String(plan.photoViewLimit).padEnd(2)} priority=${plan.prioritySearch}`,
     );
   }
 

@@ -81,7 +81,7 @@ const plans = [
     price: '£9.99',
     period: '/month',
     popular: false,
-    features: ['30 profile views/day', '15 interests/day', 'Limited chat', 'Who viewed me'],
+    features: ['30 profile views/month', '15 interests/month', 'Limited chat', 'Who viewed me'],
   },
   {
     name: 'Gold',
@@ -374,7 +374,7 @@ function HowItWorksSection() {
     {
       step: '02',
       title: 'Discover Matches',
-      desc: 'Browse profiles with smart filters, get daily recommendations based on compatibility, and find people who share your values.',
+      desc: 'Browse profiles with smart filters, get personalised recommendations based on compatibility, and find people who share your values.',
       icon: Sparkles,
     },
     {

@@ -3,15 +3,12 @@ import { Eye, Heart, MessageCircle, Crown, Lock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils/cn';
 import { ROUTES } from '@/lib/constants/routes';
-import { useUsage, useMySubscription } from '../hooks/useSubscription';
+import { useUsage } from '../hooks/useSubscription';
 
 export function UsageBar({ className }: { className?: string }) {
   const { data: usageRes } = useUsage();
-  const { data: subRes } = useMySubscription();
-
   const usage = usageRes?.success ? usageRes.data : null;
-  const planId = subRes?.success ? subRes.data.subscription.planId : 'free';
-  const isUnlimited = planId === 'gold' || planId === 'platinum';
+  const isUnlimited = usage?.profileViewsRemaining === -1 && usage?.interestsRemaining === -1;
 
   if (!usage) return null;
 
@@ -19,7 +16,7 @@ export function UsageBar({ className }: { className?: string }) {
     <div className={cn('rounded-xl bg-white shadow-soft-sm p-3 sm:p-4', className)}>
       <div className="flex items-center justify-between mb-3">
         <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-          Daily Usage
+          Monthly Usage
         </p>
         {!isUnlimited && (
           <Link to={ROUTES.PLANS}>
@@ -93,8 +90,8 @@ function UsageItem({
   bg: string;
   barColor: string;
 }) {
-  const maxMap: Record<number, number> = { 10: 10, 5: 5, 30: 30, 15: 15 };
-  const max = unlimited ? 1 : Object.values(maxMap).find((m) => remaining <= m) || 10;
+  const maxMap: Record<number, number> = { 5: 5, 10: 10, 15: 15, 25: 25, 30: 30 };
+  const max = unlimited ? 1 : Object.values(maxMap).find((m) => remaining <= m) || 30;
   const pct = unlimited ? 100 : Math.round((remaining / max) * 100);
   const isLow = !unlimited && remaining <= 2;
 
@@ -108,7 +105,7 @@ function UsageItem({
       </div>
       <p className={cn('text-sm font-bold', isLow ? 'text-destructive' : 'text-foreground')}>
         {unlimited ? '∞' : remaining}
-        {!unlimited && <span className="text-[10px] font-normal text-muted-foreground"> left</span>}
+        {!unlimited && <span className="text-[10px] font-normal text-muted-foreground"> left this month</span>}
       </p>
       {!unlimited && (
         <div className="h-1 rounded-full bg-muted overflow-hidden">
