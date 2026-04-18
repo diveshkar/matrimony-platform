@@ -1,6 +1,6 @@
 variable "aws_region" {
   type    = string
-  default = "ap-south-1"
+  default = "ap-southeast-1"
 }
 
 variable "environment" {
@@ -10,12 +10,12 @@ variable "environment" {
 
 variable "domain_name" {
   type    = string
-  default = "matrimony.com"
+  default = "theworldtamilmatrimony.com"
 }
 
 variable "cors_allowed_origins" {
   type    = list(string)
-  default = ["https://matrimony.com", "https://www.matrimony.com"]
+  default = ["https://theworldtamilmatrimony.com", "https://www.theworldtamilmatrimony.com"]
 }
 
 variable "certificate_arn" {
@@ -74,7 +74,7 @@ variable "ses_from_email" {
 
 variable "frontend_url" {
   type        = string
-  default     = "https://matrimony.com"
+  default     = "https://theworldtamilmatrimony.com"
   description = "Frontend URL for Stripe redirects and CORS"
 }
 

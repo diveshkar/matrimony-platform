@@ -194,6 +194,7 @@ module "lambda_auth" {
   source_code_hash      = filebase64sha256("${local.lambda_packages_dir}/auth.zip")
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
+  attach_policy         = true
   tags                  = local.common_tags
 }
 
@@ -207,6 +208,7 @@ module "lambda_profile" {
   source_code_hash      = filebase64sha256("${local.lambda_packages_dir}/profile.zip")
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
+  attach_policy         = true
   tags                  = local.common_tags
 }
 
@@ -220,6 +222,7 @@ module "lambda_uploads" {
   source_code_hash      = filebase64sha256("${local.lambda_packages_dir}/uploads.zip")
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
+  attach_policy         = true
   tags                  = local.common_tags
 }
 
@@ -233,6 +236,7 @@ module "lambda_discovery" {
   source_code_hash      = filebase64sha256("${local.lambda_packages_dir}/discovery.zip")
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
+  attach_policy         = true
   tags                  = local.common_tags
 }
 
@@ -246,6 +250,7 @@ module "lambda_interests" {
   source_code_hash      = filebase64sha256("${local.lambda_packages_dir}/interests.zip")
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
+  attach_policy         = true
   tags                  = local.common_tags
 }
 
@@ -259,6 +264,7 @@ module "lambda_chat" {
   source_code_hash      = filebase64sha256("${local.lambda_packages_dir}/chat.zip")
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
+  attach_policy         = true
   tags                  = local.common_tags
 }
 
@@ -272,6 +278,7 @@ module "lambda_subscriptions" {
   source_code_hash      = filebase64sha256("${local.lambda_packages_dir}/subscriptions.zip")
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
+  attach_policy         = true
   tags                  = local.common_tags
 }
 
@@ -285,6 +292,7 @@ module "lambda_safety" {
   source_code_hash      = filebase64sha256("${local.lambda_packages_dir}/safety.zip")
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
+  attach_policy         = true
   tags                  = local.common_tags
 }
 
