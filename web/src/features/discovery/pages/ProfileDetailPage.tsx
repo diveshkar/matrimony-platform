@@ -14,6 +14,7 @@ import {
   Ban,
   Flag,
   Mail,
+  Phone,
   MessageCircle,
   Lock,
   ChevronLeft,
@@ -338,7 +339,7 @@ export default function ProfileDetailPage() {
       {/* Contact Info */}
       <ContactInfoCard
         email={s('personalEmail') || s('email')}
-        whatsapp={s('whatsappNumber')}
+        phone={s('whatsappNumber')}
         canView={Boolean(raw.contactInfoVisible)}
       />
 
@@ -592,20 +593,22 @@ function ProfileActions({
 
 function ContactInfoCard({
   email,
-  whatsapp,
+  phone,
   canView,
 }: {
   email: string;
-  whatsapp: string;
+  phone: string;
   canView: boolean;
 }) {
-  const hasAny = email || whatsapp;
+  const hasAny = email || phone;
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Mail className="h-5 w-5 text-primary-700" />
+          {/* WhatsApp icon — uncomment when WhatsApp login is enabled */}
+          {/* <MessageCircle className="h-5 w-5 text-primary-700" /> */}
+          <Phone className="h-5 w-5 text-primary-700" />
           Contact Information
           {!canView && (
             <Badge variant="outline" className="ml-auto text-[10px] font-normal">
@@ -618,11 +621,11 @@ function ContactInfoCard({
       <CardContent className="space-y-3">
         {canView && hasAny ? (
           <>
-            {whatsapp && (
+            {phone && (
               <div className="flex items-center gap-3">
-                <MessageCircle className="h-4 w-4 text-muted-foreground shrink-0" />
-                <span className="text-sm font-medium">{whatsapp}</span>
-                <span className="text-xs text-muted-foreground">WhatsApp</span>
+                <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
+                <span className="text-sm font-medium">{phone}</span>
+                {/* <span className="text-xs text-muted-foreground">WhatsApp</span> */}
               </div>
             )}
             {email && (
@@ -637,9 +640,8 @@ function ContactInfoCard({
         ) : (
           <>
             <div className="flex items-center gap-3">
-              <MessageCircle className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+              <Phone className="h-4 w-4 text-muted-foreground/40 shrink-0" />
               <span className="text-sm text-muted-foreground">+●●●●●●●●●●</span>
-              <span className="text-xs text-muted-foreground">WhatsApp</span>
             </div>
             <div className="flex items-center gap-3">
               <Mail className="h-4 w-4 text-muted-foreground/40 shrink-0" />

@@ -205,6 +205,7 @@ export class ProfileService {
         await validatePhoneNumber(newPhone);
         await changePhone(userId, currentPhone, newPhone);
       }
+      updates.whatsappNumber = newPhone;
       delete updates.phoneNumber;
     }
 

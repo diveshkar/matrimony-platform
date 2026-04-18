@@ -154,7 +154,8 @@ export default function EditProfilePage() {
         {/* Contact Info */}
         <SectionCard icon={MessageCircle} title="Contact Information" delay={0.1}>
           <p className="text-xs text-muted-foreground -mt-1 mb-2">Visible only to Gold and Platinum members.</p>
-          <Field label="WhatsApp Number">
+          {/* Rename back to "WhatsApp Number" when WhatsApp login is enabled */}
+          <Field label="Phone Number">
             <Input value={(form.whatsappNumber as string) || ''} onChange={(e) => update('whatsappNumber', e.target.value)} placeholder="+447911123456" className="h-11 rounded-xl" />
           </Field>
           <Field label="Personal Email">

@@ -44,11 +44,12 @@ export default function PrivacySettingsPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           <ToggleRow
-            label="Hide WhatsApp Number"
-            description="Your WhatsApp number will not be visible to others"
+            label="Hide Phone Number"
+            description="Your phone number will not be visible to other members"
             checked={privacy?.hideWhatsapp ?? true}
             onChange={(v) => updatePrivacy.mutate({ hideWhatsapp: v })}
           />
+          {/* Rename back to "Hide WhatsApp Number" when WhatsApp login is enabled */}
           <ToggleRow
             label="Hide Date of Birth"
             description="Only your age will be shown, not your full date of birth"
