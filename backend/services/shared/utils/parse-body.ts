@@ -1,4 +1,5 @@
 import type { APIGatewayProxyEventV2 } from 'aws-lambda';
+import { ValidationError } from '../errors/app-errors.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function parseBody(event: APIGatewayProxyEventV2): any {
@@ -11,6 +12,6 @@ export function parseBody(event: APIGatewayProxyEventV2): any {
   try {
     return JSON.parse(raw);
   } catch {
-    return {};
+    throw new ValidationError('Invalid JSON in request body');
   }
 }
