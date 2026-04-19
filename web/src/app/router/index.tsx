@@ -79,7 +79,6 @@ export function AppRouter() {
           {/* Auth pages */}
           <Route path={ROUTES.LOGIN} element={<LoginPage />} />
           <Route path={ROUTES.VERIFY_OTP} element={<VerifyOtpPage />} />
-          <Route path={ROUTES.PLANS} element={<PlansPage />} />
         </Route>
 
         {/* Onboarding — auth required but no profile required */}
@@ -121,6 +120,7 @@ export function AppRouter() {
           <Route path={ROUTES.SHARE_STORY} element={<ShareStoryPage />} />
           <Route path={ROUTES.APPROVE_STORY} element={<ApproveStoryPage />} />
           <Route path={ROUTES.NOTIFICATIONS} element={<NotificationsPage />} />
+          <Route path={ROUTES.PLANS} element={<PlansPage />} />
           <Route path={ROUTES.PAYMENT_SUCCESS} element={<PaymentSuccessPage />} />
           <Route path={ROUTES.PAYMENT_CANCEL} element={<PaymentCancelPage />} />
         </Route>

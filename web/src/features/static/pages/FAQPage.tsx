@@ -17,7 +17,7 @@ const faqs = [
   },
   {
     q: 'How is my privacy protected?',
-    a: 'You have full control over your privacy. You can hide your WhatsApp number, date of birth, and set photo visibility to everyone, contacts only, or hidden. We never share your data with third parties.',
+    a: 'You have full control over your privacy. You can hide your phone number, date of birth, and set photo visibility to everyone, contacts only, or hidden. We never share your data with third parties.',
   },
   {
     q: 'How does the matching work?',

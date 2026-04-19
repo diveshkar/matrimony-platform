@@ -18,9 +18,20 @@ function todayKey(): string {
   return new Date().toISOString().split('T')[0];
 }
 
-function monthKey(): string {
+function calendarMonthKey(): string {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+}
+
+// Returns the usage-reset period key for a user.
+// Paid users → their billing cycle anchor (e.g. "2026-04-15"), resets on renewal.
+// Free users or legacy paid subs without anchor → calendar month (e.g. "2026-04").
+async function getPeriodKey(userId: string): Promise<string> {
+  const sub = await subRepo.getSubscription(userId);
+  if (sub && sub.status === 'active' && sub.planId !== 'free' && sub.currentPeriodStart) {
+    return sub.currentPeriodStart.split('T')[0];
+  }
+  return calendarMonthKey();
 }
 
 async function getUsage(userId: string, action: string, period: string): Promise<number> {
@@ -48,14 +59,16 @@ async function checkAndIncrementUsage(
   }
 
   if (monthlyLimit !== -1) {
-    const month = monthKey();
-    const result = await coreRepo.incrementIfBelow(`USAGE#${userId}`, `${action}#${month}`, 'count', monthlyLimit, {
-      month,
-      ttl: Math.floor(Date.now() / 1000) + 86400 * 35,
+    const period = await getPeriodKey(userId);
+    const isCalendarPeriod = period.length === 7; // "YYYY-MM" vs "YYYY-MM-DD"
+    const result = await coreRepo.incrementIfBelow(`USAGE#${userId}`, `${action}#${period}`, 'count', monthlyLimit, {
+      month: period,
+      ttl: Math.floor(Date.now() / 1000) + 86400 * 60,
       createdAt: nowISO(),
     });
     if (!result.success) {
-      throw new ForbiddenError(`You have reached your monthly limit (${monthlyLimit}). Resets next month.`);
+      const resetMsg = isCalendarPeriod ? 'Resets next month.' : 'Resets on your next billing cycle.';
+      throw new ForbiddenError(`You have reached your monthly limit (${monthlyLimit}). ${resetMsg}`);
     }
     return;
   }
@@ -129,6 +142,9 @@ export async function getRemainingUsage(userId: string): Promise<{
   const interestsDaily = entitlement.interestsPerDay;
   const interestsMonthly = entitlement.interestsPerMonth ?? -1;
 
+  // Resolve period key once for both counters (single subscription read)
+  const periodKey = viewsMonthly !== -1 || interestsMonthly !== -1 ? await getPeriodKey(userId) : '';
+
   let profileViewsRemaining = -1;
   let profileViewsPeriod: 'day' | 'month' = 'day';
   if (viewsDaily !== -1) {
@@ -136,7 +152,7 @@ export async function getRemainingUsage(userId: string): Promise<{
     profileViewsRemaining = Math.max(0, viewsDaily - used);
     profileViewsPeriod = 'day';
   } else if (viewsMonthly !== -1) {
-    const used = await getUsage(userId, 'profile_view', monthKey());
+    const used = await getUsage(userId, 'profile_view', periodKey);
     profileViewsRemaining = Math.max(0, viewsMonthly - used);
     profileViewsPeriod = 'month';
   }
@@ -148,7 +164,7 @@ export async function getRemainingUsage(userId: string): Promise<{
     interestsRemaining = Math.max(0, interestsDaily - used);
     interestsPeriod = 'day';
   } else if (interestsMonthly !== -1) {
-    const used = await getUsage(userId, 'send_interest', monthKey());
+    const used = await getUsage(userId, 'send_interest', periodKey);
     interestsRemaining = Math.max(0, interestsMonthly - used);
     interestsPeriod = 'month';
   }

@@ -178,7 +178,7 @@ export default function ChatDetailPage() {
         <div className="border-t py-3 shrink-0">
           <UpgradePrompt
             title="Upgrade to chat"
-            description="Chat is available on Silver plan and above."
+            description="Chat is available on Gold plan and above."
           />
         </div>
       ) : (

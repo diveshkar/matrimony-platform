@@ -64,7 +64,7 @@ const planConfigs: Record<string, PlanCardConfig> = {
 
 const planHighlights: Record<string, string[]> = {
   silver: ['Chat with your matches', '30 views + 15 interests/month', 'See who viewed your profile'],
-  gold: ['See contact info (WhatsApp & email)', 'Unlimited views & interests', '1 profile boost per month'],
+  gold: ['See contact info (Phone & email)', 'Unlimited views & interests', '1 profile boost per month'],
   platinum: ['Top search placement always', '3 boosts per month', 'Everything in Gold included'],
 };
 
@@ -78,7 +78,8 @@ export default function PlansPage() {
   const [cancelOpen, setCancelOpen] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
 
-  const plans = plansResponse?.success ? plansResponse.data : [];
+  // Silver hidden from UI but kept in backend/code for future re-enable
+  const plans = plansResponse?.success ? plansResponse.data.filter((p) => p.id !== 'silver') : [];
   const currentPlan = subResponse?.success ? subResponse.data.subscription.planId : 'free';
 
   if (isLoading) {
@@ -120,7 +121,7 @@ export default function PlansPage() {
       </motion.div>
 
       {/* Plan Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6 max-w-2xl mx-auto">
         {plans.map((plan, i) => {
           const config = planConfigs[plan.id] || planConfigs.silver;
           const isCurrentPlan = currentPlan === plan.id;
@@ -244,9 +245,7 @@ export default function PlansPage() {
                     <th className="text-center py-3 px-3 font-medium text-xs w-[80px]">
                       <span className="text-muted-foreground">Free</span>
                     </th>
-                    <th className="text-center py-3 px-3 font-medium text-xs w-[80px]">
-                      <span className="text-slate-600">Silver</span>
-                    </th>
+                    {/* Silver column hidden — kept in data for future re-enable */}
                     <th className="text-center py-3 px-3 font-medium text-xs w-[80px]">
                       <span className="text-accent-600 font-semibold">Gold</span>
                     </th>
@@ -261,7 +260,7 @@ export default function PlansPage() {
                       <td className="py-3 px-4 text-xs text-foreground font-medium">
                         {row.label}
                       </td>
-                      {(['free', 'silver', 'gold', 'platinum'] as const).map((plan) => {
+                      {(['free', 'gold', 'platinum'] as const).map((plan) => {
                         const val = row[plan];
                         return (
                           <td key={plan} className="text-center py-3 px-3">
@@ -302,7 +301,7 @@ export default function PlansPage() {
                 <tr className="bg-warm-50/50 border-t">
                   <td className="py-3 px-4 text-xs font-semibold text-foreground w-[200px]">Monthly price</td>
                   <td className="text-center py-3 px-3 text-xs font-bold text-foreground w-[80px]">Free</td>
-                  <td className="text-center py-3 px-3 text-xs font-bold text-foreground w-[80px]">£9.99</td>
+                  {/* Silver column hidden */}
                   <td className="text-center py-3 px-3 text-xs font-bold text-accent-700 w-[80px]">£19.99</td>
                   <td className="text-center py-3 px-3 text-xs font-bold text-violet-700 w-[80px]">£29.99</td>
                 </tr>
@@ -358,7 +357,7 @@ export default function PlansPage() {
             <ul className="space-y-1 text-xs text-amber-700">
               {currentPlan === 'platinum' && <li>- Priority search placement</li>}
               {currentPlan === 'platinum' && <li>- 3 profile boosts per month</li>}
-              {(currentPlan === 'gold' || currentPlan === 'platinum') && <li>- Contact info visibility (WhatsApp & email)</li>}
+              {(currentPlan === 'gold' || currentPlan === 'platinum') && <li>- Contact info visibility (Phone & email)</li>}
               {(currentPlan === 'gold' || currentPlan === 'platinum') && <li>- Unlimited profile views & interests</li>}
               {(currentPlan === 'gold' || currentPlan === 'platinum') && <li>- Profile boost feature</li>}
               <li>- Chat access</li>

@@ -10,6 +10,9 @@ export interface SubscriptionRecord {
   stripeCustomerId?: string;
   startDate: string;
   endDate: string;
+  // Billing cycle anchor — updated on each renewal. Used as the usage-reset
+  // boundary so paid users get exactly 1 month of quota per payment.
+  currentPeriodStart?: string;
   status: 'active' | 'cancelled' | 'expired';
   schemaVersion: number;
   createdAt: string;

@@ -12,7 +12,7 @@ export function useAuthStart() {
   return useMutation({
     mutationFn: (data: AuthStartRequest) => authApi.start(data),
     onSuccess: () => {
-      toast.success('OTP sent', 'Check your WhatsApp or email for the verification code');
+      toast.success('OTP sent', 'Check your phone or email for the verification code');
     },
     onError: () => {
       toast.error('Failed to send OTP', 'Please try again');

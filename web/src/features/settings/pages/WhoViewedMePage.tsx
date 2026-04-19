@@ -21,7 +21,7 @@ export default function WhoViewedMePage() {
         <h1 className="font-heading text-xl sm:text-2xl font-bold text-foreground">Who Viewed Me</h1>
         <UpgradePrompt
           title="Upgrade to see who viewed you"
-          description="Who Viewed Me is available on Silver plan and above."
+          description="Who Viewed Me is available on Gold plan and above."
         />
       </div>
     );

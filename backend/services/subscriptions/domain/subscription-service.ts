@@ -150,6 +150,7 @@ export class SubscriptionService {
           stripeCustomerId: session.customer as string,
           startDate: now,
           endDate: endDate.toISOString(),
+          currentPeriodStart: now,
           status: 'active',
           schemaVersion: 1,
           createdAt: now,
@@ -168,13 +169,15 @@ export class SubscriptionService {
           // Find user by Stripe subscription ID and extend their endDate
           const sub = await this.findSubscriptionByStripeId(stripeSubId);
           if (sub) {
+            const renewalNow = nowISO();
             const newEnd = new Date();
             newEnd.setMonth(newEnd.getMonth() + 1);
             await this.repo.updateSubscription(sub.userId, {
               endDate: newEnd.toISOString(),
+              currentPeriodStart: renewalNow,
               status: 'active',
             });
-            logger.info('Subscription renewed', { userId: sub.userId, newEndDate: newEnd.toISOString() });
+            logger.info('Subscription renewed', { userId: sub.userId, newEndDate: newEnd.toISOString(), periodStart: renewalNow });
           } else {
             logger.warn('Invoice paid but no matching subscription found', { stripeSubId });
           }

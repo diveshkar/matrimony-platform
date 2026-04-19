@@ -40,7 +40,7 @@ export default function PrivacyPage() {
                 3. Your Privacy Controls
               </h2>
               <p>
-                You have full control over your profile visibility. You can hide your WhatsApp number,
+                You have full control over your profile visibility. You can hide your phone number,
                 date of birth, and control who sees your photos. You can also choose to hide your
                 profile from search results entirely.
               </p>

@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Heart,
   Shield,
@@ -8,6 +9,8 @@ import {
   Globe,
   Sparkles,
   CheckCircle2,
+  Check,
+  X,
   Star,
   ArrowRight,
   Quote,
@@ -77,6 +80,18 @@ function useStats() {
 
 const plans = [
   {
+    name: 'Free',
+    price: '£0',
+    period: '/forever',
+    popular: false,
+    features: [
+      '10 profile views/month',
+      '5 interests/month',
+      'Basic search',
+      'Browse profiles',
+    ],
+  },
+  {
     name: 'Silver',
     price: '£9.99',
     period: '/month',
@@ -89,8 +104,8 @@ const plans = [
     period: '/month',
     popular: true,
     features: [
-      'Unlimited profile views',
-      'Unlimited interests',
+      '25 profile views/month',
+      '25 interests/month',
       'Full chat access',
       'View contact info',
       '1 boost/month',
@@ -102,11 +117,11 @@ const plans = [
     period: '/month',
     popular: false,
     features: [
-      'Everything in Gold',
+      '30 profile views/month',
+      '30 interests/month',
       'Priority support',
       '3 boosts/month',
       'Premium badge',
-      'Top search placement',
     ],
   },
 ];
@@ -135,21 +150,27 @@ export default function HomePage() {
 
 function HeroSection() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-primary-950 via-primary-900 to-primary-800 text-white">
-      {/* Ambient light effects */}
-      <div className="absolute inset-0 overflow-hidden">
+    <section
+      className="relative overflow-hidden bg-gradient-to-br from-primary-950 via-primary-900 to-primary-800 text-white"
+      style={{ isolation: 'isolate', contain: 'paint' }}
+    >
+      {/* Ambient light effects — GPU-layered for performance */}
+      <div className="absolute inset-0 overflow-hidden" style={{ transform: 'translateZ(0)' }}>
         <motion.div
-          className="absolute -top-20 -left-20 h-[500px] w-[500px] rounded-full bg-accent-400/10 blur-[120px]"
+          className="absolute -top-20 -left-20 h-[500px] w-[500px] rounded-full bg-accent-400/10 blur-[120px] transform-gpu"
+          style={{ willChange: 'transform, opacity' }}
           animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.15, 0.1] }}
           transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
-          className="absolute -bottom-32 -right-32 h-[600px] w-[600px] rounded-full bg-primary-400/10 blur-[120px]"
+          className="absolute -bottom-32 -right-32 h-[600px] w-[600px] rounded-full bg-primary-400/10 blur-[120px] transform-gpu"
+          style={{ willChange: 'transform, opacity' }}
           animate={{ scale: [1.2, 1, 1.2], opacity: [0.08, 0.12, 0.08] }}
           transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[300px] w-[300px] rounded-full bg-accent-500/5 blur-[100px]"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[300px] w-[300px] rounded-full bg-accent-500/5 blur-[100px] transform-gpu"
+          style={{ willChange: 'transform' }}
           animate={{ scale: [1, 1.3, 1] }}
           transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
         />
@@ -164,79 +185,130 @@ function HeroSection() {
         }}
       />
 
-      <div className="page-container relative py-24 sm:py-32 lg:py-40">
-        <div className="mx-auto max-w-4xl text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <Badge variant="gold" className="mb-6 px-4 py-1.5 text-sm font-medium">
-              <Heart className="mr-1.5 h-3.5 w-3.5 fill-current" />
-              Trusted by Tamil families worldwide
-            </Badge>
-          </motion.div>
-
-          <motion.h1
-            className="font-heading text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight leading-[1.1]"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.15 }}
-          >
-            Where Tamil Hearts{' '}
-            <span className="relative inline-block">
-              <span className="bg-gradient-to-r from-accent-300 via-accent-400 to-accent-500 bg-clip-text text-transparent">
-                Find Home
-              </span>
-              <motion.span
-                className="absolute -bottom-2 left-0 right-0 h-[3px] bg-gradient-to-r from-accent-400/0 via-accent-400 to-accent-400/0 rounded-full"
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: 1 }}
-                transition={{ duration: 0.8, delay: 0.8 }}
-              />
-            </span>
-          </motion.h1>
-
-          <motion.p
-            className="mt-8 text-lg sm:text-xl text-white/60 max-w-2xl mx-auto leading-relaxed"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.35 }}
-          >
-            A premium matrimony platform crafted for the global Tamil community. Find your life
-            partner with trust, tradition, and the care your journey deserves.
-          </motion.p>
-
-          <motion.div
-            className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-          >
-            <Button size="xl" variant="gold" className="group min-w-[200px]" asChild>
-              <Link to={ROUTES.LOGIN}>
-                Start Your Journey
-                <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-              </Link>
-            </Button>
-            <Button
-              size="xl"
-              variant="outline"
-              className="border-white/20 text-white hover:bg-white/10 min-w-[200px]"
-              asChild
+      <div className="page-container relative py-20 sm:py-24 lg:py-32">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          {/* Left: Text content */}
+          <div className="text-center lg:text-left">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
             >
-              <Link to={ROUTES.PLANS}>View Plans</Link>
-            </Button>
-          </motion.div>
+              <Badge variant="gold" className="mb-6 px-4 py-1.5 text-sm font-medium">
+                <Heart className="mr-1.5 h-3.5 w-3.5 fill-current" />
+                Trusted by Tamil families worldwide
+              </Badge>
+            </motion.div>
 
-          <motion.p
-            className="mt-5 text-sm text-white/30"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.7 }}
+            <motion.h1
+              className="font-heading text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight leading-[1.1]"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.15 }}
+            >
+              Where Tamil Hearts{' '}
+              <span className="relative inline-block">
+                <span className="bg-gradient-to-r from-accent-300 via-accent-400 to-accent-500 bg-clip-text text-transparent">
+                  Find Home
+                </span>
+                <motion.span
+                  className="absolute -bottom-2 left-0 right-0 h-[3px] bg-gradient-to-r from-accent-400/0 via-accent-400 to-accent-400/0 rounded-full"
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ duration: 0.8, delay: 0.8 }}
+                />
+              </span>
+            </motion.h1>
+
+            <motion.p
+              className="mt-8 text-lg sm:text-xl text-white/60 max-w-2xl mx-auto lg:mx-0 leading-relaxed"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.35 }}
+            >
+              A premium matrimony platform crafted for the global Tamil community. Find your life
+              partner with trust, tradition, and the care your journey deserves.
+            </motion.p>
+
+            <motion.div
+              className="mt-10 flex flex-col sm:flex-row items-center lg:justify-start justify-center gap-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+            >
+              <Button size="xl" variant="gold" className="group min-w-[200px]" asChild>
+                <Link to={ROUTES.LOGIN}>
+                  Start Your Journey
+                  <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                </Link>
+              </Button>
+              <Button
+                size="xl"
+                variant="outline"
+                className="border-white/20 text-white hover:bg-white/10 min-w-[200px]"
+                asChild
+              >
+                <Link to={ROUTES.PLANS}>View Plans</Link>
+              </Button>
+            </motion.div>
+
+            <motion.p
+              className="mt-5 text-sm text-white/30"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.7 }}
+            >
+              Free to register. No credit card required.
+            </motion.p>
+          </div>
+
+          {/* Right: Couple image with premium framing */}
+          <motion.div
+            className="relative mx-auto lg:mx-0 w-full max-w-md lg:max-w-none"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.9, delay: 0.3, ease: 'easeOut' }}
           >
-            Free to register. No credit card required.
-          </motion.p>
+            {/* Gold glow behind image — static, GPU-layered */}
+            <div
+              className="absolute -inset-4 bg-gradient-to-br from-accent-400/20 via-accent-500/10 to-transparent rounded-[2rem] blur-2xl transform-gpu"
+              style={{ willChange: 'transform' }}
+            />
+
+            {/* Decorative gold corner accents */}
+            <div className="absolute -top-3 -left-3 h-16 w-16 border-t-2 border-l-2 border-accent-400/60 rounded-tl-2xl" />
+            <div className="absolute -bottom-3 -right-3 h-16 w-16 border-b-2 border-r-2 border-accent-400/60 rounded-br-2xl" />
+
+            {/* Image frame */}
+            <motion.div
+              className="relative overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/10 transform-gpu"
+              style={{ willChange: 'transform' }}
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              <img
+                src="/marriedcouple.png"
+                alt="Happy Tamil couple"
+                className="w-full h-auto object-cover"
+                loading="eager"
+                decoding="async"
+                fetchPriority="high"
+              />
+              {/* Subtle inner vignette for premium feel */}
+              <div className="absolute inset-0 bg-gradient-to-t from-primary-950/30 via-transparent to-transparent pointer-events-none" />
+            </motion.div>
+
+            {/* Floating heart badge */}
+            <motion.div
+              className="absolute -bottom-5 -left-5 flex items-center gap-2 rounded-full bg-white/95 backdrop-blur-sm px-4 py-2.5 shadow-xl"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.9 }}
+            >
+              <Heart className="h-4 w-4 fill-primary-700 text-primary-700" />
+              <span className="text-xs font-semibold text-primary-900">Made with love</span>
+            </motion.div>
+          </motion.div>
         </div>
       </div>
 
@@ -539,6 +611,7 @@ function SuccessStoriesSection() {
 /* ─────────────────────────────────────────── */
 
 function PlansSection() {
+  const [showComparison, setShowComparison] = useState(false);
   return (
     <section className="section-spacing bg-white" id="plans">
       <div className="page-container">
@@ -556,7 +629,7 @@ function PlansSection() {
         </AnimatedSection>
 
         <StaggerContainer className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {plans.map((plan) => (
+          {plans.filter((p) => p.name !== 'Silver').map((plan) => (
             <StaggerItem key={plan.name}>
               <Card
                 className={`h-full relative hover-lift ${
@@ -608,15 +681,116 @@ function PlansSection() {
         <AnimatedSection delay={0.3} className="mt-10 text-center">
           <p className="text-sm text-muted-foreground">
             All plans include free registration and basic profile browsing.{' '}
-            <Link to={ROUTES.FAQ} className="text-primary-700 hover:underline font-medium">
-              Compare plans in detail
-            </Link>
+            <button
+              onClick={() => setShowComparison((v) => !v)}
+              className="text-primary-700 hover:underline font-medium"
+            >
+              {showComparison ? 'Hide comparison' : 'Compare plans in detail'}
+            </button>
           </p>
         </AnimatedSection>
+
+        <AnimatePresence initial={false}>
+          {showComparison && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+              className="mt-8 max-w-4xl mx-auto overflow-hidden"
+            >
+              <Card className="border-0 shadow-soft-lg rounded-2xl overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-warm-50">
+                        <th className="text-left py-3 px-4 font-medium text-muted-foreground text-xs w-[200px]">
+                          Feature
+                        </th>
+                        <th className="text-center py-3 px-3 font-medium text-xs w-[90px]">
+                          <span className="text-muted-foreground">Free</span>
+                        </th>
+                        <th className="text-center py-3 px-3 font-medium text-xs w-[90px]">
+                          <span className="text-accent-600 font-semibold">Gold</span>
+                        </th>
+                        <th className="text-center py-3 px-3 font-medium text-xs w-[90px]">
+                          <span className="text-violet-600">Platinum</span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {COMPARISON_FEATURES.map((row) => (
+                        <tr key={row.label} className="hover:bg-warm-50/50 transition-colors">
+                          <td className="py-3 px-4 text-xs text-foreground font-medium">{row.label}</td>
+                          {(['free', 'gold', 'platinum'] as const).map((tier) => {
+                            const val = row[tier];
+                            return (
+                              <td key={tier} className="text-center py-3 px-3">
+                                {val === true ? (
+                                  <div className="flex justify-center">
+                                    <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100">
+                                      <Check className="h-3 w-3 text-emerald-600" />
+                                    </div>
+                                  </div>
+                                ) : val === false ? (
+                                  <div className="flex justify-center">
+                                    <div className="flex h-5 w-5 items-center justify-center rounded-full bg-red-50">
+                                      <X className="h-3 w-3 text-red-400" />
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <span
+                                    className={
+                                      tier === 'gold'
+                                        ? 'text-xs font-medium text-accent-700'
+                                        : tier === 'platinum'
+                                        ? 'text-xs font-medium text-violet-700'
+                                        : 'text-xs font-medium text-foreground'
+                                    }
+                                  >
+                                    {val}
+                                  </span>
+                                )}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))}
+                      <tr className="bg-warm-50/50 border-t-2">
+                        <td className="py-3 px-4 text-xs font-semibold text-foreground">Monthly price</td>
+                        <td className="text-center py-3 px-3 text-xs font-bold text-foreground">Free</td>
+                        <td className="text-center py-3 px-3 text-xs font-bold text-accent-700">£19.99</td>
+                        <td className="text-center py-3 px-3 text-xs font-bold text-violet-700">£29.99</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </section>
   );
 }
+
+const COMPARISON_FEATURES: Array<{
+  label: string;
+  free: string | boolean;
+  gold: string | boolean;
+  platinum: string | boolean;
+}> = [
+  { label: 'Profile views/month', free: '10', gold: '25', platinum: '30' },
+  { label: 'Interests/month', free: '5', gold: '25', platinum: '30' },
+  { label: 'Chat access', free: false, gold: true, platinum: true },
+  { label: 'Contact info visible', free: false, gold: true, platinum: true },
+  { label: 'Who viewed me', free: false, gold: 'Full details', platinum: 'Full details' },
+  { label: 'Photo uploads', free: '3 max', gold: '6 max', platinum: '6 max' },
+  { label: "View other's photos", free: '1 photo', gold: '4 photos', platinum: 'All photos' },
+  { label: 'Photo visibility controls', free: false, gold: true, platinum: true },
+  { label: 'Profile boost', free: false, gold: '1/month', platinum: '3/month' },
+  { label: 'Priority in search', free: false, gold: false, platinum: true },
+];
 
 /* ─────────────────────────────────────────── */
 /*  CTA                                         */
@@ -624,10 +798,14 @@ function PlansSection() {
 
 function CTASection() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-primary-900 via-primary-800 to-primary-900 text-white section-spacing">
-      <div className="absolute inset-0 overflow-hidden">
+    <section
+      className="relative overflow-hidden bg-gradient-to-br from-primary-900 via-primary-800 to-primary-900 text-white section-spacing"
+      style={{ isolation: 'isolate', contain: 'paint' }}
+    >
+      <div className="absolute inset-0 overflow-hidden" style={{ transform: 'translateZ(0)' }}>
         <motion.div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[400px] w-[400px] rounded-full bg-accent-400/10 blur-[100px]"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[400px] w-[400px] rounded-full bg-accent-400/10 blur-[100px] transform-gpu"
+          style={{ willChange: 'transform' }}
           animate={{ scale: [1, 1.2, 1] }}
           transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
         />

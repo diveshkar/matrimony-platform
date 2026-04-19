@@ -140,7 +140,7 @@ export default function PhotosPage() {
           <h1 className="font-heading text-xl font-bold text-foreground">My Photos</h1>
           <p className="text-xs text-muted-foreground">
             {photos.length} of {maxPhotos} photos uploaded
-            {currentPlan === 'free' && <span className="text-primary-600 ml-1">(Silver+ gets 6)</span>}
+            {currentPlan === 'free' && <span className="text-primary-600 ml-1">(Gold+ gets 6)</span>}
           </p>
         </div>
       </div>
@@ -354,11 +354,11 @@ export default function PhotosPage() {
             </div>
             <DialogTitle className="text-center">Upload More Photos</DialogTitle>
             <DialogDescription className="text-center">
-              Free plan allows up to {maxPhotos} photos. Upgrade to Silver or above to upload up to 6 photos and unlock photo visibility controls.
+              Free plan allows up to {maxPhotos} photos. Upgrade to Gold or above to upload up to 6 photos and unlock photo visibility controls.
             </DialogDescription>
           </DialogHeader>
           <div className="bg-primary-50/50 rounded-xl p-4 text-sm space-y-2">
-            <p className="font-medium text-primary-800">With Silver+ you get:</p>
+            <p className="font-medium text-primary-800">With Gold+ you get:</p>
             <ul className="space-y-1.5 text-xs text-primary-700">
               <li className="flex items-center gap-2">
                 <Camera className="h-3.5 w-3.5 shrink-0" />
@@ -370,7 +370,7 @@ export default function PhotosPage() {
               </li>
               <li className="flex items-center gap-2">
                 <Crown className="h-3.5 w-3.5 shrink-0" />
-                Silver members see 4 photos, Gold sees all
+                Gold members see all photos
               </li>
             </ul>
           </div>
