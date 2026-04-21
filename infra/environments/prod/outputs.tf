@@ -33,3 +33,13 @@ output "cloudfront_distribution_id" {
 output "cloudfront_domain" {
   value = module.cloudfront_frontend.distribution_domain_name
 }
+
+# Paste these 4 name servers into Hostinger → Domain → DNS/Nameservers (Custom)
+output "route53_name_servers" {
+  value       = aws_route53_zone.main.name_servers
+  description = "Add these as custom nameservers in Hostinger to delegate DNS to Route 53"
+}
+
+output "route53_zone_id" {
+  value = aws_route53_zone.main.zone_id
+}

@@ -12,13 +12,12 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
   const authedEvent = event as AuthenticatedEvent;
 
   const body = parseBody(event);
-  if (!body.s3Key || !body.url || !body.fileSize || !body.mimeType) {
-    throw new ValidationError('s3Key, url, fileSize, and mimeType are required');
+  if (!body.s3Key || !body.fileSize || !body.mimeType) {
+    throw new ValidationError('s3Key, fileSize, and mimeType are required');
   }
 
   const photo = await uploadService.confirmUpload(authedEvent.auth.userId, {
     s3Key: body.s3Key,
-    url: body.url,
     fileSize: body.fileSize,
     mimeType: body.mimeType,
     visibility: body.visibility,

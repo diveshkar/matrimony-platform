@@ -28,16 +28,14 @@ export const photoApi = {
       )
       .then((r) => r.data),
 
-  uploadFile: async (uploadUrl: string, file: File): Promise<string> => {
-    const response = await axios.post(uploadUrl, file, {
+  uploadFile: async (uploadUrl: string, file: File): Promise<void> => {
+    await axios.put(uploadUrl, file, {
       headers: { 'Content-Type': file.type },
     });
-    return response.data?.data?.url || uploadUrl;
   },
 
   confirmUpload: (data: {
     s3Key: string;
-    url: string;
     fileSize: number;
     mimeType: string;
     visibility?: string;

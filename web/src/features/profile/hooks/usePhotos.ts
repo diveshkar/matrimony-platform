@@ -19,11 +19,10 @@ export function useUploadPhoto() {
       if (!urlResponse.success) throw new Error('Failed to get upload URL');
 
       const { uploadUrl, s3Key } = urlResponse.data;
-      const fileUrl = await photoApi.uploadFile(uploadUrl, file);
+      await photoApi.uploadFile(uploadUrl, file);
 
       const confirmResponse = await photoApi.confirmUpload({
         s3Key,
-        url: fileUrl,
         fileSize: file.size,
         mimeType: file.type,
       });

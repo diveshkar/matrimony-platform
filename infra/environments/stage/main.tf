@@ -117,6 +117,7 @@ locals {
     JWT_SECRET            = var.jwt_secret
     SES_FROM_EMAIL        = var.ses_from_email
     S3_MEDIA_BUCKET       = module.s3_media.bucket_id
+    MEDIA_CDN_URL         = "https://${module.cloudfront_media.distribution_domain_name}"
     CORS_ALLOWED_ORIGINS  = join(",", var.cors_allowed_origins)
     STRIPE_SECRET_KEY     = var.stripe_secret_key
     STRIPE_WEBHOOK_SECRET = var.stripe_webhook_secret

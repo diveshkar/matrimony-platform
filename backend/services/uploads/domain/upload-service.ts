@@ -84,7 +84,6 @@ export class UploadService {
     userId: string,
     data: {
       s3Key: string;
-      url: string;
       fileSize: number;
       mimeType: string;
       visibility?: 'all' | 'contacts' | 'hidden';
@@ -95,20 +94,21 @@ export class UploadService {
     }
 
     const isLocal = process.env.ENVIRONMENT === 'dev';
-    const bucket = process.env.S3_MEDIA_BUCKET;
-    if (!isLocal) {
-      const validUrlPatterns = [
-        `https://${bucket}.s3.`,
-        `https://s3.`,
-      ];
-      if (!validUrlPatterns.some((p) => data.url.startsWith(p))) {
-        throw new ValidationError('Invalid photo URL');
-      }
+    const mediaCdnUrl = process.env.MEDIA_CDN_URL;
+    if (!isLocal && !mediaCdnUrl) {
+      throw new Error('MEDIA_CDN_URL env var not configured');
     }
+
+    // Build clean, permanent CloudFront URL from s3Key.
+    // (Do NOT trust any URL from the client — the pre-signed upload URL
+    // expires in 5 min and would break photo display.)
+    const cleanUrl = isLocal
+      ? `http://localhost:4000/uploads/${data.s3Key}`
+      : `${mediaCdnUrl}/${data.s3Key}`;
 
     const photo = await this.repo.savePhoto(userId, {
       s3Key: data.s3Key,
-      url: data.url,
+      url: cleanUrl,
       fileSize: data.fileSize,
       mimeType: data.mimeType,
       visibility: data.visibility || 'all',

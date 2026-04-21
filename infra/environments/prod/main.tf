@@ -4,6 +4,7 @@ locals {
     Project     = "matrimony"
     Environment = var.environment
   }
+  lambda_packages_dir = "${path.module}/../../lambda-packages"
 }
 
 # ──────────────────────────────────────────────
@@ -94,7 +95,7 @@ module "s3_media" {
   source               = "../../modules/s3_bucket"
   bucket_name          = "${local.prefix}-media"
   cors_allowed_origins = var.cors_allowed_origins
-  cors_allowed_methods = ["GET", "PUT"]
+  cors_allowed_methods = ["GET", "PUT", "POST", "DELETE", "HEAD"]
   versioning           = true
   tags                 = local.common_tags
 }
@@ -117,10 +118,10 @@ module "api_gateway" {
 locals {
   lambda_env = {
     ENVIRONMENT           = var.environment
-    AWS_REGION            = var.aws_region
     JWT_SECRET            = var.jwt_secret
-    SES_FROM_EMAIL        = "noreply@${var.domain_name}"
+    SES_FROM_EMAIL        = var.ses_from_email
     S3_MEDIA_BUCKET       = module.s3_media.bucket_id
+    MEDIA_CDN_URL         = "https://media.${var.domain_name}"
     CORS_ALLOWED_ORIGINS  = join(",", var.cors_allowed_origins)
     STRIPE_SECRET_KEY     = var.stripe_secret_key
     STRIPE_WEBHOOK_SECRET = var.stripe_webhook_secret
@@ -140,8 +141,6 @@ locals {
     module.dynamodb_events.table_arn,
     "${module.dynamodb_events.table_arn}/index/*",
   ]
-
-  lambda_packages_dir = "${path.module}/../../lambda-packages"
 }
 
 data "aws_iam_policy_document" "lambda_service" {
@@ -171,13 +170,15 @@ data "aws_iam_policy_document" "lambda_service" {
 # ──────────────────────────────────────────────
 
 module "lambda_health" {
-  source                = "../../modules/lambda_function"
-  function_name         = "${local.prefix}-health"
-  handler               = "index.main"
-  memory_size           = 128
-  timeout               = 10
-  filename              = "${local.lambda_packages_dir}/health.zip"
-  source_code_hash      = filebase64sha256("${local.lambda_packages_dir}/health.zip")
+  source           = "../../modules/lambda_function"
+  function_name    = "${local.prefix}-health"
+  handler          = "index.main"
+  memory_size      = 128
+  timeout          = 10
+  s3_bucket        = "thamizhakal-matrimony-state"
+  s3_key           = "lambda-packages/health.zip"
+  source_code_hash = filebase64sha256("${local.lambda_packages_dir}/health.zip")
+
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
   attach_policy         = true
@@ -185,13 +186,15 @@ module "lambda_health" {
 }
 
 module "lambda_auth" {
-  source                = "../../modules/lambda_function"
-  function_name         = "${local.prefix}-auth"
-  handler               = "index.main"
-  memory_size           = 256
-  timeout               = 30
-  filename              = "${local.lambda_packages_dir}/auth.zip"
-  source_code_hash      = filebase64sha256("${local.lambda_packages_dir}/auth.zip")
+  source           = "../../modules/lambda_function"
+  function_name    = "${local.prefix}-auth"
+  handler          = "index.main"
+  memory_size      = 256
+  timeout          = 30
+  s3_bucket        = "thamizhakal-matrimony-state"
+  s3_key           = "lambda-packages/auth.zip"
+  source_code_hash = filebase64sha256("${local.lambda_packages_dir}/auth.zip")
+
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
   attach_policy         = true
@@ -199,13 +202,15 @@ module "lambda_auth" {
 }
 
 module "lambda_profile" {
-  source                = "../../modules/lambda_function"
-  function_name         = "${local.prefix}-profile"
-  handler               = "index.main"
-  memory_size           = 256
-  timeout               = 30
-  filename              = "${local.lambda_packages_dir}/profile.zip"
-  source_code_hash      = filebase64sha256("${local.lambda_packages_dir}/profile.zip")
+  source           = "../../modules/lambda_function"
+  function_name    = "${local.prefix}-profile"
+  handler          = "index.main"
+  memory_size      = 256
+  timeout          = 30
+  s3_bucket        = "thamizhakal-matrimony-state"
+  s3_key           = "lambda-packages/profile.zip"
+  source_code_hash = filebase64sha256("${local.lambda_packages_dir}/profile.zip")
+
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
   attach_policy         = true
@@ -213,13 +218,15 @@ module "lambda_profile" {
 }
 
 module "lambda_uploads" {
-  source                = "../../modules/lambda_function"
-  function_name         = "${local.prefix}-uploads"
-  handler               = "index.main"
-  memory_size           = 256
-  timeout               = 30
-  filename              = "${local.lambda_packages_dir}/uploads.zip"
-  source_code_hash      = filebase64sha256("${local.lambda_packages_dir}/uploads.zip")
+  source           = "../../modules/lambda_function"
+  function_name    = "${local.prefix}-uploads"
+  handler          = "index.main"
+  memory_size      = 256
+  timeout          = 30
+  s3_bucket        = "thamizhakal-matrimony-state"
+  s3_key           = "lambda-packages/uploads.zip"
+  source_code_hash = filebase64sha256("${local.lambda_packages_dir}/uploads.zip")
+
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
   attach_policy         = true
@@ -227,13 +234,15 @@ module "lambda_uploads" {
 }
 
 module "lambda_discovery" {
-  source                = "../../modules/lambda_function"
-  function_name         = "${local.prefix}-discovery"
-  handler               = "index.main"
-  memory_size           = 256
-  timeout               = 30
-  filename              = "${local.lambda_packages_dir}/discovery.zip"
-  source_code_hash      = filebase64sha256("${local.lambda_packages_dir}/discovery.zip")
+  source           = "../../modules/lambda_function"
+  function_name    = "${local.prefix}-discovery"
+  handler          = "index.main"
+  memory_size      = 256
+  timeout          = 30
+  s3_bucket        = "thamizhakal-matrimony-state"
+  s3_key           = "lambda-packages/discovery.zip"
+  source_code_hash = filebase64sha256("${local.lambda_packages_dir}/discovery.zip")
+
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
   attach_policy         = true
@@ -241,13 +250,15 @@ module "lambda_discovery" {
 }
 
 module "lambda_interests" {
-  source                = "../../modules/lambda_function"
-  function_name         = "${local.prefix}-interests"
-  handler               = "index.main"
-  memory_size           = 256
-  timeout               = 30
-  filename              = "${local.lambda_packages_dir}/interests.zip"
-  source_code_hash      = filebase64sha256("${local.lambda_packages_dir}/interests.zip")
+  source           = "../../modules/lambda_function"
+  function_name    = "${local.prefix}-interests"
+  handler          = "index.main"
+  memory_size      = 256
+  timeout          = 30
+  s3_bucket        = "thamizhakal-matrimony-state"
+  s3_key           = "lambda-packages/interests.zip"
+  source_code_hash = filebase64sha256("${local.lambda_packages_dir}/interests.zip")
+
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
   attach_policy         = true
@@ -255,13 +266,15 @@ module "lambda_interests" {
 }
 
 module "lambda_chat" {
-  source                = "../../modules/lambda_function"
-  function_name         = "${local.prefix}-chat"
-  handler               = "index.main"
-  memory_size           = 256
-  timeout               = 30
-  filename              = "${local.lambda_packages_dir}/chat.zip"
-  source_code_hash      = filebase64sha256("${local.lambda_packages_dir}/chat.zip")
+  source           = "../../modules/lambda_function"
+  function_name    = "${local.prefix}-chat"
+  handler          = "index.main"
+  memory_size      = 256
+  timeout          = 30
+  s3_bucket        = "thamizhakal-matrimony-state"
+  s3_key           = "lambda-packages/chat.zip"
+  source_code_hash = filebase64sha256("${local.lambda_packages_dir}/chat.zip")
+
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
   attach_policy         = true
@@ -269,13 +282,15 @@ module "lambda_chat" {
 }
 
 module "lambda_subscriptions" {
-  source                = "../../modules/lambda_function"
-  function_name         = "${local.prefix}-subscriptions"
-  handler               = "index.main"
-  memory_size           = 256
-  timeout               = 30
-  filename              = "${local.lambda_packages_dir}/subscriptions.zip"
-  source_code_hash      = filebase64sha256("${local.lambda_packages_dir}/subscriptions.zip")
+  source           = "../../modules/lambda_function"
+  function_name    = "${local.prefix}-subscriptions"
+  handler          = "index.main"
+  memory_size      = 256
+  timeout          = 30
+  s3_bucket        = "thamizhakal-matrimony-state"
+  s3_key           = "lambda-packages/subscriptions.zip"
+  source_code_hash = filebase64sha256("${local.lambda_packages_dir}/subscriptions.zip")
+
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
   attach_policy         = true
@@ -283,13 +298,15 @@ module "lambda_subscriptions" {
 }
 
 module "lambda_safety" {
-  source                = "../../modules/lambda_function"
-  function_name         = "${local.prefix}-safety"
-  handler               = "index.main"
-  memory_size           = 256
-  timeout               = 30
-  filename              = "${local.lambda_packages_dir}/safety.zip"
-  source_code_hash      = filebase64sha256("${local.lambda_packages_dir}/safety.zip")
+  source           = "../../modules/lambda_function"
+  function_name    = "${local.prefix}-safety"
+  handler          = "index.main"
+  memory_size      = 256
+  timeout          = 30
+  s3_bucket        = "thamizhakal-matrimony-state"
+  s3_key           = "lambda-packages/safety.zip"
+  source_code_hash = filebase64sha256("${local.lambda_packages_dir}/safety.zip")
+
   environment_variables = local.lambda_env
   policy_json           = data.aws_iam_policy_document.lambda_service.json
   attach_policy         = true
@@ -863,34 +880,80 @@ module "cloudfront_media" {
 }
 
 # ──────────────────────────────────────────────
-# CloudWatch Alarms
+# Route 53 — DNS for Hostinger-purchased domain
+# After first apply, copy the name_servers output into
+# Hostinger's DNS panel (Domain → DNS/Nameservers → Custom).
 # ──────────────────────────────────────────────
 
-module "alarms" {
-  source      = "../../modules/cloudwatch_alarms"
-  environment = var.environment
-  alarm_email = var.alarm_email
-
-  api_gateway_id = module.api_gateway.api_id
-
-  lambda_function_names = [
-    module.lambda_health.function_name,
-    module.lambda_auth.function_name,
-    module.lambda_profile.function_name,
-    module.lambda_uploads.function_name,
-    module.lambda_discovery.function_name,
-    module.lambda_interests.function_name,
-    module.lambda_chat.function_name,
-    module.lambda_subscriptions.function_name,
-    module.lambda_safety.function_name,
-  ]
-
-  dynamodb_table_names = [
-    module.dynamodb_core.table_name,
-    module.dynamodb_messages.table_name,
-    module.dynamodb_discovery.table_name,
-    module.dynamodb_events.table_name,
-  ]
-
+resource "aws_route53_zone" "main" {
+  name = var.domain_name
   tags = local.common_tags
 }
+
+# Apex domain → frontend CloudFront
+resource "aws_route53_record" "root_a" {
+  zone_id = aws_route53_zone.main.zone_id
+  name    = var.domain_name
+  type    = "A"
+
+  alias {
+    name                   = module.cloudfront_frontend.distribution_domain_name
+    zone_id                = "Z2FDTNDATAQYW2" # CloudFront's global hosted zone
+    evaluate_target_health = false
+  }
+}
+
+# www → frontend CloudFront
+resource "aws_route53_record" "www_a" {
+  zone_id = aws_route53_zone.main.zone_id
+  name    = "www.${var.domain_name}"
+  type    = "A"
+
+  alias {
+    name                   = module.cloudfront_frontend.distribution_domain_name
+    zone_id                = "Z2FDTNDATAQYW2"
+    evaluate_target_health = false
+  }
+}
+
+# media.domain → media CloudFront (user photos)
+resource "aws_route53_record" "media_a" {
+  zone_id = aws_route53_zone.main.zone_id
+  name    = "media.${var.domain_name}"
+  type    = "A"
+
+  alias {
+    name                   = module.cloudfront_media.distribution_domain_name
+    zone_id                = "Z2FDTNDATAQYW2"
+    evaluate_target_health = false
+  }
+}
+
+# SES DKIM — verifies the domain for sending email (OTP, notifications)
+resource "aws_route53_record" "ses_dkim" {
+  count   = 3
+  zone_id = aws_route53_zone.main.zone_id
+  name    = "${module.ses.dkim_tokens[count.index]}._domainkey.${var.domain_name}"
+  type    = "CNAME"
+  ttl     = 300
+  records = ["${module.ses.dkim_tokens[count.index]}.dkim.amazonses.com"]
+}
+
+# SPF — tells receiving servers Amazon SES is authorised to send on our behalf
+resource "aws_route53_record" "spf" {
+  zone_id = aws_route53_zone.main.zone_id
+  name    = var.domain_name
+  type    = "TXT"
+  ttl     = 300
+  records = ["v=spf1 include:amazonses.com ~all"]
+}
+
+# DMARC — email authentication policy; reduces spoofing
+resource "aws_route53_record" "dmarc" {
+  zone_id = aws_route53_zone.main.zone_id
+  name    = "_dmarc.${var.domain_name}"
+  type    = "TXT"
+  ttl     = 300
+  records = ["v=DMARC1; p=quarantine; rua=mailto:dmarc@${var.domain_name}"]
+}
+
