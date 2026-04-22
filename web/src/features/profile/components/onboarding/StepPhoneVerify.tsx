@@ -41,7 +41,13 @@ export function StepPhoneVerify({ data, onChange, errors }: StepProps) {
   const existingPhone = user?.phone;
   const hasPhoneFromLogin = !!existingPhone;
 
-  const [step, setStep] = useState<PhoneStep>(hasPhoneFromLogin ? 'verified' : 'enter');
+  // If phone already in draft, user previously verified (draft is only updated on success).
+  // Persist the 'verified' state across navigation so they don't re-verify unnecessarily.
+  const [step, setStep] = useState<PhoneStep>(() => {
+    if (hasPhoneFromLogin) return 'verified';
+    if (data.phoneNumber) return 'verified';
+    return 'enter';
+  });
   const [countryCode, setCountryCode] = useState(() => {
     if (data.phoneNumber) {
       const match = countryCodes.find((cc) => data.phoneNumber?.startsWith(cc.code));
@@ -190,6 +196,18 @@ export function StepPhoneVerify({ data, onChange, errors }: StepProps) {
           <Badge variant="success" className="mt-2 text-[10px]">Verified via SMS</Badge>
         </div>
         <p className="text-xs text-center text-muted-foreground">Click Continue to proceed to the next step.</p>
+
+        <button
+          onClick={() => {
+            onChange({ phoneNumber: undefined });
+            setStep('enter');
+            setError('');
+            setOtp(Array(6).fill(''));
+          }}
+          className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 w-full text-center"
+        >
+          Change phone number
+        </button>
       </div>
     );
   }

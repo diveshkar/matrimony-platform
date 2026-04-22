@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Loader2, Check } from 'lucide-react';
@@ -31,11 +31,15 @@ const STEPS = [
   { title: 'About You', subtitle: 'In your own words' },
 ];
 
-const DRAFT_KEY = 'matrimony_onboarding_draft';
-
 export default function OnboardingPage() {
   const { user } = useAuth();
-  const [currentStep, setCurrentStep] = useState(0);
+  // Per-user namespaced keys — isolates state on shared devices.
+  // user.id is guaranteed by ProtectedRoute (which waits for auth to resolve).
+  const userId = user?.id || 'guest';
+  const DRAFT_KEY = `matrimony_onboarding_draft_${userId}`;
+  const STEP_KEY = `matrimony_onboarding_step_${userId}`;
+
+  const [currentStep, setCurrentStep] = useLocalStorage<number>(STEP_KEY, 0);
   const [draft, setDraft] = useLocalStorage<Partial<ProfileData>>(DRAFT_KEY, {});
   const [stepErrors, setStepErrors] = useState<Record<string, string>>({});
   const createProfile = useCreateProfile();
@@ -152,10 +156,20 @@ export default function OnboardingPage() {
     try {
       await createProfile.mutateAsync(profileData);
       localStorage.removeItem(DRAFT_KEY);
+      localStorage.removeItem(STEP_KEY);
     } catch {}
   }, [draft, validateStep, createProfile]);
 
   const isLastStep = currentStep === STEPS.length - 1;
+
+  // Safety net: clear this user's onboarding state if they somehow land here
+  // after completing onboarding (shouldn't happen — redirect fires below).
+  useEffect(() => {
+    if (user?.onboardingComplete) {
+      localStorage.removeItem(DRAFT_KEY);
+      localStorage.removeItem(STEP_KEY);
+    }
+  }, [user?.onboardingComplete, DRAFT_KEY, STEP_KEY]);
 
   if (user?.onboardingComplete) {
     return <Navigate to={ROUTES.DASHBOARD} replace />;
@@ -241,15 +255,18 @@ export default function OnboardingPage() {
 
         {/* Navigation */}
         <div className="flex items-center justify-between mt-8 pt-5 border-t">
-          <Button
-            variant="outline"
-            onClick={handleBack}
-            disabled={currentStep === 0}
-            className="gap-2 rounded-xl"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Button>
+          {currentStep > 0 ? (
+            <Button
+              variant="outline"
+              onClick={handleBack}
+              className="gap-2 rounded-xl"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
+          ) : (
+            <div />
+          )}
 
           {isLastStep ? (
             <Button

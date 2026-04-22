@@ -28,7 +28,7 @@ import { MobileNav } from './MobileNav';
 const publicNavLinks = [
   { label: 'About', href: ROUTES.ABOUT },
   { label: 'Safety', href: ROUTES.SAFETY },
-  { label: 'Plans', href: ROUTES.PLANS },
+  { label: 'Plans', href: '/#plans' },
   { label: 'FAQ', href: ROUTES.FAQ },
 ];
 

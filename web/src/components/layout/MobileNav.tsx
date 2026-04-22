@@ -51,7 +51,7 @@ const settingsLinks = [
 const publicLinks = [
   { label: 'About', href: ROUTES.ABOUT, icon: HelpCircle },
   { label: 'Safety', href: ROUTES.SAFETY, icon: Shield },
-  { label: 'Plans', href: ROUTES.PLANS, icon: Crown },
+  { label: 'Plans', href: '/#plans', icon: Crown },
   { label: 'FAQ', href: ROUTES.FAQ, icon: HelpCircle },
 ];
 

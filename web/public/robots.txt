@@ -6,7 +6,6 @@ Allow: /faq
 Allow: /contact
 Allow: /terms
 Allow: /privacy
-Allow: /plans
 
 # Block authenticated/private pages
 Disallow: /login
@@ -23,6 +22,7 @@ Disallow: /chats
 Disallow: /settings
 Disallow: /notifications
 Disallow: /who-viewed-me
+Disallow: /plans
 Disallow: /payment/
 
-Sitemap: https://matrimony.com/sitemap.xml
+Sitemap: https://theworldtamilmatrimony.com/sitemap.xml

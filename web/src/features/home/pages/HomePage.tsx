@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -131,6 +131,19 @@ const plans = [
 /* ─────────────────────────────────────────── */
 
 export default function HomePage() {
+  const location = useLocation();
+
+  // Smooth-scroll to hash target when navigating to /#plans etc.
+  useEffect(() => {
+    if (!location.hash) return;
+    const id = location.hash.slice(1);
+    // Wait for section to render before scrolling
+    const timer = setTimeout(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [location.hash]);
+
   return (
     <div className="overflow-hidden">
       <HeroSection />
@@ -248,7 +261,7 @@ function HeroSection() {
                 className="border-white/20 text-white hover:bg-white/10 min-w-[200px]"
                 asChild
               >
-                <Link to={ROUTES.PLANS}>View Plans</Link>
+                <Link to="/#plans">View Plans</Link>
               </Button>
             </motion.div>
 
