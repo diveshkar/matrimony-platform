@@ -841,7 +841,7 @@ module "ses" {
 resource "aws_sns_sms_preferences" "sms" {
   monthly_spend_limit           = var.sns_sms_monthly_spend_limit
   default_sms_type              = "Transactional"
-  default_sender_id             = "Matrimony"
+  default_sender_id             = "TamilMatri"
   delivery_status_success_sampling_rate = 100
 }
 

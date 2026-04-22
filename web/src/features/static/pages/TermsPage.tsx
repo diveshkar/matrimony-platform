@@ -100,7 +100,7 @@ export default function TermsPage() {
 
             <section>
               <h2 className="font-heading text-lg font-semibold text-foreground">9. Contact</h2>
-              <p>For questions about these terms, contact us at support@matrimony.com.</p>
+              <p>For questions about these terms, contact us at support@theworldtamilmatrimony.com.</p>
             </section>
           </div>
         </AnimatedSection>

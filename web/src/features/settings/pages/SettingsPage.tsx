@@ -301,7 +301,7 @@ export default function SettingsPage() {
               className="flex-1 rounded-xl"
               onClick={() => {
                 setDeleteOpen(false);
-                toast.error('Account deletion', 'Please contact support@matrimony.com to delete your account');
+                toast.error('Account deletion', 'Please contact support@theworldtamilmatrimony.com to delete your account');
               }}
             >
               <Trash2 className="mr-2 h-4 w-4" />

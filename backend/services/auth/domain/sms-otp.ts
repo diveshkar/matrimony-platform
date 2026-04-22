@@ -21,7 +21,7 @@ export async function sendSmsOtp(phone: string, otp: string): Promise<void> {
     const result = await client.send(
       new PublishCommand({
         PhoneNumber: phone,
-        Message: `Your Matrimony verification code is ${otp}. It expires in 5 minutes.`,
+        Message: `Your verification code for The World Tamil Matrimony is ${otp}. Valid for 5 minutes.`,
         MessageAttributes: {
           'AWS.SNS.SMS.SMSType': {
             DataType: 'String',
@@ -29,7 +29,7 @@ export async function sendSmsOtp(phone: string, otp: string): Promise<void> {
           },
           'AWS.SNS.SMS.SenderID': {
             DataType: 'String',
-            StringValue: 'Matrimony',
+            StringValue: 'TamilMatri',
           },
         },
       }),

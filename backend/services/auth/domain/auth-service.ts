@@ -36,19 +36,19 @@ async function sendOtpEmail(email: string, otp: string): Promise<void> {
   }
 
   const ses = new SESClient({ region: process.env.AWS_REGION || 'ap-southeast-1' });
-  const fromEmail = process.env.SES_FROM_EMAIL || 'noreply@matrimony.com';
+  const fromEmail = process.env.SES_FROM_EMAIL || 'noreply@theworldtamilmatrimony.com';
 
   await ses.send(
     new SendEmailCommand({
       Source: fromEmail,
       Destination: { ToAddresses: [email] },
       Message: {
-        Subject: { Data: 'Your Matrimony Login Code' },
+        Subject: { Data: 'Your Login Code - The World Tamil Matrimony' },
         Body: {
           Html: {
             Data: `
               <div style="font-family: sans-serif; max-width: 400px; margin: 0 auto; padding: 20px;">
-                <h2 style="color: #8B1A4A;">Matrimony</h2>
+                <h2 style="color: #8B1A4A;">The World Tamil Matrimony</h2>
                 <p>Your verification code is:</p>
                 <div style="font-size: 32px; font-weight: bold; letter-spacing: 8px; padding: 20px; background: #f5f5f5; text-align: center; border-radius: 8px; margin: 16px 0;">
                   ${otp}
@@ -57,7 +57,7 @@ async function sendOtpEmail(email: string, otp: string): Promise<void> {
               </div>
             `,
           },
-          Text: { Data: `Your Matrimony verification code is: ${otp}. It expires in 5 minutes.` },
+          Text: { Data: `Your The World Tamil Matrimony verification code is: ${otp}. It expires in 5 minutes.` },
         },
       },
     }),

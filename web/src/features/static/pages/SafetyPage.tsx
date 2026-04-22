@@ -35,7 +35,7 @@ const tips = [
   {
     icon: Shield,
     title: 'We Are Here to Help',
-    desc: 'Our support team reviews every report. Contact us anytime at support@matrimony.com.',
+    desc: 'Our support team reviews every report. Contact us anytime at support@theworldtamilmatrimony.com.',
   },
 ];
 

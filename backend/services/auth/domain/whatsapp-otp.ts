@@ -36,7 +36,7 @@ export async function sendWhatsAppOtp(phone: string, otp: string): Promise<void>
   }
 
   const toNumber = `whatsapp:${phone}`;
-  const body = `Your Matrimony verification code is ${otp}. It expires in 5 minutes.`;
+  const body = `Your verification code for The World Tamil Matrimony is ${otp}. Valid for 5 minutes.`;
 
   const credentials = Buffer.from(`${accountSid}:${authToken}`).toString('base64');
 

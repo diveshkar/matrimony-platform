@@ -74,7 +74,7 @@ export class SubscriptionService {
           price_data: {
             currency: 'gbp',
             product_data: {
-              name: `Matrimony ${plan.name} Plan`,
+              name: `The World Tamil Matrimony ${plan.name} Plan`,
               description: `Monthly subscription to ${plan.name} plan`,
             },
             unit_amount: plan.monthlyPriceGBP,

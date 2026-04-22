@@ -300,7 +300,7 @@ function HeroSection() {
               transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
             >
               <img
-                src="/marriedcouple.png"
+                src="/marriedcouple.webp"
                 alt="Happy Tamil couple"
                 className="w-full h-auto object-cover"
                 loading="eager"
