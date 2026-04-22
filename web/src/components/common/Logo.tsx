@@ -3,6 +3,7 @@ import { Heart } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { useAuth } from '@/lib/auth/auth-context';
 import { ROUTES } from '@/lib/constants/routes';
+import { CONFIG } from '@/lib/constants/config';
 
 interface LogoProps {
   className?: string;
@@ -37,8 +38,10 @@ export function Logo({ className, size = 'md', showText = true }: LogoProps) {
         <Heart className="h-1/2 w-1/2 fill-accent-400 text-accent-400" />
       </div>
       {showText && (
-        <span className={cn('font-heading font-bold text-primary-800', textSizes[size])}>
-          Matrimony
+        <span className={cn('font-heading font-bold text-primary-800 whitespace-nowrap', textSizes[size])}>
+          {/* Full brand on desktop, short on mobile to avoid header overflow */}
+          <span className="hidden sm:inline">{CONFIG.APP_NAME}</span>
+          <span className="sm:hidden">Tamil Matrimony</span>
         </span>
       )}
     </Link>
