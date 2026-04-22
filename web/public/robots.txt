@@ -1,13 +1,6 @@
 User-agent: *
-Allow: /
-Allow: /about
-Allow: /safety
-Allow: /faq
-Allow: /contact
-Allow: /terms
-Allow: /privacy
 
-# Block authenticated/private pages
+# Block authenticated/private pages (everything else is crawlable by default)
 Disallow: /login
 Disallow: /verify-otp
 Disallow: /onboarding
