@@ -5,6 +5,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { SEO } from '@/components/common/SEO';
 
 const faqs = [
   {
@@ -48,12 +49,32 @@ const faqs = [
 export default function FAQPage() {
   return (
     <div className="py-16 sm:py-20">
+      <SEO
+        title="FAQ - Tamil Matrimony Questions Answered"
+        description="Common questions about The World Tamil Matrimony — registration, profiles, privacy, plans, payments, and finding a Tamil bride or groom. Get answers from the trusted Tamil matrimony platform."
+        keywords="Tamil matrimony FAQ, Tamil matrimony questions, Tamil matrimony help, free Tamil matrimony, Tamil matrimony plans, Tamil matrimony privacy"
+        path="/faq"
+        structuredData={{
+          '@context': 'https://schema.org',
+          '@type': 'FAQPage',
+          mainEntity: faqs.map((faq) => ({
+            '@type': 'Question',
+            name: faq.q,
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: faq.a,
+            },
+          })),
+        }}
+      />
       <div className="page-container max-w-3xl mx-auto">
         <AnimatedSection className="text-center mb-12">
           <h1 className="font-heading text-3xl sm:text-4xl font-bold text-foreground">
             Frequently Asked Questions
           </h1>
-          <p className="mt-4 text-muted-foreground">Everything you need to know about Matrimony.</p>
+          <p className="mt-4 text-muted-foreground">
+            Everything you need to know about The World Tamil Matrimony.
+          </p>
         </AnimatedSection>
 
         <AnimatedSection delay={0.2}>

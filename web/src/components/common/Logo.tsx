@@ -38,10 +38,13 @@ export function Logo({ className, size = 'md', showText = true }: LogoProps) {
         <Heart className="h-1/2 w-1/2 fill-accent-400 text-accent-400" />
       </div>
       {showText && (
-        <span className={cn('font-heading font-bold text-primary-800 whitespace-nowrap', textSizes[size])}>
-          {/* Full brand on desktop, short on mobile to avoid header overflow */}
-          <span className="hidden sm:inline">{CONFIG.APP_NAME}</span>
-          <span className="sm:hidden">Tamil Matrimony</span>
+        <span
+          className={cn(
+            'font-heading font-bold text-primary-800 whitespace-nowrap hidden sm:inline',
+            textSizes[size],
+          )}
+        >
+          {CONFIG.APP_NAME}
         </span>
       )}
     </Link>

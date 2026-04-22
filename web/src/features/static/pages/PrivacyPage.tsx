@@ -1,8 +1,14 @@
 import { AnimatedSection } from '@/components/common/AnimatedSection';
+import { SEO } from '@/components/common/SEO';
 
 export default function PrivacyPage() {
   return (
     <div className="py-16 sm:py-20">
+      <SEO
+        title="Privacy Policy"
+        description="Privacy policy for The World Tamil Matrimony. Learn how we protect Tamil singles' personal data, photos, and contact information with industry-leading privacy controls."
+        path="/privacy"
+      />
       <div className="page-container max-w-3xl mx-auto">
         <AnimatedSection>
           <h1 className="font-heading text-3xl sm:text-4xl font-bold text-foreground text-center">

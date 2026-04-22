@@ -25,6 +25,7 @@ import {
   StaggerItem,
 } from '@/components/common/AnimatedSection';
 import { AnimatedCounter } from '@/components/common/AnimatedCounter';
+import { SEO } from '@/components/common/SEO';
 import { apiClient, type ApiResponse } from '@/lib/api/client';
 import { ROUTES } from '@/lib/constants/routes';
 import { CONFIG } from '@/lib/constants/config';
@@ -146,6 +147,34 @@ export default function HomePage() {
 
   return (
     <div className="overflow-hidden">
+      <SEO
+        title="The World Tamil Matrimony - Premium Tamil Matrimony Worldwide"
+        description="Find your life partner on The World Tamil Matrimony — the trusted platform for Tamil singles in the UK, Sri Lanka, India, Canada, Australia, and worldwide. Verified profiles, smart matching, family-first values."
+        keywords="Tamil matrimony, UK Tamil matrimony, Sri Lankan Tamil matrimony, Jaffna matrimony, Vellala matrimony, Chettiar matrimony, Mudaliar matrimony, Iyer matrimony, Iyengar matrimony, Nadar matrimony, Tamil Hindu matrimony, Tamil Christian matrimony, NRI Tamil matrimony, London Tamil matrimony, Toronto Tamil matrimony, Sydney Tamil matrimony, Colombo matrimony, free Tamil matrimony, premium Tamil matrimony, Tamil bride finder, Tamil groom search, Tamil matrimony 2026"
+        path="/"
+        structuredData={{
+          '@context': 'https://schema.org',
+          '@type': 'WebSite',
+          name: 'The World Tamil Matrimony',
+          url: 'https://theworldtamilmatrimony.com',
+          description:
+            'Premium Tamil matrimony platform connecting Tamil hearts worldwide',
+          publisher: {
+            '@type': 'Organization',
+            name: 'The World Tamil Matrimony',
+            logo: {
+              '@type': 'ImageObject',
+              url: 'https://theworldtamilmatrimony.com/android-chrome-512x512.png',
+            },
+          },
+          potentialAction: {
+            '@type': 'SearchAction',
+            target:
+              'https://theworldtamilmatrimony.com/search?q={search_term_string}',
+            'query-input': 'required name=search_term_string',
+          },
+        }}
+      />
       <HeroSection />
       <StatsSection />
       <FeaturesSection />

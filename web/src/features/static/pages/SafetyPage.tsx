@@ -5,6 +5,7 @@ import {
   StaggerContainer,
   StaggerItem,
 } from '@/components/common/AnimatedSection';
+import { SEO } from '@/components/common/SEO';
 
 const tips = [
   {
@@ -42,6 +43,12 @@ const tips = [
 export default function SafetyPage() {
   return (
     <div className="py-16 sm:py-20">
+      <SEO
+        title="Safety & Trust - Tamil Matrimony"
+        description="Your safety is our priority. Learn how The World Tamil Matrimony protects Tamil singles with verified profiles, photo controls, blocking tools, and report systems for a trusted matrimony experience."
+        keywords="safe Tamil matrimony, verified Tamil matrimony profiles, Tamil matrimony safety, trusted Tamil matrimony, Tamil matrimony privacy"
+        path="/safety"
+      />
       <div className="page-container">
         <AnimatedSection className="max-w-3xl mx-auto text-center mb-16">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-emerald-50">
