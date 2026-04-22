@@ -1,8 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
-  Menu,
-  X,
   Bell,
   MessageCircle,
   Heart,
@@ -41,12 +39,6 @@ const authNavLinks = [
 export function Header() {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  // Auto-close menu on any navigation — pathname OR hash changes (e.g. /#plans)
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [location.pathname, location.hash]);
 
   const navLinks = isAuthenticated ? authNavLinks : publicNavLinks;
 
@@ -99,18 +91,9 @@ export function Header() {
         <div className="flex md:hidden items-center gap-1">
           {isAuthenticated && <ChatBadge />}
           {isAuthenticated && <NotificationBell />}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-          >
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </Button>
+          <MobileNav />
         </div>
       </div>
-
-      <MobileNav open={mobileOpen} onClose={() => setMobileOpen(false)} />
     </header>
   );
 }
