@@ -83,6 +83,12 @@ variable "twilio_whatsapp_from" {
   description = "Twilio WhatsApp sender number (sandbox or production)"
 }
 
+variable "twilio_messaging_service_sid" {
+  type        = string
+  default     = ""
+  description = "Twilio Messaging Service SID for SMS OTP (starts with MG...)"
+}
+
 variable "frontend_url" {
   type        = string
   default     = "https://stage.matrimony.com"

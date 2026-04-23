@@ -127,10 +127,11 @@ locals {
     CORS_ALLOWED_ORIGINS  = join(",", var.cors_allowed_origins)
     STRIPE_SECRET_KEY     = var.stripe_secret_key
     STRIPE_WEBHOOK_SECRET = var.stripe_webhook_secret
-    TWILIO_ACCOUNT_SID    = var.twilio_account_sid
-    TWILIO_AUTH_TOKEN     = var.twilio_auth_token
-    TWILIO_WHATSAPP_FROM  = var.twilio_whatsapp_from
-    FRONTEND_URL          = var.frontend_url
+    TWILIO_ACCOUNT_SID            = var.twilio_account_sid
+    TWILIO_AUTH_TOKEN             = var.twilio_auth_token
+    TWILIO_WHATSAPP_FROM          = var.twilio_whatsapp_from
+    TWILIO_MESSAGING_SERVICE_SID  = var.twilio_messaging_service_sid
+    FRONTEND_URL                  = var.frontend_url
   }
 
   dynamodb_arns = [
@@ -162,10 +163,11 @@ data "aws_iam_policy_document" "lambda_service" {
   #   actions   = ["ses:SendEmail", "ses:SendRawEmail"]
   #   resources = ["*"]
   # }
-  statement {
-    actions   = ["sns:Publish"]
-    resources = ["*"]
-  }
+  # SNS disabled — using Twilio instead (SNS production access was rejected)
+  # statement {
+  #   actions   = ["sns:Publish"]
+  #   resources = ["*"]
+  # }
 }
 
 # ──────────────────────────────────────────────
@@ -841,15 +843,17 @@ module "route_my_story_delete" {
 # }
 
 # ──────────────────────────────────────────────
-# SNS SMS (Phone Verification OTP)
+# SNS SMS — DISABLED
+# AWS SNS production access was rejected. Using Twilio Messaging Service instead.
+# To re-enable: uncomment this block + sns:Publish IAM statement above.
 # ──────────────────────────────────────────────
 
-resource "aws_sns_sms_preferences" "sms" {
-  monthly_spend_limit           = var.sns_sms_monthly_spend_limit
-  default_sms_type              = "Transactional"
-  default_sender_id             = "TamilMatri"
-  delivery_status_success_sampling_rate = 100
-}
+# resource "aws_sns_sms_preferences" "sms" {
+#   monthly_spend_limit           = var.sns_sms_monthly_spend_limit
+#   default_sms_type              = "Transactional"
+#   default_sender_id             = "TamilMatri"
+#   delivery_status_success_sampling_rate = 100
+# }
 
 # ──────────────────────────────────────────────
 # CloudFront (Frontend CDN)

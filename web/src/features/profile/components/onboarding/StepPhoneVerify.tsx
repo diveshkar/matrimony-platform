@@ -22,6 +22,14 @@ const countryCodes = [
   { code: '+971', country: 'UAE', flag: '🇦🇪' },
   { code: '+49', country: 'DE', flag: '🇩🇪' },
   { code: '+33', country: 'FR', flag: '🇫🇷' },
+  { code: '+39', country: 'IT', flag: '🇮🇹' },
+  { code: '+41', country: 'CH', flag: '🇨🇭' },
+  { code: '+31', country: 'NL', flag: '🇳🇱' },
+  { code: '+47', country: 'NO', flag: '🇳🇴' },
+  { code: '+46', country: 'SE', flag: '🇸🇪' },
+  { code: '+45', country: 'DK', flag: '🇩🇰' },
+  { code: '+974', country: 'QA', flag: '🇶🇦' },
+  { code: '+966', country: 'SA', flag: '🇸🇦' },
   { code: '+65', country: 'SG', flag: '🇸🇬' },
   { code: '+60', country: 'MY', flag: '🇲🇾' },
   { code: '+64', country: 'NZ', flag: '🇳🇿' },
@@ -30,7 +38,10 @@ const countryCodes = [
 const countryToCode: Record<string, string> = {
   'United Kingdom': '+44', 'Sri Lanka': '+94', 'India': '+91',
   'United States': '+1', 'Canada': '+1', 'Australia': '+61',
-  'UAE': '+971', 'Germany': '+49', 'France': '+33',
+  'United Arab Emirates': '+971', 'Germany': '+49', 'France': '+33',
+  'Italy': '+39', 'Switzerland': '+41', 'Netherlands': '+31',
+  'Norway': '+47', 'Sweden': '+46', 'Denmark': '+45',
+  'Qatar': '+974', 'Saudi Arabia': '+966',
   'Singapore': '+65', 'Malaysia': '+60', 'New Zealand': '+64',
 };
 

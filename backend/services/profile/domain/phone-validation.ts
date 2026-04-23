@@ -46,33 +46,20 @@ export async function validatePhoneNumber(phone: string): Promise<PhoneValidatio
   const formattedPhone = parsed.format('E.164');
   const country = parsed.country;
 
-  // Layer 1 passed — return result
-  // Layer 2 (Twilio Lookup VOIP detection) is disabled for now
-  // Enable when platform grows past 1,000 users by uncommenting below
-
   logger.info('Phone validated via libphonenumber', {
     phone: formattedPhone,
     country,
     type: numberType,
   });
 
-  return {
-    valid: true,
-    phone: formattedPhone,
-    country,
-    carrierType: 'mobile',
-  };
-
-  /*
   // ── Layer 2: Twilio Lookup (VOIP detection) ─────────────
-  // Uncomment this block when ready to enable VOIP detection
-  // Requires: TWILIO_ACCOUNT_SID + TWILIO_AUTH_TOKEN in env
-  // Cost: $0.005 per lookup
+  // Costs $0.005 per lookup. Skipped in dev; skipped if credentials missing.
 
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
+  const isDev = process.env.ENVIRONMENT === 'dev' || !process.env.ENVIRONMENT;
 
-  if (!accountSid || !authToken) {
+  if (isDev || !accountSid || !authToken) {
     return { valid: true, phone: formattedPhone, country, carrierType: 'mobile' };
   }
 
@@ -81,16 +68,17 @@ export async function validatePhoneNumber(phone: string): Promise<PhoneValidatio
 
   const response = await fetch(twilioUrl, {
     method: 'GET',
-    headers: { 'Authorization': `Basic ${credentials}` },
+    headers: { Authorization: `Basic ${credentials}` },
   });
 
   if (!response.ok) {
     const errorBody = await response.text();
     logger.error('Twilio Lookup failed', { phone: formattedPhone, status: response.status, error: errorBody });
+    // Don't block signup if Twilio is down — Layer 1 already passed
     return { valid: true, phone: formattedPhone, country, carrierType: 'mobile' };
   }
 
-  const data = await response.json() as {
+  const data = (await response.json()) as {
     valid: boolean;
     line_type_intelligence?: { type?: string; carrier_name?: string };
   };
@@ -102,13 +90,19 @@ export async function validatePhoneNumber(phone: string): Promise<PhoneValidatio
   const lineType = data.line_type_intelligence?.type?.toLowerCase();
   const carrierName = data.line_type_intelligence?.carrier_name;
 
-  if (lineType === 'voip' || lineType === 'nonFixedVoip' || lineType === 'non_fixed_voip') {
+  if (lineType === 'voip' || lineType === 'nonfixedvoip' || lineType === 'non_fixed_voip') {
     throw new ValidationError('Virtual/VOIP phone numbers are not allowed. Please use a real mobile number.');
   }
 
-  if (lineType === 'landline' || lineType === 'fixedLine' || lineType === 'fixed_line') {
+  if (lineType === 'landline' || lineType === 'fixedline' || lineType === 'fixed_line') {
     throw new ValidationError('Please use a mobile phone number, not a landline.');
   }
+
+  logger.info('Phone validated via Twilio Lookup', {
+    phone: formattedPhone,
+    lineType,
+    carrier: carrierName,
+  });
 
   return {
     valid: true,
@@ -117,5 +111,4 @@ export async function validatePhoneNumber(phone: string): Promise<PhoneValidatio
     carrierType: lineType || 'mobile',
     carrier: carrierName,
   };
-  */
 }
