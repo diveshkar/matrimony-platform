@@ -89,7 +89,14 @@ variable "resend_api_key" {
   type        = string
   default     = ""
   sensitive   = true
-  description = "Resend.com API key for sending OTP emails"
+  description = "Resend.com API key — fallback email provider (100/day free)"
+}
+
+variable "brevo_api_key" {
+  type        = string
+  default     = ""
+  sensitive   = true
+  description = "Brevo (Sendinblue) API key — primary email provider (300/day free)"
 }
 
 variable "frontend_url" {

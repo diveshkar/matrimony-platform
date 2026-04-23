@@ -119,9 +119,10 @@ locals {
   lambda_env = {
     ENVIRONMENT           = var.environment
     JWT_SECRET            = var.jwt_secret
-    # SES_FROM_EMAIL    = var.ses_from_email  # SES disabled — using Resend instead. Kept variable for future re-enable.
-    EMAIL_FROM            = var.ses_from_email  # Reused as sender address for Resend
-    RESEND_API_KEY        = var.resend_api_key
+    # SES_FROM_EMAIL    = var.ses_from_email  # SES disabled — using Brevo + Resend instead
+    EMAIL_FROM            = var.ses_from_email  # Sender address (used by both Brevo and Resend)
+    BREVO_API_KEY         = var.brevo_api_key   # Primary email provider (300/day free tier)
+    RESEND_API_KEY        = var.resend_api_key  # Fallback when Brevo daily limit hit (100/day free)
     S3_MEDIA_BUCKET       = module.s3_media.bucket_id
     MEDIA_CDN_URL         = "https://media.${var.domain_name}"
     CORS_ALLOWED_ORIGINS  = join(",", var.cors_allowed_origins)

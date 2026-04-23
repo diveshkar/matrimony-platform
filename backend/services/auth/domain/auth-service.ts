@@ -1,9 +1,9 @@
 import jwt from 'jsonwebtoken';
-// SES disabled — using Resend instead until AWS SES production access is approved.
-// Keep the import commented to re-enable quickly later:
-// import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
+// SES disabled — using Brevo (primary) + Resend (fallback) via email-service.
+// SES can be re-enabled later if AWS approves production access.
 import { AuthRepository } from '../repositories/auth-repository.js';
 import { sendWhatsAppOtp } from './whatsapp-otp.js';
+import { sendEmail } from '../../shared/utils/email-service.js';
 import {
   ValidationError,
   UnauthorizedError,
@@ -29,11 +29,9 @@ function verifyToken(token: string): Record<string, unknown> {
 }
 
 // ──────────────────────────────────────────────────────────────────
-// Email OTP via Resend (https://resend.com)
-// Using Resend instead of AWS SES — SES production access was rejected.
-// Resend free tier: 3,000 emails/month, 100/day — plenty for early growth.
-// To switch back to SES later: uncomment the SES imports above and
-// restore the SES-based sendOtpEmail implementation from git history.
+// Email OTP — delegated to dual-provider email-service
+// Brevo (primary, 300/day free) → Resend (fallback, 100/day free)
+// 12,000 free emails/month combined.
 // ──────────────────────────────────────────────────────────────────
 async function sendOtpEmail(email: string, otp: string): Promise<void> {
   const forceReal = process.env.FORCE_REAL_OTP === 'true';
@@ -44,41 +42,21 @@ async function sendOtpEmail(email: string, otp: string): Promise<void> {
     return;
   }
 
-  const resendApiKey = process.env.RESEND_API_KEY;
-  if (!resendApiKey) {
-    throw new Error('RESEND_API_KEY environment variable is required');
-  }
-  const fromEmail = process.env.EMAIL_FROM || 'noreply@theworldtamilmatrimony.com';
-
-  const response = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${resendApiKey}`,
-    },
-    body: JSON.stringify({
-      from: `The World Tamil Matrimony <${fromEmail}>`,
-      to: email,
-      subject: 'Your Login Code - The World Tamil Matrimony',
-      html: `
-        <div style="font-family: sans-serif; max-width: 400px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #8B1A4A;">The World Tamil Matrimony</h2>
-          <p>Your verification code is:</p>
-          <div style="font-size: 32px; font-weight: bold; letter-spacing: 8px; padding: 20px; background: #f5f5f5; text-align: center; border-radius: 8px; margin: 16px 0;">
-            ${otp}
-          </div>
-          <p style="color: #666; font-size: 14px;">This code expires in 5 minutes. Do not share it with anyone.</p>
+  await sendEmail({
+    to: email,
+    subject: 'Your Login Code - The World Tamil Matrimony',
+    html: `
+      <div style="font-family: sans-serif; max-width: 400px; margin: 0 auto; padding: 20px;">
+        <h2 style="color: #8B1A4A;">The World Tamil Matrimony</h2>
+        <p>Your verification code is:</p>
+        <div style="font-size: 32px; font-weight: bold; letter-spacing: 8px; padding: 20px; background: #f5f5f5; text-align: center; border-radius: 8px; margin: 16px 0;">
+          ${otp}
         </div>
-      `,
-      text: `Your The World Tamil Matrimony verification code is: ${otp}. It expires in 5 minutes.`,
-    }),
+        <p style="color: #666; font-size: 14px;">This code expires in 5 minutes. Do not share it with anyone.</p>
+      </div>
+    `,
+    text: `Your The World Tamil Matrimony verification code is: ${otp}. It expires in 5 minutes.`,
   });
-
-  if (!response.ok) {
-    const errorBody = await response.text();
-    logger.error('Resend email failed', { status: response.status, body: errorBody });
-    throw new Error(`Failed to send OTP email: ${response.status}`);
-  }
 }
 
 export class AuthService {
