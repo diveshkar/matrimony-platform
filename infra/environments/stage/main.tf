@@ -115,7 +115,9 @@ locals {
   lambda_env = {
     ENVIRONMENT           = var.environment
     JWT_SECRET            = var.jwt_secret
-    SES_FROM_EMAIL        = var.ses_from_email
+    # SES_FROM_EMAIL    = var.ses_from_email  # SES disabled — using Resend instead
+    EMAIL_FROM            = var.ses_from_email  # Reused as sender address for Resend
+    RESEND_API_KEY        = var.resend_api_key
     S3_MEDIA_BUCKET       = module.s3_media.bucket_id
     MEDIA_CDN_URL         = "https://${module.cloudfront_media.distribution_domain_name}"
     CORS_ALLOWED_ORIGINS  = join(",", var.cors_allowed_origins)
@@ -161,10 +163,11 @@ data "aws_iam_policy_document" "lambda_service" {
     resources = ["${module.s3_media.bucket_arn}/*"]
   }
 
-  statement {
-    actions   = ["ses:SendEmail", "ses:SendRawEmail"]
-    resources = ["*"]
-  }
+  # SES disabled — using Resend instead
+  # statement {
+  #   actions   = ["ses:SendEmail", "ses:SendRawEmail"]
+  #   resources = ["*"]
+  # }
 
   statement {
     actions   = ["sns:Publish"]
@@ -846,16 +849,17 @@ module "route_my_story_delete" {
 }
 
 # ──────────────────────────────────────────────
-# SES (Email OTP)
+# SES (Email OTP) — DISABLED
+# Using Resend.com instead. Uncomment to re-enable.
 # ──────────────────────────────────────────────
 
-module "ses" {
-  source      = "../../modules/ses_config"
-  domain      = var.domain_name
-  from_email  = "noreply@${var.domain_name}"
-  environment = var.environment
-  tags        = local.common_tags
-}
+# module "ses" {
+#   source      = "../../modules/ses_config"
+#   domain      = var.domain_name
+#   from_email  = "noreply@${var.domain_name}"
+#   environment = var.environment
+#   tags        = local.common_tags
+# }
 
 # ──────────────────────────────────────────────
 # SNS SMS (Phone Verification OTP)

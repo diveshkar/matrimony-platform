@@ -52,8 +52,16 @@ variable "stripe_webhook_secret" {
 }
 
 variable "ses_from_email" {
-  type    = string
-  default = ""
+  type        = string
+  default     = ""
+  description = "Sender email address (used by Resend currently; will revert to SES if re-enabled)"
+}
+
+variable "resend_api_key" {
+  type        = string
+  default     = ""
+  sensitive   = true
+  description = "Resend.com API key for sending OTP emails"
 }
 
 variable "twilio_account_sid" {

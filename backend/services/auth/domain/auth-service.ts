@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken';
-import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
+// SES disabled — using Resend instead until AWS SES production access is approved.
+// Keep the import commented to re-enable quickly later:
+// import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 import { AuthRepository } from '../repositories/auth-repository.js';
 import { sendWhatsAppOtp } from './whatsapp-otp.js';
 import {
@@ -26,6 +28,13 @@ function verifyToken(token: string): Record<string, unknown> {
   return jwt.verify(token, JWT_SECRET, { issuer: JWT_ISSUER }) as Record<string, unknown>;
 }
 
+// ──────────────────────────────────────────────────────────────────
+// Email OTP via Resend (https://resend.com)
+// Using Resend instead of AWS SES — SES production access was rejected.
+// Resend free tier: 3,000 emails/month, 100/day — plenty for early growth.
+// To switch back to SES later: uncomment the SES imports above and
+// restore the SES-based sendOtpEmail implementation from git history.
+// ──────────────────────────────────────────────────────────────────
 async function sendOtpEmail(email: string, otp: string): Promise<void> {
   const forceReal = process.env.FORCE_REAL_OTP === 'true';
   if (isDev && !forceReal) {
@@ -35,33 +44,41 @@ async function sendOtpEmail(email: string, otp: string): Promise<void> {
     return;
   }
 
-  const ses = new SESClient({ region: process.env.AWS_REGION || 'ap-southeast-1' });
-  const fromEmail = process.env.SES_FROM_EMAIL || 'noreply@theworldtamilmatrimony.com';
+  const resendApiKey = process.env.RESEND_API_KEY;
+  if (!resendApiKey) {
+    throw new Error('RESEND_API_KEY environment variable is required');
+  }
+  const fromEmail = process.env.EMAIL_FROM || 'noreply@theworldtamilmatrimony.com';
 
-  await ses.send(
-    new SendEmailCommand({
-      Source: fromEmail,
-      Destination: { ToAddresses: [email] },
-      Message: {
-        Subject: { Data: 'Your Login Code - The World Tamil Matrimony' },
-        Body: {
-          Html: {
-            Data: `
-              <div style="font-family: sans-serif; max-width: 400px; margin: 0 auto; padding: 20px;">
-                <h2 style="color: #8B1A4A;">The World Tamil Matrimony</h2>
-                <p>Your verification code is:</p>
-                <div style="font-size: 32px; font-weight: bold; letter-spacing: 8px; padding: 20px; background: #f5f5f5; text-align: center; border-radius: 8px; margin: 16px 0;">
-                  ${otp}
-                </div>
-                <p style="color: #666; font-size: 14px;">This code expires in 5 minutes. Do not share it with anyone.</p>
-              </div>
-            `,
-          },
-          Text: { Data: `Your The World Tamil Matrimony verification code is: ${otp}. It expires in 5 minutes.` },
-        },
-      },
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${resendApiKey}`,
+    },
+    body: JSON.stringify({
+      from: `The World Tamil Matrimony <${fromEmail}>`,
+      to: email,
+      subject: 'Your Login Code - The World Tamil Matrimony',
+      html: `
+        <div style="font-family: sans-serif; max-width: 400px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #8B1A4A;">The World Tamil Matrimony</h2>
+          <p>Your verification code is:</p>
+          <div style="font-size: 32px; font-weight: bold; letter-spacing: 8px; padding: 20px; background: #f5f5f5; text-align: center; border-radius: 8px; margin: 16px 0;">
+            ${otp}
+          </div>
+          <p style="color: #666; font-size: 14px;">This code expires in 5 minutes. Do not share it with anyone.</p>
+        </div>
+      `,
+      text: `Your The World Tamil Matrimony verification code is: ${otp}. It expires in 5 minutes.`,
     }),
-  );
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    logger.error('Resend email failed', { status: response.status, body: errorBody });
+    throw new Error(`Failed to send OTP email: ${response.status}`);
+  }
 }
 
 export class AuthService {

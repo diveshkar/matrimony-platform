@@ -119,7 +119,9 @@ locals {
   lambda_env = {
     ENVIRONMENT           = var.environment
     JWT_SECRET            = var.jwt_secret
-    SES_FROM_EMAIL        = var.ses_from_email
+    # SES_FROM_EMAIL    = var.ses_from_email  # SES disabled — using Resend instead. Kept variable for future re-enable.
+    EMAIL_FROM            = var.ses_from_email  # Reused as sender address for Resend
+    RESEND_API_KEY        = var.resend_api_key
     S3_MEDIA_BUCKET       = module.s3_media.bucket_id
     MEDIA_CDN_URL         = "https://media.${var.domain_name}"
     CORS_ALLOWED_ORIGINS  = join(",", var.cors_allowed_origins)
@@ -155,10 +157,11 @@ data "aws_iam_policy_document" "lambda_service" {
     actions   = ["s3:PutObject", "s3:GetObject", "s3:DeleteObject"]
     resources = ["${module.s3_media.bucket_arn}/*"]
   }
-  statement {
-    actions   = ["ses:SendEmail", "ses:SendRawEmail"]
-    resources = ["*"]
-  }
+  # SES disabled — using Resend instead. Uncomment to re-enable if AWS SES is approved later.
+  # statement {
+  #   actions   = ["ses:SendEmail", "ses:SendRawEmail"]
+  #   resources = ["*"]
+  # }
   statement {
     actions   = ["sns:Publish"]
     resources = ["*"]
@@ -823,16 +826,19 @@ module "route_my_story_delete" {
 }
 
 # ──────────────────────────────────────────────
-# SES (Email OTP)
+# SES (Email OTP) — DISABLED
+# AWS SES production access was rejected. Using Resend.com instead.
+# To re-enable: uncomment this block, uncomment SES DKIM records below,
+# uncomment ses:SendEmail IAM statement above, and restore SES_FROM_EMAIL env var.
 # ──────────────────────────────────────────────
 
-module "ses" {
-  source      = "../../modules/ses_config"
-  domain      = var.domain_name
-  from_email  = "noreply@${var.domain_name}"
-  environment = var.environment
-  tags        = local.common_tags
-}
+# module "ses" {
+#   source      = "../../modules/ses_config"
+#   domain      = var.domain_name
+#   from_email  = "noreply@${var.domain_name}"
+#   environment = var.environment
+#   tags        = local.common_tags
+# }
 
 # ──────────────────────────────────────────────
 # SNS SMS (Phone Verification OTP)
@@ -929,24 +935,25 @@ resource "aws_route53_record" "media_a" {
   }
 }
 
-# SES DKIM — verifies the domain for sending email (OTP, notifications)
-resource "aws_route53_record" "ses_dkim" {
-  count   = 3
-  zone_id = aws_route53_zone.main.zone_id
-  name    = "${module.ses.dkim_tokens[count.index]}._domainkey.${var.domain_name}"
-  type    = "CNAME"
-  ttl     = 300
-  records = ["${module.ses.dkim_tokens[count.index]}.dkim.amazonses.com"]
-}
+# SES DKIM — DISABLED (using Resend instead). Uncomment when SES is re-enabled.
+# resource "aws_route53_record" "ses_dkim" {
+#   count   = 3
+#   zone_id = aws_route53_zone.main.zone_id
+#   name    = "${module.ses.dkim_tokens[count.index]}._domainkey.${var.domain_name}"
+#   type    = "CNAME"
+#   ttl     = 300
+#   records = ["${module.ses.dkim_tokens[count.index]}.dkim.amazonses.com"]
+# }
 
-# SPF — tells receiving servers Amazon SES is authorised to send on our behalf
-resource "aws_route53_record" "spf" {
-  zone_id = aws_route53_zone.main.zone_id
-  name    = var.domain_name
-  type    = "TXT"
-  ttl     = 300
-  records = ["v=spf1 include:amazonses.com ~all"]
-}
+# SPF — DISABLED. Add Resend's DKIM + return-path CNAMEs manually via Resend dashboard
+# (they give you the exact records to add). Don't add a TXT SPF here — Resend uses its own.
+# resource "aws_route53_record" "spf" {
+#   zone_id = aws_route53_zone.main.zone_id
+#   name    = var.domain_name
+#   type    = "TXT"
+#   ttl     = 300
+#   records = ["v=spf1 include:amazonses.com ~all"]
+# }
 
 # DMARC — email authentication policy; reduces spoofing
 resource "aws_route53_record" "dmarc" {
