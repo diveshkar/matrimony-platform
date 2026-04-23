@@ -89,6 +89,12 @@ variable "twilio_messaging_service_sid" {
   description = "Twilio Messaging Service SID for SMS OTP (starts with MG...)"
 }
 
+variable "twilio_verify_service_sid" {
+  type        = string
+  default     = ""
+  description = "Twilio Verify Service SID for phone verification (starts with VA...)"
+}
+
 variable "frontend_url" {
   type        = string
   default     = "https://stage.matrimony.com"
