@@ -35,8 +35,12 @@ function verifyToken(token: string): Record<string, unknown> {
 // ──────────────────────────────────────────────────────────────────
 async function sendOtpEmail(email: string, otp: string): Promise<void> {
   const forceReal = process.env.FORCE_REAL_OTP === 'true';
-  if (isDev && !forceReal) {
-    logger.info('Email OTP (dev mode — check terminal)', { email });
+  // Strictly require ENVIRONMENT === 'dev' (not just "unset") before
+  // printing the OTP to the terminal. Prevents accidental OTP leakage
+  // into CloudWatch logs if a stage/prod Lambda is ever deployed without
+  // ENVIRONMENT set.
+  if (process.env.ENVIRONMENT === 'dev' && !forceReal) {
+    logger.info('Email OTP (dev mode — see stdout for code)', { email });
     // eslint-disable-next-line no-console
     console.log(`\n  [DEV] Email OTP for ${email}: ${otp}\n`);
     return;
@@ -152,7 +156,13 @@ export class AuthService {
       throw new ValidationError('Invalid OTP. Please try again.');
     }
 
-    await this.repo.deleteOtp(identifier);
+    // Atomic consume: only succeeds if the OTP record still has the value
+    // we just verified. Prevents the same OTP being used twice in parallel
+    // requests (race window between match-check and delete).
+    const consumed = await this.repo.consumeOtp(identifier, otp);
+    if (!consumed) {
+      throw new ValidationError('OTP already used. Please request a new one.');
+    }
 
     let account = phone
       ? await this.repo.findAccountByPhone(phone)
@@ -172,9 +182,14 @@ export class AuthService {
     if (account.phone) tokenClaims.phone_number = account.phone;
 
     const accessToken = createToken(tokenClaims, 60);
-    const refreshToken = createToken({ sub: account.userId, type: 'refresh' }, 43200);
-
-    await this.repo.updateRefreshToken(account.userId, refreshToken);
+    // Two-step rotation: bump the generation atomically, sign the JWT
+    // with that generation, then persist the signed token.
+    const generation = await this.repo.bumpRefreshTokenGeneration(account.userId);
+    const refreshToken = createToken(
+      { sub: account.userId, type: 'refresh', gen: String(generation) },
+      43200,
+    );
+    await this.repo.setRefreshToken(account.userId, refreshToken);
 
     return {
       accessToken,
@@ -215,6 +230,18 @@ export class AuthService {
       throw new UnauthorizedError('Refresh token revoked');
     }
 
+    // Reject older generations even if the JWT itself is still valid.
+    // This is the critical part of rotation: once a newer refresh token
+    // exists, the previous one is dead — even before its JWT expiry.
+    const tokenGen = claims.gen ? Number(claims.gen) : undefined;
+    if (
+      account.refreshTokenGeneration !== undefined &&
+      tokenGen !== undefined &&
+      tokenGen !== account.refreshTokenGeneration
+    ) {
+      throw new UnauthorizedError('Refresh token superseded. Please log in again.');
+    }
+
     const tokenClaims: Record<string, string> = {
       sub: account.userId,
     };
@@ -222,9 +249,12 @@ export class AuthService {
     if (account.phone) tokenClaims.phone_number = account.phone;
 
     const newAccessToken = createToken(tokenClaims, 60);
-    const newRefreshToken = createToken({ sub: account.userId, type: 'refresh' }, 43200);
-
-    await this.repo.updateRefreshToken(account.userId, newRefreshToken);
+    const generation = await this.repo.bumpRefreshTokenGeneration(account.userId);
+    const newRefreshToken = createToken(
+      { sub: account.userId, type: 'refresh', gen: String(generation) },
+      43200,
+    );
+    await this.repo.setRefreshToken(account.userId, newRefreshToken);
 
     return {
       accessToken: newAccessToken,
@@ -243,11 +273,20 @@ export class AuthService {
     matrimonyId: string;
     hasProfile: boolean;
     onboardingComplete: boolean;
+    deactivated: boolean;
   }> {
     const account = await this.repo.getAccount(userId);
     if (!account) {
       throw new UnauthorizedError('Account not found');
     }
+
+    // Check privacy state — if showInSearch is false, the user has
+    // deactivated and the frontend should offer to reactivate.
+    const privacy = await this.repo.get<{ showInSearch?: boolean }>(
+      `USER#${userId}`,
+      'PRIVACY#v1',
+    );
+    const deactivated = privacy?.showInSearch === false;
 
     return {
       id: account.userId,
@@ -256,6 +295,7 @@ export class AuthService {
       matrimonyId: account.matrimonyId,
       hasProfile: account.hasProfile,
       onboardingComplete: account.onboardingComplete,
+      deactivated,
     };
   }
 }

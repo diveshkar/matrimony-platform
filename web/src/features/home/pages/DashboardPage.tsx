@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useQueryClient } from '@tanstack/react-query';
 import { UsageBar } from '@/features/subscription/components/UsageBar';
 import {
   Search,
@@ -12,15 +14,87 @@ import {
   Eye,
   Camera,
   ArrowRight,
+  PauseCircle,
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/lib/auth/auth-context';
+import { useMe } from '@/features/auth/hooks/useAuthMutation';
 import { useMySubscription } from '@/features/subscription/hooks/useSubscription';
 import { useMyProfile } from '@/features/profile/hooks/useProfile';
+import { profileApi } from '@/features/profile/api/profile-api';
+import { useToast } from '@/components/ui/toaster';
 import { formatDate } from '@/lib/utils/format';
 import { ROUTES } from '@/lib/constants/routes';
+
+function ReactivationBanner() {
+  const { data: meResponse, isLoading } = useMe();
+  const queryClient = useQueryClient();
+  const toast = useToast();
+  const [reactivating, setReactivating] = useState(false);
+
+  if (isLoading) return null;
+  const isDeactivated = meResponse?.success && meResponse.data.deactivated === true;
+  if (!isDeactivated) return null;
+
+  const handleReactivate = async () => {
+    setReactivating(true);
+    try {
+      await profileApi.reactivateAccount();
+      toast.success(
+        'Profile reactivated',
+        'You are visible in search and discovery again.',
+      );
+      await queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Please try again';
+      toast.error('Failed to reactivate', msg);
+    } finally {
+      setReactivating(false);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-2xl border border-amber-200 bg-amber-50 p-4 sm:p-5"
+    >
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+        <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100">
+            <PauseCircle className="h-5 w-5 text-amber-700" />
+          </div>
+          <div className="min-w-0">
+            <p className="font-heading text-sm font-semibold text-amber-900">
+              Your profile is hidden
+            </p>
+            <p className="text-xs text-amber-800/80 mt-0.5">
+              You won't appear in search or discovery until you reactivate.
+            </p>
+          </div>
+        </div>
+        <Button
+          size="sm"
+          onClick={handleReactivate}
+          disabled={reactivating}
+          className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl self-start sm:self-auto"
+        >
+          {reactivating ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Reactivating...
+            </>
+          ) : (
+            'Reactivate Profile'
+          )}
+        </Button>
+      </div>
+    </motion.div>
+  );
+}
 
 const quickActions = [
   {
@@ -85,6 +159,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
+      <ReactivationBanner />
       {/* Welcome banner */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}

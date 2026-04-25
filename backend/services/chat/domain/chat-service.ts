@@ -2,6 +2,7 @@ import { ChatRepository } from '../repositories/chat-repository.js';
 import { BaseRepository } from '../../shared/repositories/base-repository.js';
 import { ForbiddenError, NotFoundError, ValidationError } from '../../shared/errors/app-errors.js';
 import { logger } from '../../shared/utils/logger.js';
+import { withRetry } from '../../shared/utils/retry.js';
 
 export class ChatService {
   private chatRepo: ChatRepository;
@@ -132,14 +133,24 @@ export class ChatService {
 
       const { SafetyRepository } = await import('../../safety/repositories/safety-repository.js');
       const repo = new SafetyRepository();
-      await repo.createNotification(otherUser, {
-        type: 'new_message',
-        title: `New message from ${senderName}`,
-        message: preview,
-        actionUrl: `/chats/${conversationId}`,
-      });
+      await withRetry(
+        () =>
+          repo.createNotification(otherUser, {
+            type: 'new_message',
+            title: `New message from ${senderName}`,
+            message: preview,
+            actionUrl: `/chats/${conversationId}`,
+          }),
+        { attempts: 3, label: 'chat-notification' },
+      );
     } catch (err) {
-      logger.warn('Failed to create chat notification', { error: String(err) });
+      // Bumped to error so CloudWatch alarms can fire on persistent failures.
+      // The message itself was already saved — only the push notification is lost.
+      logger.error('Failed to create chat notification after retries', {
+        error: String(err),
+        conversationId,
+        receiverId: otherUser,
+      });
     }
 
     return { message };

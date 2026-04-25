@@ -14,7 +14,8 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
   const parsed = searchFiltersSchema.safeParse(params);
   const filters = parsed.success ? parsed.data : {};
 
-  const limit = Number(params.limit) || 20;
+  const rawLimit = Number(params.limit);
+  const limit = Math.min(50, Math.max(1, Number.isFinite(rawLimit) && rawLimit > 0 ? rawLimit : 20));
   const cursor = params.cursor;
 
   const result = await discoveryService.search(authedEvent.auth.userId, filters, limit, cursor);

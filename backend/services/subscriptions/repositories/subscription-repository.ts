@@ -49,6 +49,18 @@ export class SubscriptionRepository extends BaseRepository {
       SK: 'SUBSCRIPTION#ACTIVE',
       ...data,
     });
+
+    // Reverse-lookup index so Stripe webhooks (which only know the
+    // stripeSubscriptionId) can find the userId without scanning the table.
+    if (data.stripeSubscriptionId) {
+      await this.put({
+        PK: `STRIPE_SUB#${data.stripeSubscriptionId}`,
+        SK: 'INDEX',
+        userId: data.userId,
+        stripeSubscriptionId: data.stripeSubscriptionId,
+        createdAt: data.createdAt,
+      });
+    }
   }
 
   async updateSubscription(userId: string, updates: Partial<SubscriptionRecord>): Promise<void> {
@@ -56,6 +68,27 @@ export class SubscriptionRepository extends BaseRepository {
       ...updates,
       updatedAt: nowISO(),
     });
+  }
+
+  /**
+   * O(1) reverse lookup from Stripe subscription id → userId.
+   * Used by webhook handlers (invoice.paid, customer.subscription.deleted)
+   * which only carry the Stripe id and need to find our user.
+   */
+  async findUserByStripeSubscriptionId(stripeSubId: string): Promise<string | null> {
+    const record = await this.get<{ userId: string }>(
+      `STRIPE_SUB#${stripeSubId}`,
+      'INDEX',
+    );
+    return record?.userId || null;
+  }
+
+  /**
+   * Remove the reverse-lookup index. Called on cancel/expire so a new
+   * subscription with a (theoretically) recycled id wouldn't collide.
+   */
+  async deleteStripeSubscriptionIndex(stripeSubId: string): Promise<void> {
+    await this.delete(`STRIPE_SUB#${stripeSubId}`, 'INDEX');
   }
 
   async getEntitlement(planId: string): Promise<EntitlementRecord | null> {

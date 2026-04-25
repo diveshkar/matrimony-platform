@@ -66,6 +66,21 @@ export class DiscoveryService {
     );
     const showInSearch = privacy?.showInSearch !== false;
     if (!showInSearch) {
+      // Fix 2: also remove DISCOVERY#ALL entry so deactivated users don't appear
+      const existing = await this.discoveryRepo.get<DiscoveryProfile & { discoveryAllSk?: string }>(
+        `PROFILE#${userId}`,
+        'DISCOVERY#v1',
+      );
+      if (existing?.discoveryAllSk) {
+        try {
+          await this.discoveryRepo.delete('DISCOVERY#ALL', existing.discoveryAllSk);
+        } catch (err) {
+          logger.warn('Failed to clean up DISCOVERY#ALL on deactivation', {
+            userId,
+            error: String(err),
+          });
+        }
+      }
       await this.discoveryRepo.removeProjection(userId);
       return;
     }
@@ -101,6 +116,7 @@ export class DiscoveryService {
       aboutMe: profile.aboutMe as string | undefined,
       phoneVerified,
       lastActiveAt: new Date().toISOString(),
+      createdAt: profile.createdAt as string | undefined,
       GSI1PK: `COUNTRY#${country}#GENDER#${gender}`,
       GSI1SK: `AGE#${String(age).padStart(3, '0')}#${userId}`,
       GSI2PK: `RELIGION#${religion}#GENDER#${gender}`,
@@ -111,13 +127,40 @@ export class DiscoveryService {
       } : {}),
     };
 
-    await this.discoveryRepo.upsertProjection(projection);
+    // Fix 2: get previous DISCOVERY#ALL SK so we can clean it up before writing the new one.
+    // Stored on the projection itself for O(1) cleanup.
+    const previous = await this.discoveryRepo.get<DiscoveryProfile & { discoveryAllSk?: string }>(
+      `PROFILE#${userId}`,
+      'DISCOVERY#v1',
+    );
+
+    const newAllSk = `PROFILE#${projection.lastActiveAt}#${userId}`;
+
+    // Save the new SK on the projection so next sync can clean it up
+    const projectionWithSk = { ...projection, discoveryAllSk: newAllSk } as DiscoveryProfile & {
+      discoveryAllSk?: string;
+    };
+
+    await this.discoveryRepo.upsertProjection(projectionWithSk);
 
     await this.discoveryRepo.put({
       ...projection,
       PK: 'DISCOVERY#ALL',
-      SK: `PROFILE#${projection.lastActiveAt}#${userId}`,
+      SK: newAllSk,
     } as unknown as Record<string, unknown>);
+
+    // Delete the old DISCOVERY#ALL entry (if it existed and SK differs)
+    if (previous?.discoveryAllSk && previous.discoveryAllSk !== newAllSk) {
+      try {
+        await this.discoveryRepo.delete('DISCOVERY#ALL', previous.discoveryAllSk);
+      } catch (err) {
+        logger.warn('Failed to clean up old DISCOVERY#ALL entry', {
+          userId,
+          oldSk: previous.discoveryAllSk,
+          error: String(err),
+        });
+      }
+    }
   }
 
   async getRecommendations(
@@ -362,6 +405,72 @@ export class DiscoveryService {
     return { items, nextCursor };
   }
 
+  /**
+   * Returns profiles that joined within the last `days` days.
+   * Excludes: own profile, blocked users, users you've already interacted with,
+   * and deactivated users.
+   * Sorted by createdAt descending (most recently joined first).
+   */
+  async getRecentlyJoined(
+    userId: string,
+    days = 7,
+    limit = 10,
+  ): Promise<{ items: DiscoveryProfile[] }> {
+    // Fix 3: bound inputs (already done in handler but defensive)
+    days = Math.min(30, Math.max(1, days));
+    limit = Math.min(50, Math.max(1, limit));
+
+    // Fetch blocks + interactions in parallel (Fix 6: also collect interacted users)
+    const [blockRecord, interactedResult] = await Promise.all([
+      this.coreRepo.get<{ blockedUserIds?: string[] }>(`USER#${userId}`, 'BLOCK'),
+      this.coreRepo.query<{ SK: string }>(`USER#${userId}`, { limit: 500 }),
+    ]);
+
+    const blockedIds = new Set<string>(blockRecord?.blockedUserIds || []);
+
+    const interactedIds = new Set<string>();
+    for (const item of interactedResult.items) {
+      if (item.SK.startsWith('INTEREST#OUT#')) {
+        interactedIds.add(item.SK.replace('INTEREST#OUT#', ''));
+      } else if (item.SK.startsWith('INTEREST#IN#')) {
+        interactedIds.add(item.SK.replace('INTEREST#IN#', ''));
+      }
+    }
+
+    // Fix 4: bigger pool (200 instead of 100) for better coverage of truly recent users
+    const pool = await this.discoveryRepo.getAllProfiles(200);
+
+    const cutoffMs = Date.now() - days * 24 * 60 * 60 * 1000;
+
+    const seen = new Set<string>();
+    const filtered = pool.items.filter((p) => {
+      if (seen.has(p.userId)) return false;
+      seen.add(p.userId);
+      if (p.userId === userId) return false;
+      if (blockedIds.has(p.userId)) return false;
+      if (interactedIds.has(p.userId)) return false; // Fix 6: skip already-interacted
+      if (!p.createdAt) return false;
+      if (new Date(p.createdAt).getTime() < cutoffMs) return false;
+      return true;
+    });
+
+    filtered.sort((a, b) => {
+      const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return tb - ta;
+    });
+
+    // Fix 1: verify each candidate still has active projection (skip deactivated users)
+    // Take a slightly larger candidate set to absorb deactivated users dropping out
+    const candidates = filtered.slice(0, limit + 5);
+    const candidateIds = candidates.map((p) => p.userId);
+    const activeMap = await this.discoveryRepo.getProfilesByIds(candidateIds);
+
+    const final = candidates.filter((p) => activeMap.has(p.userId));
+
+    return { items: final.slice(0, limit) };
+  }
+
   async search(
     userId: string,
     filters: SearchFilters,
@@ -370,10 +479,24 @@ export class DiscoveryService {
   ): Promise<{ items: DiscoveryProfile[]; nextCursor?: string }> {
     const startKey = cursor ? (() => { try { return JSON.parse(Buffer.from(cursor, 'base64').toString()); } catch { return undefined; } })() : undefined;
 
-    const blockRecord = await this.coreRepo.get<{ blockedUserIds?: string[] }>(`USER#${userId}`, 'BLOCK');
+    // Fix 6: also fetch interacted users so search excludes them
+    const [blockRecord, interactedResult] = await Promise.all([
+      this.coreRepo.get<{ blockedUserIds?: string[] }>(`USER#${userId}`, 'BLOCK'),
+      this.coreRepo.query<{ SK: string }>(`USER#${userId}`, { limit: 500 }),
+    ]);
     const blockedIds = new Set<string>(blockRecord?.blockedUserIds || []);
 
+    const interactedIds = new Set<string>();
+    for (const item of interactedResult.items) {
+      if (item.SK.startsWith('INTEREST#OUT#')) {
+        interactedIds.add(item.SK.replace('INTEREST#OUT#', ''));
+      } else if (item.SK.startsWith('INTEREST#IN#')) {
+        interactedIds.add(item.SK.replace('INTEREST#IN#', ''));
+      }
+    }
+
     let results: { items: DiscoveryProfile[]; lastKey?: Record<string, unknown> };
+    const usedGetAllProfiles = !(filters.country && filters.gender) && !(filters.religion && filters.gender);
 
     if (filters.country && filters.gender) {
       results = await this.discoveryRepo.searchByCountryAndGender(filters.country, filters.gender, {
@@ -397,7 +520,12 @@ export class DiscoveryService {
       return true;
     });
 
-    let filtered = deduped.filter((p) => p.userId !== userId && !blockedIds.has(p.userId));
+    let filtered = deduped.filter(
+      (p) =>
+        p.userId !== userId &&
+        !blockedIds.has(p.userId) &&
+        !interactedIds.has(p.userId), // Fix 6: skip already-interacted
+    );
 
     if (filters.gender) filtered = filtered.filter((p) => p.gender === filters.gender);
     if (filters.ageMin) filtered = filtered.filter((p) => p.age >= filters.ageMin!);
@@ -415,7 +543,16 @@ export class DiscoveryService {
       filtered = filtered.filter((p) => p.maritalStatus === filters.maritalStatus);
     if (filters.hasPhoto) filtered = filtered.filter((p) => !!p.primaryPhotoUrl);
 
-    const items = filtered.slice(0, limit);
+    let items = filtered.slice(0, limit);
+
+    // Fix 1: when using getAllProfiles (no GSI filter), verify active status
+    // GSI-based queries already only return profiles with current DISCOVERY#v1 record
+    if (usedGetAllProfiles && items.length > 0) {
+      const ids = items.map((p) => p.userId);
+      const activeMap = await this.discoveryRepo.getProfilesByIds(ids);
+      items = items.filter((p) => activeMap.has(p.userId));
+    }
+
     const nextCursor = results.lastKey
       ? Buffer.from(JSON.stringify(results.lastKey)).toString('base64')
       : undefined;

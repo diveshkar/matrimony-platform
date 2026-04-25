@@ -2,6 +2,7 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { PhotoRepository } from '../repositories/photo-repository.js';
 import { ValidationError, NotFoundError } from '../../shared/errors/app-errors.js';
+import { logger } from '../../shared/utils/logger.js';
 import type { PhotoMetadata } from '../../../packages/shared-types/index.js';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -35,7 +36,6 @@ export class UploadService {
 
     const { SubscriptionRepository } = await import('../../subscriptions/repositories/subscription-repository.js');
     const subRepo = new SubscriptionRepository();
-    const entitlement = await subRepo.getUserEntitlement(userId);
     const sub = await subRepo.getSubscription(userId);
     const planId = sub?.status === 'active' ? sub.planId : 'free';
     const maxPhotos = UPLOAD_LIMITS[planId] || 3;
@@ -48,8 +48,6 @@ export class UploadService {
           : `Maximum ${maxPhotos} photos allowed`,
       );
     }
-
-    void entitlement;
 
     const mimeToExt: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
     const ext = mimeToExt[mimeType] || 'jpg';
@@ -69,7 +67,7 @@ export class UploadService {
           Key: s3Key,
           ContentType: mimeType,
         }),
-        { expiresIn: 300 },
+        { expiresIn: 120 },
       );
     }
 
@@ -101,7 +99,7 @@ export class UploadService {
 
     // Build clean, permanent CloudFront URL from s3Key.
     // (Do NOT trust any URL from the client — the pre-signed upload URL
-    // expires in 5 min and would break photo display.)
+    // is short-lived and would break photo display.)
     const cleanUrl = isLocal
       ? `http://localhost:4000/uploads/${data.s3Key}`
       : `${mediaCdnUrl}/${data.s3Key}`;
@@ -160,6 +158,14 @@ export class UploadService {
 
     await this.repo.deletePhoto(userId, photoId);
 
+    // Best-effort S3 object cleanup — DB row is gone either way, but we
+    // don't want orphaned objects piling up in the bucket and racking up
+    // storage costs. Errors are logged inside the helper.
+    if (photo.s3Key) {
+      const { deleteMediaObject } = await import('../../shared/utils/s3-cleanup.js');
+      await deleteMediaObject(photo.s3Key);
+    }
+
     const remaining = await this.repo.getPhotos(userId);
     const primary = remaining.find((p) => p.isPrimary);
     await this.updateProfilePhoto(userId, primary?.url || '');
@@ -168,15 +174,31 @@ export class UploadService {
   private async updateProfilePhoto(userId: string, url: string): Promise<void> {
     const { BaseRepository } = await import('../../shared/repositories/base-repository.js');
     const coreRepo = new BaseRepository('core');
-    try {
-      await coreRepo.update(`USER#${userId}`, 'PROFILE#v1', {
-        primaryPhotoUrl: url,
-      });
 
+    // The profile may not exist yet during onboarding (user uploaded photo
+    // before completing profile creation). In that case the update will
+    // throw and we should silently no-op.
+    const profile = await coreRepo.get(`USER#${userId}`, 'PROFILE#v1');
+    if (!profile) return;
+
+    // From here on, errors mean the profile WOULD have been updated but
+    // the write failed. Surface those — otherwise the user thinks they
+    // changed their photo but discovery still shows the old one.
+    await coreRepo.update(`USER#${userId}`, 'PROFILE#v1', {
+      primaryPhotoUrl: url,
+    });
+
+    try {
       const { DiscoveryService } = await import('../../discovery/domain/discovery-service.js');
       await new DiscoveryService().syncProfileToDiscovery(userId);
-    } catch {
-      // Profile may not exist yet during onboarding
+    } catch (err) {
+      // Discovery sync is best-effort — the profile is the source of truth
+      // and the next legitimate sync trigger (edit, deactivate/reactivate)
+      // will reconcile. Log at error level so alarms can fire.
+      logger.error('Failed to sync profile to discovery after photo change', {
+        userId,
+        error: String(err),
+      });
     }
   }
 }

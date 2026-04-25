@@ -1,10 +1,26 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { authApi, type AuthStartRequest, type AuthVerifyRequest } from '../api/auth-api';
 import { settingsApi } from '@/features/settings/api/settings-api';
 import { useAuth } from '@/lib/auth/auth-context';
 import { useToast } from '@/components/ui/toaster';
 import { ROUTES } from '@/lib/constants/routes';
+
+/**
+ * Fetches the authoritative current account state (including the
+ * deactivated flag from PRIVACY#v1). Use this when a stale
+ * localStorage user isn't enough — e.g. to decide whether to show
+ * the reactivation banner on Dashboard.
+ */
+export function useMe() {
+  const { isAuthenticated } = useAuth();
+  return useQuery({
+    queryKey: ['auth', 'me'],
+    queryFn: () => authApi.me(),
+    enabled: isAuthenticated,
+    staleTime: 30_000,
+  });
+}
 
 export function useAuthStart() {
   const toast = useToast();

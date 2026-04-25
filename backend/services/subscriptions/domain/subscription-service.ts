@@ -104,13 +104,11 @@ export class SubscriptionService {
   async handleWebhook(payload: string, signature: string): Promise<void> {
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
 
-    let event: Stripe.Event;
-
     if (!webhookSecret) {
       throw new ValidationError('STRIPE_WEBHOOK_SECRET is not configured');
     }
 
-    event = getStripe().webhooks.constructEvent(payload, signature, webhookSecret);
+    const event: Stripe.Event = getStripe().webhooks.constructEvent(payload, signature, webhookSecret);
 
     const eventKey = `STRIPE_EVENT#${event.id}`;
     const alreadyProcessed = await this.coreRepo.get(eventKey, 'PROCESSED');
@@ -123,7 +121,10 @@ export class SubscriptionService {
       SK: 'PROCESSED',
       eventType: event.type,
       processedAt: nowISO(),
-      ttl: Math.floor(Date.now() / 1000) + 86400 * 7,
+      // 90-day TTL — Stripe can retry failed webhooks for up to ~3 weeks,
+      // and we want a generous buffer beyond that to dedupe retries that
+      // arrive after a long gap.
+      ttl: Math.floor(Date.now() / 1000) + 86400 * 90,
     });
 
     logger.info('Stripe webhook received', { type: event.type, id: event.id });
@@ -166,18 +167,17 @@ export class SubscriptionService {
         const stripeSubId = invoice.subscription as string;
 
         if (stripeSubId) {
-          // Find user by Stripe subscription ID and extend their endDate
-          const sub = await this.findSubscriptionByStripeId(stripeSubId);
-          if (sub) {
+          const userId = await this.repo.findUserByStripeSubscriptionId(stripeSubId);
+          if (userId) {
             const renewalNow = nowISO();
             const newEnd = new Date();
             newEnd.setMonth(newEnd.getMonth() + 1);
-            await this.repo.updateSubscription(sub.userId, {
+            await this.repo.updateSubscription(userId, {
               endDate: newEnd.toISOString(),
               currentPeriodStart: renewalNow,
               status: 'active',
             });
-            logger.info('Subscription renewed', { userId: sub.userId, newEndDate: newEnd.toISOString(), periodStart: renewalNow });
+            logger.info('Subscription renewed', { userId, newEndDate: newEnd.toISOString(), periodStart: renewalNow });
           } else {
             logger.warn('Invoice paid but no matching subscription found', { stripeSubId });
           }
@@ -187,10 +187,11 @@ export class SubscriptionService {
 
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription;
-        const sub = await this.findSubscriptionByStripeId(subscription.id);
-        if (sub) {
-          await this.repo.updateSubscription(sub.userId, { status: 'cancelled' });
-          logger.info('Subscription cancelled via Stripe', { userId: sub.userId, stripeSubId: subscription.id });
+        const userId = await this.repo.findUserByStripeSubscriptionId(subscription.id);
+        if (userId) {
+          await this.repo.updateSubscription(userId, { status: 'cancelled' });
+          await this.repo.deleteStripeSubscriptionIndex(subscription.id);
+          logger.info('Subscription cancelled via Stripe', { userId, stripeSubId: subscription.id });
         } else {
           logger.warn('Subscription deleted but no matching record found', { stripeSubId: subscription.id });
         }
@@ -200,32 +201,6 @@ export class SubscriptionService {
       default:
         logger.info('Unhandled webhook event', { type: event.type });
     }
-  }
-
-  private async findSubscriptionByStripeId(stripeSubId: string): Promise<{ userId: string } | null> {
-    // Look up subscription by Stripe subscription ID
-    // For webhook events where we only have the Stripe ID, not our userId
-    const { ScanCommand } = await import('@aws-sdk/lib-dynamodb');
-    const { getDynamoClient, getTableName } = await import('../../shared/repositories/dynamodb-client.js');
-    const client = getDynamoClient();
-    const tableName = getTableName('core');
-
-    const result = await client.send(
-      new ScanCommand({
-        TableName: tableName,
-        FilterExpression: 'SK = :sk AND stripeSubscriptionId = :sid',
-        ExpressionAttributeValues: {
-          ':sk': 'SUBSCRIPTION#ACTIVE',
-          ':sid': stripeSubId,
-        },
-        Limit: 1,
-      }),
-    );
-
-    if (result.Items && result.Items.length > 0) {
-      return { userId: result.Items[0].userId as string };
-    }
-    return null;
   }
 
   async getMySubscription(userId: string): Promise<{
@@ -260,6 +235,9 @@ export class SubscriptionService {
 
     // Only update DB if Stripe succeeded (or was test/seeded)
     await this.repo.updateSubscription(userId, { status: 'cancelled' });
+    if (sub.stripeSubscriptionId) {
+      await this.repo.deleteStripeSubscriptionIndex(sub.stripeSubscriptionId);
+    }
     logger.info('Subscription cancelled', { userId, planId: sub.planId });
 
     return { status: 'subscription_cancelled' };

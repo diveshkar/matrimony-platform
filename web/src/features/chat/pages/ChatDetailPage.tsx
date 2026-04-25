@@ -24,7 +24,7 @@ export default function ChatDetailPage() {
 
   const { data: msgResponse, isLoading: msgsLoading } = useMessages(conversationId);
   const { data: convsResponse } = useConversations();
-  const sendMessage = useSendMessage(conversationId || '');
+  const sendMessage = useSendMessage(conversationId || '', user?.id);
 
   const messages = msgResponse?.success ? msgResponse.data.items : [];
 
@@ -34,12 +34,26 @@ export default function ChatDetailPage() {
   const otherPhoto = currentConv?.otherUserPhoto;
   const otherUserId = currentConv?.otherUserId;
 
-  const { data: otherProfile } = useQuery({
+  const { data: otherProfile, error: otherProfileError } = useQuery({
     queryKey: ['profile', otherUserId],
     queryFn: () => profileApi.getProfile(otherUserId!),
     enabled: !!otherUserId,
     staleTime: 60_000,
+    // Don't retry 404s — the user is gone, not transiently unavailable.
+    retry: (failureCount, err) => {
+      const axiosErr = err as { response?: { status?: number } };
+      if (axiosErr?.response?.status === 404) return false;
+      return failureCount < 2;
+    },
   });
+
+  // If the other user's profile returns 404, they've deleted/deactivated
+  // their account. Existing chat history is still shown but new messages
+  // are disabled and a banner explains the state.
+  const otherUserGone = (() => {
+    const axiosErr = otherProfileError as { response?: { status?: number } } | null;
+    return axiosErr?.response?.status === 404;
+  })();
 
   const lastActiveAt = otherProfile?.success ? (otherProfile.data as Record<string, unknown>).lastActiveAt as string : undefined;
   const isRecentlyActive = lastActiveAt ? Date.now() - new Date(lastActiveAt).getTime() < 5 * 60 * 1000 : false;
@@ -138,6 +152,7 @@ export default function ChatDetailPage() {
             {/* Messages */}
             {items.map((msg) => {
               const isMine = msg.senderId === user?.id;
+              const isPending = msg.messageId.startsWith('pending-');
               return (
                 <div
                   key={msg.messageId}
@@ -145,10 +160,11 @@ export default function ChatDetailPage() {
                 >
                   <div
                     className={cn(
-                      'max-w-[75%] px-4 py-3 text-sm leading-relaxed shadow-soft-sm',
+                      'max-w-[75%] px-4 py-3 text-sm leading-relaxed shadow-soft-sm transition-opacity',
                       isMine
                         ? 'bg-gradient-to-br from-primary-800 to-primary-900 text-white rounded-2xl rounded-br-md'
                         : 'bg-white text-foreground rounded-2xl rounded-bl-md',
+                      isPending && 'opacity-60',
                     )}
                   >
                     <p className="whitespace-pre-wrap break-words">{msg.content}</p>
@@ -158,10 +174,12 @@ export default function ChatDetailPage() {
                         isMine ? 'text-white/50 text-right' : 'text-muted-foreground',
                       )}
                     >
-                      {new Date(msg.createdAt).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
+                      {isPending
+                        ? 'Sending...'
+                        : new Date(msg.createdAt).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
                     </p>
                   </div>
                 </div>
@@ -180,6 +198,15 @@ export default function ChatDetailPage() {
             title="Upgrade to chat"
             description="Chat is available on Gold plan and above."
           />
+        </div>
+      ) : otherUserGone ? (
+        <div className="border-t py-4 px-4 shrink-0 bg-muted/40 text-center">
+          <p className="text-sm font-medium text-muted-foreground">
+            This user is no longer on the platform
+          </p>
+          <p className="text-[11px] text-muted-foreground/70 mt-1">
+            You can still read past messages but cannot send new ones.
+          </p>
         </div>
       ) : (
         <div className="border-t py-3 shrink-0 bg-white/80 backdrop-blur-sm">

@@ -20,8 +20,8 @@ resource "aws_apigatewayv2_stage" "this" {
   auto_deploy = true
 
   default_route_settings {
-    throttling_burst_limit = 50
-    throttling_rate_limit  = 20
+    throttling_burst_limit = var.throttling_burst_limit
+    throttling_rate_limit  = var.throttling_rate_limit
   }
 
   access_log_settings {

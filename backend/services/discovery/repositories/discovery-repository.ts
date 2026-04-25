@@ -22,6 +22,7 @@ export interface DiscoveryProfile {
   aboutMe?: string;
   phoneVerified?: boolean;
   lastActiveAt: string;
+  createdAt?: string;
   GSI1PK?: string;
   GSI1SK?: string;
   GSI2PK?: string;

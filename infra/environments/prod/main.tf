@@ -105,10 +105,12 @@ module "s3_media" {
 # ──────────────────────────────────────────────
 
 module "api_gateway" {
-  source               = "../../modules/api_gateway_http"
-  api_name             = "${local.prefix}-api"
-  cors_allowed_origins = var.cors_allowed_origins
-  tags                 = local.common_tags
+  source                 = "../../modules/api_gateway_http"
+  api_name               = "${local.prefix}-api"
+  cors_allowed_origins   = var.cors_allowed_origins
+  throttling_burst_limit = 1000
+  throttling_rate_limit  = 500
+  tags                   = local.common_tags
 }
 
 # ──────────────────────────────────────────────
@@ -117,23 +119,23 @@ module "api_gateway" {
 
 locals {
   lambda_env = {
-    ENVIRONMENT           = var.environment
-    JWT_SECRET            = var.jwt_secret
+    ENVIRONMENT = var.environment
+    JWT_SECRET  = var.jwt_secret
     # SES_FROM_EMAIL    = var.ses_from_email  # SES disabled — using Brevo + Resend instead
-    EMAIL_FROM            = var.ses_from_email  # Sender address (used by both Brevo and Resend)
-    BREVO_API_KEY         = var.brevo_api_key   # Primary email provider (300/day free tier)
-    RESEND_API_KEY        = var.resend_api_key  # Fallback when Brevo daily limit hit (100/day free)
-    S3_MEDIA_BUCKET       = module.s3_media.bucket_id
-    MEDIA_CDN_URL         = "https://media.${var.domain_name}"
-    CORS_ALLOWED_ORIGINS  = join(",", var.cors_allowed_origins)
-    STRIPE_SECRET_KEY     = var.stripe_secret_key
-    STRIPE_WEBHOOK_SECRET = var.stripe_webhook_secret
-    TWILIO_ACCOUNT_SID            = var.twilio_account_sid
-    TWILIO_AUTH_TOKEN             = var.twilio_auth_token
-    TWILIO_WHATSAPP_FROM          = var.twilio_whatsapp_from
-    TWILIO_MESSAGING_SERVICE_SID  = var.twilio_messaging_service_sid
-    TWILIO_VERIFY_SERVICE_SID     = var.twilio_verify_service_sid
-    FRONTEND_URL                  = var.frontend_url
+    EMAIL_FROM                   = var.ses_from_email # Sender address (used by both Brevo and Resend)
+    BREVO_API_KEY                = var.brevo_api_key  # Primary email provider (300/day free tier)
+    RESEND_API_KEY               = var.resend_api_key # Fallback when Brevo daily limit hit (100/day free)
+    S3_MEDIA_BUCKET              = module.s3_media.bucket_id
+    MEDIA_CDN_URL                = "https://media.${var.domain_name}"
+    CORS_ALLOWED_ORIGINS         = join(",", var.cors_allowed_origins)
+    STRIPE_SECRET_KEY            = var.stripe_secret_key
+    STRIPE_WEBHOOK_SECRET        = var.stripe_webhook_secret
+    TWILIO_ACCOUNT_SID           = var.twilio_account_sid
+    TWILIO_AUTH_TOKEN            = var.twilio_auth_token
+    TWILIO_WHATSAPP_FROM         = var.twilio_whatsapp_from
+    TWILIO_MESSAGING_SERVICE_SID = var.twilio_messaging_service_sid
+    TWILIO_VERIFY_SERVICE_SID    = var.twilio_verify_service_sid
+    FRONTEND_URL                 = var.frontend_url
   }
 
   dynamodb_arns = [
@@ -159,6 +161,12 @@ data "aws_iam_policy_document" "lambda_service" {
   statement {
     actions   = ["s3:PutObject", "s3:GetObject", "s3:DeleteObject"]
     resources = ["${module.s3_media.bucket_arn}/*"]
+  }
+  # ListBucket is required for the photos/{userId}/ prefix sweep that
+  # runs at account-delete time to clean up orphaned S3 objects.
+  statement {
+    actions   = ["s3:ListBucket"]
+    resources = [module.s3_media.bucket_arn]
   }
   # SES disabled — using Resend instead. Uncomment to re-enable if AWS SES is approved later.
   # statement {
@@ -534,6 +542,15 @@ module "route_discover_search" {
   api_id               = module.api_gateway.api_id
   api_execution_arn    = module.api_gateway.execution_arn
   route_key            = "GET /discover/search"
+  lambda_invoke_arn    = module.lambda_discovery.invoke_arn
+  lambda_function_name = module.lambda_discovery.function_name
+}
+
+module "route_discover_recently_joined" {
+  source               = "../../modules/api_gateway_route"
+  api_id               = module.api_gateway.api_id
+  api_execution_arn    = module.api_gateway.execution_arn
+  route_key            = "GET /discover/recently-joined"
   lambda_invoke_arn    = module.lambda_discovery.invoke_arn
   lambda_function_name = module.lambda_discovery.function_name
 }

@@ -25,6 +25,11 @@ export interface AccountRecord {
   hasProfile: boolean;
   onboardingComplete: boolean;
   refreshToken?: string;
+  // Monotonic counter incremented on every refresh-token rotation. Embed
+  // this in issued refresh tokens and reject older generations — that way
+  // a stolen old refresh token can't keep refreshing once a newer one has
+  // been issued.
+  refreshTokenGeneration?: number;
   schemaVersion: number;
   createdAt: string;
   updatedAt: string;
@@ -55,13 +60,23 @@ export class AuthRepository extends BaseRepository {
   }
 
   async incrementOtpAttempts(identifier: string): Promise<void> {
+    const current = await this.getOtp(identifier);
     await this.update(`OTP#${identifier}`, 'PENDING#v1', {
-      attempts: (await this.getOtp(identifier))?.attempts ?? 0 + 1,
+      attempts: (current?.attempts ?? 0) + 1,
     });
   }
 
   async deleteOtp(identifier: string): Promise<void> {
     await this.delete(`OTP#${identifier}`, 'PENDING#v1');
+  }
+
+  /**
+   * Atomically delete the OTP record only if it still has the expected value.
+   * Returns true if the delete happened, false if the record was already gone
+   * or had a different value (e.g. consumed by a parallel request).
+   */
+  async consumeOtp(identifier: string, expectedOtp: string): Promise<boolean> {
+    return this.conditionalDelete(`OTP#${identifier}`, 'PENDING#v1', 'otp', expectedOtp);
   }
 
   async getLockout(identifier: string): Promise<{ lockedUntil: number } | null> {
@@ -151,7 +166,32 @@ export class AuthRepository extends BaseRepository {
     return account;
   }
 
-  async updateRefreshToken(userId: string, refreshToken: string): Promise<void> {
+  /**
+   * Atomically bump refreshTokenGeneration and return the new value.
+   * Caller signs a refresh JWT that embeds this generation, then calls
+   * `setRefreshToken` to persist the signed token. The two-step pattern
+   * is needed because we need the generation BEFORE signing the JWT
+   * (the gen is one of the claims).
+   */
+  async bumpRefreshTokenGeneration(userId: string): Promise<number> {
+    const result = await this.client.send(
+      new (await import('@aws-sdk/lib-dynamodb')).UpdateCommand({
+        TableName: this.tableName,
+        Key: { PK: `USER#${userId}`, SK: 'ACCOUNT#v1' },
+        UpdateExpression:
+          'SET refreshTokenGeneration = if_not_exists(refreshTokenGeneration, :zero) + :one, updatedAt = :now',
+        ExpressionAttributeValues: {
+          ':zero': 0,
+          ':one': 1,
+          ':now': nowISO(),
+        },
+        ReturnValues: 'ALL_NEW',
+      }),
+    );
+    return (result.Attributes?.refreshTokenGeneration as number) || 1;
+  }
+
+  async setRefreshToken(userId: string, refreshToken: string): Promise<void> {
     await this.update(`USER#${userId}`, 'ACCOUNT#v1', {
       refreshToken,
       updatedAt: nowISO(),
@@ -159,9 +199,21 @@ export class AuthRepository extends BaseRepository {
   }
 
   async clearRefreshToken(userId: string): Promise<void> {
-    await this.update(`USER#${userId}`, 'ACCOUNT#v1', {
-      refreshToken: '',
-      updatedAt: nowISO(),
-    });
+    // Bump the generation on logout too, so any in-flight refresh requests
+    // with the old token are rejected.
+    await this.client.send(
+      new (await import('@aws-sdk/lib-dynamodb')).UpdateCommand({
+        TableName: this.tableName,
+        Key: { PK: `USER#${userId}`, SK: 'ACCOUNT#v1' },
+        UpdateExpression:
+          'SET refreshToken = :empty, refreshTokenGeneration = if_not_exists(refreshTokenGeneration, :zero) + :one, updatedAt = :now',
+        ExpressionAttributeValues: {
+          ':empty': '',
+          ':zero': 0,
+          ':one': 1,
+          ':now': nowISO(),
+        },
+      }),
+    );
   }
 }

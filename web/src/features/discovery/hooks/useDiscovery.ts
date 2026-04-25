@@ -17,8 +17,9 @@ export function useRecentlyJoined() {
   const { isAuthenticated } = useAuth();
   return useQuery({
     queryKey: ['recently-joined'],
-    queryFn: () => discoveryApi.search({ limit: 10 }),
-    staleTime: 1000 * 60,
+    queryFn: () => discoveryApi.getRecentlyJoined(10, 7), // last 7 days, max 10
+    staleTime: 1000 * 20,
+    refetchOnWindowFocus: true,
     enabled: isAuthenticated,
   });
 }

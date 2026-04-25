@@ -1,6 +1,7 @@
 import { InterestRepository } from '../repositories/interest-repository.js';
 import { BaseRepository } from '../../shared/repositories/base-repository.js';
 import { logger } from '../../shared/utils/logger.js';
+import { withRetry } from '../../shared/utils/retry.js';
 import {
   ConflictError,
   ForbiddenError,
@@ -84,14 +85,30 @@ export class InterestService {
       const { SafetyRepository } = await import('../../safety/repositories/safety-repository.js');
       const repo = new SafetyRepository();
       const senderName = (senderProfile?.name as string) || 'Someone';
-      await repo.createNotification(receiverId, {
-        type: 'interest_received',
-        title: 'New Interest!',
-        message: `${senderName} is interested in your profile`,
-        actionUrl: '/interests',
-      });
+      // Append sender location so the receiver can decide if the interest
+      // is geographically relevant before opening the profile.
+      const senderCity = senderProfile?.city as string | undefined;
+      const senderCountry = senderProfile?.country as string | undefined;
+      const senderLocation = [senderCity, senderCountry].filter(Boolean).join(', ');
+      const message = senderLocation
+        ? `${senderName} from ${senderLocation} is interested in your profile`
+        : `${senderName} is interested in your profile`;
+      await withRetry(
+        () =>
+          repo.createNotification(receiverId, {
+            type: 'interest_received',
+            title: 'New Interest!',
+            message,
+            actionUrl: '/interests',
+          }),
+        { attempts: 3, label: 'interest-received-notification' },
+      );
     } catch (err) {
-      logger.warn('Failed to send interest notification', { error: String(err) });
+      logger.error('Failed to send interest notification after retries', {
+        error: String(err),
+        receiverId,
+        senderId,
+      });
     }
 
     return { status: 'interest_sent' };
@@ -149,14 +166,22 @@ export class InterestService {
       const { SafetyRepository } = await import('../../safety/repositories/safety-repository.js');
       const repo = new SafetyRepository();
       const receiverName = interest.receiverName || 'Someone';
-      await repo.createNotification(senderId, {
-        type: 'interest_accepted',
-        title: 'Interest Accepted!',
-        message: `${receiverName} accepted your interest. You can now chat!`,
-        actionUrl: '/chats',
-      });
+      await withRetry(
+        () =>
+          repo.createNotification(senderId, {
+            type: 'interest_accepted',
+            title: 'Interest Accepted!',
+            message: `${receiverName} accepted your interest. You can now chat!`,
+            actionUrl: '/chats',
+          }),
+        { attempts: 3, label: 'interest-accepted-notification' },
+      );
     } catch (err) {
-      logger.warn('Failed to send accept notification', { error: String(err) });
+      logger.error('Failed to send accept notification after retries', {
+        error: String(err),
+        senderId,
+        receiverId,
+      });
     }
 
     return { status: 'interest_accepted' };

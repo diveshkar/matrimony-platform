@@ -23,6 +23,7 @@ export interface AuthUser {
   matrimonyId: string;
   hasProfile: boolean;
   onboardingComplete: boolean;
+  deactivated?: boolean;
 }
 
 export interface AuthVerifyResponse {

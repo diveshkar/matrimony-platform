@@ -103,14 +103,14 @@ export default function OnboardingPage() {
     if (currentStep < STEPS.length - 1) {
       setCurrentStep((s) => s + 1);
     }
-  }, [currentStep, validateStep]);
+  }, [currentStep, validateStep, setCurrentStep]);
 
   const handleBack = useCallback(() => {
     if (currentStep > 0) {
       setCurrentStep((s) => s - 1);
       setStepErrors({});
     }
-  }, [currentStep]);
+  }, [currentStep, setCurrentStep]);
 
   const handleSubmit = useCallback(async () => {
     if (!validateStep()) return;
@@ -157,8 +157,10 @@ export default function OnboardingPage() {
       await createProfile.mutateAsync(profileData);
       localStorage.removeItem(DRAFT_KEY);
       localStorage.removeItem(STEP_KEY);
-    } catch {}
-  }, [draft, validateStep, createProfile]);
+    } catch {
+      // Toast is fired by useCreateProfile.onError; nothing to do here.
+    }
+  }, [draft, validateStep, createProfile, DRAFT_KEY, STEP_KEY]);
 
   const isLastStep = currentStep === STEPS.length - 1;
 

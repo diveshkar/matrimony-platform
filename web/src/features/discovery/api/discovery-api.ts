@@ -59,4 +59,11 @@ export const discoveryApi = {
       .get<ApiResponse<DiscoveryResponse>>(`/discover/search?${params}`)
       .then((r) => r.data);
   },
+
+  getRecentlyJoined: (limit = 10, days = 7) => {
+    const params = new URLSearchParams({ limit: String(limit), days: String(days) });
+    return apiClient
+      .get<ApiResponse<DiscoveryResponse>>(`/discover/recently-joined?${params}`)
+      .then((r) => r.data);
+  },
 };

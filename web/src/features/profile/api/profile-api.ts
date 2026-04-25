@@ -88,4 +88,13 @@ export const profileApi = {
       boostsUsed: number;
       boostsTotal: number;
     }>>('/me/boost').then((r) => r.data),
+
+  deactivateAccount: () =>
+    apiClient.post<ApiResponse<{ status: string }>>('/me/deactivate').then((r) => r.data),
+
+  reactivateAccount: () =>
+    apiClient.post<ApiResponse<{ status: string }>>('/me/reactivate').then((r) => r.data),
+
+  deleteAccount: () =>
+    apiClient.delete<ApiResponse<{ status: string }>>('/me').then((r) => r.data),
 };

@@ -239,6 +239,43 @@ export class BaseRepository {
     );
   }
 
+  /**
+   * Delete only if `conditionField` still equals `conditionValue`.
+   * Returns true if the delete actually happened, false if the row was
+   * missing or the field had a different value (e.g. consumed by a parallel call).
+   */
+  async conditionalDelete(
+    pk: string,
+    sk: string,
+    conditionField: string,
+    conditionValue: unknown,
+  ): Promise<boolean> {
+    if (USE_MEMORY) {
+      const item = memoryStore.get(this.tableName, pk, sk);
+      if (!item || item[conditionField] !== conditionValue) return false;
+      memoryStore.delete(this.tableName, pk, sk);
+      return true;
+    }
+
+    try {
+      await this.client.send(
+        new DeleteCommand({
+          TableName: this.tableName,
+          Key: { PK: pk, SK: sk },
+          ConditionExpression: '#cond = :condVal',
+          ExpressionAttributeNames: { '#cond': conditionField },
+          ExpressionAttributeValues: { ':condVal': conditionValue },
+        }),
+      );
+      return true;
+    } catch (err) {
+      if (err instanceof Error && err.name === 'ConditionalCheckFailedException') {
+        return false;
+      }
+      throw err;
+    }
+  }
+
   async query<T>(pk: string, options: QueryOptions = {}): Promise<QueryResult<T>> {
     if (USE_MEMORY) {
       const result = memoryStore.query(this.tableName, pk, {

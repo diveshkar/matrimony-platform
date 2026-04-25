@@ -12,6 +12,18 @@ variable "cors_allowed_origins" {
   default = ["*"]
 }
 
+variable "throttling_burst_limit" {
+  type        = number
+  default     = 100
+  description = "Maximum burst requests across all routes"
+}
+
+variable "throttling_rate_limit" {
+  type        = number
+  default     = 50
+  description = "Steady-state requests per second across all routes"
+}
+
 variable "tags" {
   type    = map(string)
   default = {}

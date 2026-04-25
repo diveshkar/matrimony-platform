@@ -1,6 +1,6 @@
 import { ProfileRepository } from '../repositories/profile-repository.js';
 import { BaseRepository } from '../../shared/repositories/base-repository.js';
-import { ConflictError, NotFoundError } from '../../shared/errors/app-errors.js';
+import { ConflictError, NotFoundError, ValidationError } from '../../shared/errors/app-errors.js';
 import { logger } from '../../shared/utils/logger.js';
 import type {
   UserProfile,
@@ -191,8 +191,15 @@ export class ProfileService {
       throw new NotFoundError('Profile');
     }
 
-    delete updates.gender;
-    delete updates.profileFor;
+    // Hard-reject attempts to change immutable fields. Frontend already
+    // hides the inputs, but a direct API caller would otherwise silently
+    // succeed (with the values dropped) which is confusing.
+    if ('gender' in updates) {
+      throw new ValidationError('Gender cannot be changed after profile creation');
+    }
+    if ('profileFor' in updates) {
+      throw new ValidationError('Profile-for cannot be changed after profile creation');
+    }
 
 
     const newPhone = updates.phoneNumber as string | undefined;

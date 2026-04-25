@@ -12,8 +12,9 @@ import {
   Camera,
   Edit,
   Heart,
-  Trash2,
   PauseCircle,
+  Loader2,
+  Trash2,
   AlertTriangle,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -23,6 +24,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { useToast } from '@/components/ui/toaster';
 import { useLogout } from '@/features/auth/hooks/useAuthMutation';
 import { useMySubscription } from '@/features/subscription/hooks/useSubscription';
+import { profileApi } from '@/features/profile/api/profile-api';
 import { ROUTES } from '@/lib/constants/routes';
 import { cn } from '@/lib/utils/cn';
 
@@ -93,10 +95,50 @@ export default function SettingsPage() {
   const toast = useToast();
   const { data: subResponse } = useMySubscription();
   const [deactivateOpen, setDeactivateOpen] = useState(false);
+  const [deactivating, setDeactivating] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const planId = subResponse?.success ? subResponse.data.subscription.planId : 'free';
   const isPremium = planId !== 'free';
   const planLabel = planId.charAt(0).toUpperCase() + planId.slice(1);
+
+  const handleDeactivate = async () => {
+    setDeactivating(true);
+    try {
+      await profileApi.deactivateAccount();
+      toast.success(
+        'Account deactivated',
+        'Your profile is now hidden. Log in anytime to reactivate.',
+      );
+      setDeactivateOpen(false);
+      // Log user out — they can log back in to reactivate
+      setTimeout(() => logout.mutate(), 1000);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Please try again';
+      toast.error('Failed to deactivate', msg);
+    } finally {
+      setDeactivating(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await profileApi.deleteAccount();
+      toast.success(
+        'Account deleted',
+        'Your account and data have been permanently removed.',
+      );
+      setDeleteOpen(false);
+      setTimeout(() => logout.mutate(), 1000);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Please try again';
+      toast.error('Failed to delete account', msg);
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
@@ -203,20 +245,23 @@ export default function SettingsPage() {
               </div>
               <div className="flex-1 min-w-0 text-left">
                 <h3 className="text-sm font-medium text-amber-700">Deactivate Profile</h3>
-                <p className="text-[11px] text-muted-foreground">Hide your profile temporarily</p>
+                <p className="text-[11px] text-muted-foreground">Hide your profile from search & matches</p>
               </div>
               <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
             </button>
             <button
-              onClick={() => setDeleteOpen(true)}
-              className="flex w-full items-center gap-4 p-4 hover:bg-destructive/5 transition-colors"
+              onClick={() => {
+                setDeleteConfirmText('');
+                setDeleteOpen(true);
+              }}
+              className="flex w-full items-center gap-4 p-4 hover:bg-rose-50/50 transition-colors"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-destructive/10">
-                <Trash2 className="h-4 w-4 text-destructive" />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-50">
+                <Trash2 className="h-4 w-4 text-rose-600" />
               </div>
               <div className="flex-1 min-w-0 text-left">
-                <h3 className="text-sm font-medium text-destructive">Delete Account</h3>
-                <p className="text-[11px] text-muted-foreground">Permanently remove your account</p>
+                <h3 className="text-sm font-medium text-rose-700">Delete Account</h3>
+                <p className="text-[11px] text-muted-foreground">Permanently remove your account & data</p>
               </div>
               <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
             </button>
@@ -224,8 +269,8 @@ export default function SettingsPage() {
         </Card>
       </div>
 
-      {/* Deactivate Dialog */}
-      <Dialog open={deactivateOpen} onOpenChange={setDeactivateOpen}>
+      {/* Deactivate Dialog — soft delete: hides profile, can reactivate by logging back in */}
+      <Dialog open={deactivateOpen} onOpenChange={(open) => !deactivating && setDeactivateOpen(open)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50">
@@ -233,16 +278,17 @@ export default function SettingsPage() {
             </div>
             <DialogTitle className="text-center">Deactivate Profile?</DialogTitle>
             <DialogDescription className="text-center">
-              Your profile will be hidden from all search results and discovery. No one will be able to find or view your profile.
+              Your profile will be hidden from search and discovery. You can come back anytime by logging in.
             </DialogDescription>
           </DialogHeader>
           <div className="bg-amber-50/50 rounded-xl p-4 text-sm text-amber-800 space-y-2">
-            <p className="font-medium">What happens when you deactivate:</p>
+            <p className="font-medium">What happens:</p>
             <ul className="space-y-1 text-xs text-amber-700">
-              <li>- Your profile is hidden from search results</li>
-              <li>- Existing conversations remain intact</li>
-              <li>- Your subscription stays active</li>
-              <li>- You can reactivate anytime by logging back in</li>
+              <li>✓ Your profile is hidden from everyone</li>
+              <li>✓ No one can search or view your profile</li>
+              <li>✓ Existing conversations remain (paused)</li>
+              <li>✓ Your data is preserved — nothing deleted</li>
+              <li>✓ Reactivate anytime by logging back in</li>
             </ul>
           </div>
           <div className="flex gap-3 mt-2">
@@ -250,62 +296,91 @@ export default function SettingsPage() {
               variant="outline"
               className="flex-1 rounded-xl"
               onClick={() => setDeactivateOpen(false)}
+              disabled={deactivating}
             >
               Cancel
             </Button>
             <Button
               className="flex-1 rounded-xl bg-amber-600 hover:bg-amber-700 text-white"
-              onClick={() => {
-                setDeactivateOpen(false);
-                toast.info('Profile deactivated', 'Your profile is now hidden from search results');
-              }}
+              onClick={handleDeactivate}
+              disabled={deactivating}
             >
-              <PauseCircle className="mr-2 h-4 w-4" />
-              Deactivate
+              {deactivating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deactivating...
+                </>
+              ) : (
+                <>
+                  <PauseCircle className="mr-2 h-4 w-4" />
+                  Deactivate
+                </>
+              )}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Delete Account Dialog */}
-      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+      {/* Delete Account Dialog — hard delete: permanently removes account, frees email/phone for reuse */}
+      <Dialog open={deleteOpen} onOpenChange={(open) => !deleting && setDeleteOpen(open)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10">
-              <AlertTriangle className="h-7 w-7 text-destructive" />
+            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50">
+              <AlertTriangle className="h-7 w-7 text-rose-600" />
             </div>
-            <DialogTitle className="text-center text-destructive">Delete Account?</DialogTitle>
+            <DialogTitle className="text-center">Delete Account Permanently?</DialogTitle>
             <DialogDescription className="text-center">
-              This action is permanent and cannot be undone. All your data will be lost forever.
+              This cannot be undone. All your data will be permanently deleted.
             </DialogDescription>
           </DialogHeader>
-          <div className="bg-destructive/5 rounded-xl p-4 text-sm text-destructive space-y-2">
-            <p className="font-medium">You will permanently lose:</p>
-            <ul className="space-y-1 text-xs">
-              <li>- Your profile and all photos</li>
-              <li>- All matches, interests, and shortlist</li>
-              <li>- All conversations and messages</li>
-              <li>- Your subscription (no refund)</li>
+          <div className="bg-rose-50/50 rounded-xl p-4 text-sm text-rose-800 space-y-2">
+            <p className="font-medium">What will be deleted:</p>
+            <ul className="space-y-1 text-xs text-rose-700">
+              <li>✗ Your profile, photos, and preferences</li>
+              <li>✗ All conversations and matches</li>
+              <li>✗ Interests, shortlists, and history</li>
+              <li>✗ Active subscription will be cancelled</li>
+              <li>✓ Email & phone freed — can sign up again later</li>
             </ul>
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-muted-foreground">
+              Type <span className="font-mono font-bold text-rose-700">DELETE</span> to confirm:
+            </label>
+            <input
+              type="text"
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              placeholder="DELETE"
+              disabled={deleting}
+              className="w-full px-3 py-2 text-sm border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 disabled:opacity-50"
+            />
           </div>
           <div className="flex gap-3 mt-2">
             <Button
               variant="outline"
               className="flex-1 rounded-xl"
               onClick={() => setDeleteOpen(false)}
+              disabled={deleting}
             >
-              Keep Account
+              Cancel
             </Button>
             <Button
-              variant="destructive"
-              className="flex-1 rounded-xl"
-              onClick={() => {
-                setDeleteOpen(false);
-                toast.error('Account deletion', 'Please contact support@theworldtamilmatrimony.com to delete your account');
-              }}
+              className="flex-1 rounded-xl bg-rose-600 hover:bg-rose-700 text-white"
+              onClick={handleDelete}
+              disabled={deleting || deleteConfirmText !== 'DELETE'}
             >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete Forever
+              {deleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Forever
+                </>
+              )}
             </Button>
           </div>
         </DialogContent>
