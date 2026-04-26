@@ -29,9 +29,14 @@ export default function ChatListPage() {
       <div>
         <h1 className="font-heading text-xl sm:text-2xl font-bold text-foreground">Messages</h1>
         <p className="text-sm text-muted-foreground mt-0.5">
-          {conversations.length > 0
-            ? `${conversations.length} conversation${conversations.length !== 1 ? 's' : ''}`
-            : 'Your conversations'}
+          {conversations.length > 0 ? (
+            <>
+              <span className="tabular-nums tracking-tight">{conversations.length}</span>
+              {conversations.length === 1 ? ' conversation' : ' conversations'}
+            </>
+          ) : (
+            'Your conversations'
+          )}
         </p>
       </div>
 
@@ -101,7 +106,7 @@ export default function ChatListPage() {
                   {conv.unreadCount > 0 && (
                     <Badge
                       variant="default"
-                      className="h-5 min-w-[20px] p-0 justify-center text-[10px] ml-2 shrink-0"
+                      className="h-5 min-w-[20px] p-0 justify-center text-[10px] ml-2 shrink-0 tabular-nums"
                     >
                       {conv.unreadCount}
                     </Badge>

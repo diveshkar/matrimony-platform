@@ -139,7 +139,7 @@ export default function PhotosPage() {
         <div>
           <h1 className="font-heading text-xl font-bold text-foreground">My Photos</h1>
           <p className="text-xs text-muted-foreground">
-            {photos.length} of {maxPhotos} photos uploaded
+            <span className="tabular-nums">{photos.length}</span> of <span className="tabular-nums">{maxPhotos}</span> photos uploaded
             {currentPlan === 'free' && <span className="text-primary-600 ml-1">(Gold+ gets 6)</span>}
           </p>
         </div>

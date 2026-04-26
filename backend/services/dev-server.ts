@@ -54,6 +54,7 @@ import { main as updatePhotoHandler } from './uploads/handlers/update-photo.js';
 import { main as deletePhotoHandler } from './uploads/handlers/delete-photo.js';
 import { main as getRecommendationsHandler } from './discovery/handlers/get-recommendations.js';
 import { main as searchProfilesHandler } from './discovery/handlers/search-profiles.js';
+import { main as getRecentlyJoinedHandler } from './discovery/handlers/get-recently-joined.js';
 import { main as sendInterestHandler } from './interests/handlers/send-interest.js';
 import { main as respondInterestHandler } from './interests/handlers/respond-interest.js';
 import { main as getInterestsHandler } from './interests/handlers/get-interests.js';
@@ -257,6 +258,7 @@ app.use('/uploads/local', express.static(UPLOADS_DIR));
 
 route('get', '/discover', getRecommendationsHandler);
 route('get', '/discover/search', searchProfilesHandler);
+route('get', '/discover/recently-joined', getRecentlyJoinedHandler);
 
 route('post', '/interests', sendInterestHandler);
 route('post', '/interests/:senderId/respond', respondInterestHandler);

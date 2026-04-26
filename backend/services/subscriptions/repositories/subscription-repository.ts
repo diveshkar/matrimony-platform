@@ -14,6 +14,10 @@ export interface SubscriptionRecord {
   // boundary so paid users get exactly 1 month of quota per payment.
   currentPeriodStart?: string;
   status: 'active' | 'cancelled' | 'expired';
+  // Set to true when a renewal payment fails. Cleared automatically on
+  // the next successful invoice.paid. Used by the dunning email flow to
+  // know which users are currently in a card-failure state.
+  paymentFailing?: boolean;
   schemaVersion: number;
   createdAt: string;
   updatedAt: string;

@@ -216,7 +216,7 @@ export default function ProfileDetailPage() {
               </div>
               Photos
               <span className="text-xs text-muted-foreground font-normal ml-1">
-                {totalPhotos} photo{totalPhotos !== 1 ? 's' : ''}
+                <span className="tabular-nums">{totalPhotos}</span> photo{totalPhotos !== 1 ? 's' : ''}
               </span>
             </CardTitle>
           </CardHeader>
@@ -319,7 +319,7 @@ export default function ProfileDetailPage() {
               )}
 
               {/* Counter */}
-              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/50 text-white text-xs">
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/50 text-white text-xs tabular-nums">
                 {lightboxIndex + 1} / {photos.filter((p) => !p.locked).length}
               </div>
             </div>

@@ -28,6 +28,9 @@ import { profileApi } from '@/features/profile/api/profile-api';
 import { useToast } from '@/components/ui/toaster';
 import { formatDate } from '@/lib/utils/format';
 import { ROUTES } from '@/lib/constants/routes';
+import { ActivityStats } from '../components/ActivityStats';
+import { MutualMatchSpotlight } from '../components/MutualMatchSpotlight';
+import { PendingInterestsRow } from '../components/PendingInterestsRow';
 
 function ReactivationBanner() {
   const { data: meResponse, isLoading } = useMe();
@@ -254,7 +257,7 @@ export default function DashboardPage() {
               <div className="flex-1">
                 <div className="flex items-center justify-between">
                   <p className="font-heading font-semibold text-sm">Profile</p>
-                  <span className="text-xs font-bold text-primary-800">{completion}%</span>
+                  <span className="text-xs font-bold text-primary-800 tabular-nums">{completion}%</span>
                 </div>
                 <div className="mt-1.5 h-1.5 w-full rounded-full bg-primary-100 overflow-hidden">
                   <div
@@ -277,8 +280,17 @@ export default function DashboardPage() {
       {/* Usage tracker */}
       <UsageBar />
 
-      {/* Quick actions grid */}
-      <div>
+      {/* Activity & emotional pull — each section silently hides itself
+          if the user has no data yet, so brand-new accounts still see a
+          clean dashboard without empty placeholders. */}
+      <ActivityStats />
+      <MutualMatchSpotlight />
+      <PendingInterestsRow />
+
+      {/* Quick actions grid — desktop only. The MobileQuickNav strip
+          at the top of the page already covers the same routes on
+          mobile, so showing this grid there would be redundant. */}
+      <div className="hidden md:block">
         <h2 className="font-heading font-semibold text-lg mb-4">Quick Actions</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {quickActions.map((action, i) => (

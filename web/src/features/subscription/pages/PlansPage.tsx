@@ -167,7 +167,7 @@ export default function PlansPage() {
 
                   {/* Price */}
                   <div className="mb-5">
-                    <span className="font-heading text-4xl font-bold text-foreground">£{price}</span>
+                    <span className="font-sans text-4xl font-bold text-foreground tabular-nums tracking-tight">£{price}</span>
                     <span className="text-sm text-muted-foreground ml-1">/mo</span>
                   </div>
 
@@ -302,8 +302,8 @@ export default function PlansPage() {
                   <td className="py-3 px-4 text-xs font-semibold text-foreground w-[200px]">Monthly price</td>
                   <td className="text-center py-3 px-3 text-xs font-bold text-foreground w-[80px]">Free</td>
                   {/* Silver column hidden */}
-                  <td className="text-center py-3 px-3 text-xs font-bold text-accent-700 w-[80px]">£19.99</td>
-                  <td className="text-center py-3 px-3 text-xs font-bold text-violet-700 w-[80px]">£29.99</td>
+                  <td className="text-center py-3 px-3 text-xs font-bold text-accent-700 w-[80px] tabular-nums">£19.99</td>
+                  <td className="text-center py-3 px-3 text-xs font-bold text-violet-700 w-[80px] tabular-nums">£29.99</td>
                 </tr>
               </tbody>
             </table>

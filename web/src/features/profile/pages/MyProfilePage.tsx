@@ -181,7 +181,7 @@ export default function MyProfilePage() {
                   />
                 </div>
               </div>
-              <span className="text-xs font-bold text-primary-800">
+              <span className="text-xs font-bold text-primary-800 tabular-nums">
                 {profile.profileCompletion}%
               </span>
             </div>
@@ -308,7 +308,7 @@ export default function MyProfilePage() {
                 <>
                   {ageMin && (
                     <Badge variant="secondary" className="py-1">
-                      Age: {ageMin}-{ageMax}
+                      Age: <span className="tabular-nums">{ageMin}-{ageMax}</span>
                     </Badge>
                   )}
                   {religions?.map((r) => (
@@ -387,10 +387,10 @@ export default function MyProfilePage() {
                     </DialogDescription>
                   </DialogHeader>
                   <div className="bg-accent-50 rounded-xl p-5 text-center">
-                    <p className="text-3xl font-heading font-bold text-accent-700">{hoursLeft}h</p>
+                    <p className="text-3xl font-sans font-bold text-accent-700 tabular-nums tracking-tight">{hoursLeft}h</p>
                     <p className="text-xs text-accent-600 mt-1">remaining</p>
                   </div>
-                  <p className="text-xs text-center text-muted-foreground">{boostsUsed} of {boostsTotal} boosts used this month</p>
+                  <p className="text-xs text-center text-muted-foreground"><span className="tabular-nums">{boostsUsed}</span> of <span className="tabular-nums">{boostsTotal}</span> boosts used this month</p>
                   <Button variant="outline" className="w-full rounded-xl" onClick={() => setBoostDialogOpen(false)}>Close</Button>
                 </>
               );
@@ -415,7 +415,7 @@ export default function MyProfilePage() {
                     <li className="flex items-center gap-2"><Zap className="h-3.5 w-3.5 shrink-0" />Get up to 10x more profile views</li>
                   </ul>
                 </div>
-                <p className="text-xs text-center text-muted-foreground">{boostsUsed} of {boostsTotal} boosts used this month</p>
+                <p className="text-xs text-center text-muted-foreground"><span className="tabular-nums">{boostsUsed}</span> of <span className="tabular-nums">{boostsTotal}</span> boosts used this month</p>
                 <div className="flex gap-3">
                   <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setBoostDialogOpen(false)}>Cancel</Button>
                   <Button

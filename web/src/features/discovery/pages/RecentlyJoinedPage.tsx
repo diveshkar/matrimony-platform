@@ -61,7 +61,7 @@ export default function RecentlyJoinedPage() {
               <Sparkles className="h-4 w-4 text-accent-600" />
             </div>
             <div>
-              <p className="text-lg font-bold font-heading text-foreground">{profiles.length}</p>
+              <p className="text-lg font-bold font-sans text-foreground tabular-nums tracking-tight">{profiles.length}</p>
               <p className="text-[10px] text-muted-foreground -mt-0.5">New profiles</p>
             </div>
           </div>

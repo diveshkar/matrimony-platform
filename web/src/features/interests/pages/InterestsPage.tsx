@@ -54,7 +54,7 @@ export default function InterestsPage() {
           Received
           {inbox.data?.success &&
             inbox.data.data.items.filter((i) => i.status === 'pending').length > 0 && (
-              <Badge variant="default" className="h-5 min-w-[20px] p-0 justify-center text-[10px]">
+              <Badge variant="default" className="h-5 min-w-[20px] p-0 justify-center text-[10px] tabular-nums">
                 {inbox.data.data.items.filter((i) => i.status === 'pending').length}
               </Badge>
             )}
@@ -153,78 +153,135 @@ function InterestCard({
   const photo = isInbox ? item.senderPhoto : item.receiverPhoto;
   const profileId = isInbox ? item.senderId : item.receiverId;
 
+  const showActionRow =
+    (isInbox && item.status === 'pending') || item.status === 'accepted';
+
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
       <Card className="border-0 shadow-soft-sm hover:shadow-soft transition-shadow rounded-xl">
-        <CardContent className="p-4 sm:p-5 flex items-center gap-4">
-          {/* Avatar */}
-          <Link to={profileDetailPath(profileId)}>
-            <div className="h-14 w-14 rounded-2xl overflow-hidden bg-primary-50 shrink-0">
-              {photo ? (
-                <img src={photo} alt={name} loading="lazy" className="h-full w-full object-cover" />
-              ) : (
-                <div className="h-full w-full flex items-center justify-center">
-                  <User className="h-7 w-7 text-primary-300" />
-                </div>
+        <CardContent className="p-4 sm:p-5">
+          <div className="flex items-center gap-4">
+            {/* Avatar */}
+            <Link to={profileDetailPath(profileId)}>
+              <div className="h-14 w-14 rounded-2xl overflow-hidden bg-primary-50 shrink-0">
+                {photo ? (
+                  <img
+                    src={photo}
+                    alt={name}
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center">
+                    <User className="h-7 w-7 text-primary-300" />
+                  </div>
+                )}
+              </div>
+            </Link>
+
+            {/* Info */}
+            <div className="flex-1 min-w-0">
+              <Link to={profileDetailPath(profileId)} className="hover:underline">
+                <h3 className="font-heading font-semibold text-sm truncate">
+                  {name || 'Unknown'}
+                </h3>
+              </Link>
+              {item.message && (
+                <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                  &ldquo;{item.message}&rdquo;
+                </p>
+              )}
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                <StatusBadge status={item.status} />
+                <span className="text-[10px] text-muted-foreground">
+                  {formatRelativeTime(item.createdAt)}
+                </span>
+              </div>
+            </div>
+
+            {/* Inline actions on tablet+ — preserved original side-by-side layout */}
+            {showActionRow && (
+              <div className="hidden sm:flex items-center gap-2 shrink-0">
+                {isInbox && item.status === 'pending' && (
+                  <>
+                    <Button
+                      size="sm"
+                      onClick={onAccept}
+                      disabled={isResponding}
+                      className="gap-1 text-xs"
+                    >
+                      {isResponding ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <Check className="h-3 w-3" />
+                      )}
+                      Accept
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={onDecline}
+                      disabled={isResponding}
+                      className="gap-1 text-xs"
+                    >
+                      <X className="h-3 w-3" />
+                      Decline
+                    </Button>
+                  </>
+                )}
+                {item.status === 'accepted' && (
+                  <Button size="sm" variant="outline" className="gap-1 text-xs" asChild>
+                    <Link to={ROUTES.CHATS}>
+                      <MessageCircle className="h-3 w-3" />
+                      Chat
+                    </Link>
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Stacked actions on mobile — full-width equal buttons,
+              divided from the info above so the alignment reads cleanly. */}
+          {showActionRow && (
+            <div className="sm:hidden mt-4 pt-3 border-t flex items-center gap-2">
+              {isInbox && item.status === 'pending' && (
+                <>
+                  <Button
+                    size="sm"
+                    onClick={onAccept}
+                    disabled={isResponding}
+                    className="flex-1 gap-1.5 text-xs h-9"
+                  >
+                    {isResponding ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Check className="h-3.5 w-3.5" />
+                    )}
+                    Accept
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={onDecline}
+                    disabled={isResponding}
+                    className="flex-1 gap-1.5 text-xs h-9"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                    Decline
+                  </Button>
+                </>
+              )}
+              {item.status === 'accepted' && (
+                <Button size="sm" variant="outline" className="w-full gap-1.5 text-xs h-9" asChild>
+                  <Link to={ROUTES.CHATS}>
+                    <MessageCircle className="h-3.5 w-3.5" />
+                    Chat now
+                  </Link>
+                </Button>
               )}
             </div>
-          </Link>
-
-          {/* Info */}
-          <div className="flex-1 min-w-0">
-            <Link to={profileDetailPath(profileId)} className="hover:underline">
-              <h3 className="font-heading font-semibold text-sm truncate">{name || 'Unknown'}</h3>
-            </Link>
-            {item.message && (
-              <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                &ldquo;{item.message}&rdquo;
-              </p>
-            )}
-            <div className="flex items-center gap-2 mt-1">
-              <StatusBadge status={item.status} />
-              <span className="text-[10px] text-muted-foreground">
-                {formatRelativeTime(item.createdAt)}
-              </span>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center gap-2 shrink-0">
-            {isInbox && item.status === 'pending' && (
-              <>
-                <Button
-                  size="sm"
-                  onClick={onAccept}
-                  disabled={isResponding}
-                  className="gap-1 text-xs"
-                >
-                  {isResponding ? (
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                  ) : (
-                    <Check className="h-3 w-3" />
-                  )}
-                  Accept
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={onDecline}
-                  disabled={isResponding}
-                  className="gap-1 text-xs"
-                >
-                  <X className="h-3 w-3" />
-                </Button>
-              </>
-            )}
-            {item.status === 'accepted' && (
-              <Button size="sm" variant="outline" className="gap-1 text-xs" asChild>
-                <Link to={ROUTES.CHATS}>
-                  <MessageCircle className="h-3 w-3" />
-                  Chat
-                </Link>
-              </Button>
-            )}
-          </div>
+          )}
         </CardContent>
       </Card>
     </motion.div>

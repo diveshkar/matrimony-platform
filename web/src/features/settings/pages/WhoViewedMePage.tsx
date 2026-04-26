@@ -61,7 +61,7 @@ export default function WhoViewedMePage() {
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-sm">
                 <Users className="h-8 w-8 text-accent-400" />
               </div>
-              <p className="text-4xl sm:text-5xl font-heading font-bold text-white mb-2">{viewCount}</p>
+              <p className="text-4xl sm:text-5xl font-sans font-bold text-white mb-2 tabular-nums tracking-tight">{viewCount}</p>
               <p className="text-sm text-white/70">
                 {viewCount === 1 ? 'person has' : 'people have'} viewed your profile
               </p>

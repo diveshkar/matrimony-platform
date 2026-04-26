@@ -69,7 +69,7 @@ export default function SearchPage() {
           <SlidersHorizontal className="h-4 w-4" />
           Filters
           {activeFilterCount > 0 && (
-            <Badge variant="default" className="h-5 min-w-[20px] p-0 justify-center text-[10px]">
+            <Badge variant="default" className="h-5 min-w-[20px] p-0 justify-center text-[10px] tabular-nums">
               {activeFilterCount}
             </Badge>
           )}
