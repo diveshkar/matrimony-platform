@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Compass, Sparkles, Star, Eye } from 'lucide-react';
+import { Home, Compass, Sparkles, Search, Star, Eye } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
 import { ROUTES } from '@/lib/constants/routes';
 import { cn } from '@/lib/utils/cn';
@@ -8,6 +8,7 @@ const items = [
   { label: 'Home', href: ROUTES.DASHBOARD, icon: Home },
   { label: 'Discover', href: ROUTES.DISCOVER, icon: Compass },
   { label: 'Recently Joined', href: ROUTES.RECENTLY_JOINED, icon: Sparkles },
+  { label: 'Search', href: ROUTES.SEARCH, icon: Search },
   { label: 'Shortlist', href: ROUTES.SHORTLIST, icon: Star },
   { label: 'Viewed', href: ROUTES.WHO_VIEWED, icon: Eye },
 ];
