@@ -16,7 +16,7 @@ interface StepProps {
 const countryCodes = [
   { code: '+44', country: 'UK', flag: '🇬🇧' },
   { code: '+94', country: 'LK', flag: '🇱🇰' },
-  { code: '+91', country: 'IN', flag: '🇮🇳' },
+  // { code: '+91', country: 'IN', flag: '🇮🇳' },
   { code: '+1', country: 'US/CA', flag: '🇺🇸' },
   { code: '+61', country: 'AU', flag: '🇦🇺' },
   { code: '+971', country: 'UAE', flag: '🇦🇪' },
@@ -36,7 +36,7 @@ const countryCodes = [
 ];
 
 const countryToCode: Record<string, string> = {
-  'United Kingdom': '+44', 'Sri Lanka': '+94', 'India': '+91',
+  'United Kingdom': '+44', 'Sri Lanka': '+94', // 'India': '+91',
   'United States': '+1', 'Canada': '+1', 'Australia': '+61',
   'United Arab Emirates': '+971', 'Germany': '+49', 'France': '+33',
   'Italy': '+39', 'Switzerland': '+41', 'Netherlands': '+31',

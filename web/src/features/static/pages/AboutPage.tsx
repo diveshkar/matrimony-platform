@@ -21,7 +21,7 @@ const values = [
   {
     icon: Globe,
     title: 'Global Reach',
-    desc: 'Connecting Tamil hearts across the UK, Sri Lanka, India, Canada, Australia, and beyond.',
+    desc: 'Connecting Tamil hearts across the UK, Sri Lanka, Canada, Australia, and beyond.',
   },
   {
     icon: Users,
@@ -35,7 +35,7 @@ export default function AboutPage() {
     <div className="py-16 sm:py-20">
       <SEO
         title="About The World Tamil Matrimony"
-        description="Learn about The World Tamil Matrimony — the trusted UK-based platform for the global Tamil community. Verified profiles, smart matching, and family-first values for Tamil singles in the UK, Sri Lanka, India, Canada, Australia, and worldwide."
+        description="Learn about The World Tamil Matrimony — the trusted UK-based platform for the global Tamil community. Verified profiles, smart matching, and family-first values for Tamil singles in the UK, Sri Lanka, Canada, Australia, and worldwide."
         keywords="about Tamil matrimony, premium Tamil matrimony platform, UK Tamil matrimony, Tamil diaspora matrimony, trusted Tamil matrimony, family-first Tamil matrimony"
         path="/about"
         structuredData={{
@@ -49,7 +49,7 @@ export default function AboutPage() {
             description:
               'Premium Tamil matrimony platform connecting Tamil hearts worldwide',
             foundingDate: '2026',
-            areaServed: ['United Kingdom', 'Sri Lanka', 'India', 'Canada', 'Australia'],
+            areaServed: ['United Kingdom', 'Sri Lanka', /* 'India', */ 'Canada', 'Australia'],
           },
         }}
       />

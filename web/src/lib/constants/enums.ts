@@ -162,7 +162,7 @@ const CURRENCY_MAP: Record<string, { symbol: string; ranges: number[] }> = {
   'United States': { symbol: '$', ranges: [30000, 50000, 75000, 100000, 150000] },
   'Canada': { symbol: 'C$', ranges: [30000, 50000, 75000, 100000, 150000] },
   'Australia': { symbol: 'A$', ranges: [30000, 50000, 75000, 100000, 150000] },
-  'India': { symbol: '₹', ranges: [300000, 600000, 1000000, 1500000, 2500000] },
+  // 'India': { symbol: '₹', ranges: [300000, 600000, 1000000, 1500000, 2500000] },
   'Sri Lanka': { symbol: 'Rs', ranges: [500000, 1000000, 2000000, 3000000, 5000000] },
   'Germany': { symbol: '€', ranges: [25000, 40000, 60000, 80000, 100000] },
   'France': { symbol: '€', ranges: [25000, 40000, 60000, 80000, 100000] },
@@ -200,7 +200,7 @@ export const INCOME_OPTIONS = getIncomeOptions('United Kingdom');
 export const COUNTRY_OPTIONS = [
   { value: 'United Kingdom', label: 'United Kingdom' },
   { value: 'Sri Lanka', label: 'Sri Lanka' },
-  { value: 'India', label: 'India' },
+  // { value: 'India', label: 'India' },
   { value: 'Canada', label: 'Canada' },
   { value: 'Australia', label: 'Australia' },
   { value: 'United States', label: 'United States' },

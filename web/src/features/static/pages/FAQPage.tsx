@@ -26,7 +26,7 @@ const faqs = [
   },
   {
     q: 'Can I use this from outside the UK?',
-    a: 'Absolutely. While we are UK-based, our platform serves the global Tamil community. Members from Sri Lanka, India, Canada, Australia, the UAE, and many other countries use our platform.',
+    a: 'Absolutely. While we are UK-based, our platform serves the global Tamil community. Members from Sri Lanka, Canada, Australia, the UAE, and many other countries use our platform.',
   },
   {
     q: 'What payment methods do you accept?',

@@ -60,7 +60,7 @@ const features = [
     icon: Globe,
     title: 'Global Tamil Community',
     description:
-      'Connect with Tamil singles in the UK, Sri Lanka, India, Canada, Australia, and worldwide.',
+      'Connect with Tamil singles in the UK, Sri Lanka, Canada, Australia, and worldwide.',
     color: 'bg-amber-50 text-amber-600',
   },
 ];
@@ -149,7 +149,7 @@ export default function HomePage() {
     <div className="overflow-hidden">
       <SEO
         title="The World Tamil Matrimony - Premium Tamil Matrimony Worldwide"
-        description="Find your life partner on The World Tamil Matrimony — the trusted platform for Tamil singles in the UK, Sri Lanka, India, Canada, Australia, and worldwide. Verified profiles, smart matching, family-first values."
+        description="Find your life partner on The World Tamil Matrimony — the trusted platform for Tamil singles in the UK, Sri Lanka, Canada, Australia, and worldwide. Verified profiles, smart matching, family-first values."
         keywords="Tamil matrimony, UK Tamil matrimony, Sri Lankan Tamil matrimony, Jaffna matrimony, Vellala matrimony, Chettiar matrimony, Mudaliar matrimony, Iyer matrimony, Iyengar matrimony, Nadar matrimony, Tamil Hindu matrimony, Tamil Christian matrimony, NRI Tamil matrimony, London Tamil matrimony, Toronto Tamil matrimony, Sydney Tamil matrimony, Colombo matrimony, free Tamil matrimony, premium Tamil matrimony, Tamil bride finder, Tamil groom search, Tamil matrimony 2026"
         path="/"
         structuredData={{
