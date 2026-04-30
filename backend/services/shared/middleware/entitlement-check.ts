@@ -14,6 +14,15 @@ interface UsageRecord {
   ttl: number;
 }
 
+// For launch period
+const LAUNCH_START = new Date('2026-04-30T00:00:00Z');
+const LAUNCH_END = new Date('2026-05-15T00:00:00Z');
+
+export function isLaunchPeriod(): boolean {
+  const now = new Date();
+  return now >= LAUNCH_START && now <= LAUNCH_END;
+}
+
 function todayKey(): string {
   return new Date().toISOString().split('T')[0];
 }
@@ -78,7 +87,22 @@ export async function checkEntitlement(
   userId: string,
   action: 'profile_view' | 'send_interest' | 'chat_access' | 'who_viewed_me' | 'contact_info',
 ): Promise<void> {
-  const entitlement = await subRepo.getUserEntitlement(userId);
+  // after launch period, update let to const
+  let entitlement = await subRepo.getUserEntitlement(userId);
+
+  // For launch period
+  if (isLaunchPeriod()) {
+    entitlement = {
+      ...entitlement,
+      profileViewsPerDay: -1,
+      profileViewsPerMonth: -1,
+      interestsPerDay: -1,
+      interestsPerMonth: -1,
+      chatAccess: true,
+      whoViewedMeAccess: true,
+      contactInfoAccess: true,
+    };
+  }
 
   switch (action) {
     case 'profile_view': {
@@ -135,7 +159,22 @@ export async function getRemainingUsage(userId: string): Promise<{
   whoViewedMeAccess: boolean;
   contactInfoAccess: boolean;
 }> {
-  const entitlement = await subRepo.getUserEntitlement(userId);
+  // after launch period, update let to const
+  let entitlement = await subRepo.getUserEntitlement(userId);
+
+  // For launch period
+  if (isLaunchPeriod()) {
+    entitlement = {
+      ...entitlement,
+      profileViewsPerDay: -1,
+      profileViewsPerMonth: -1,
+      interestsPerDay: -1,
+      interestsPerMonth: -1,
+      chatAccess: true,
+      whoViewedMeAccess: true,
+      contactInfoAccess: true,
+    };
+  }
 
   const viewsDaily = entitlement.profileViewsPerDay;
   const viewsMonthly = entitlement.profileViewsPerMonth ?? -1;

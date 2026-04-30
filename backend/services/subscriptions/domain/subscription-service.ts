@@ -237,8 +237,16 @@ export class SubscriptionService {
     const sub = await this.repo.getSubscription(userId);
     const entitlements = await this.repo.getUserEntitlement(userId);
 
+    let finalSub = sub || { planId: 'free', status: 'active' };
+
+    // For launch period
+    const { isLaunchPeriod } = await import('../../shared/middleware/entitlement-check.js');
+    if (isLaunchPeriod()) {
+      finalSub = { planId: 'platinum', status: 'active' } as any;
+    }
+
     return {
-      subscription: sub || { planId: 'free', status: 'active' },
+      subscription: finalSub,
       entitlements,
     };
   }

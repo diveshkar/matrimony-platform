@@ -4,6 +4,7 @@ import { PhotoRepository } from '../repositories/photo-repository.js';
 import { ValidationError, NotFoundError } from '../../shared/errors/app-errors.js';
 import { logger } from '../../shared/utils/logger.js';
 import type { PhotoMetadata } from '../../../packages/shared-types/index.js';
+import { isLaunchPeriod } from '@shared/middleware/entitlement-check.js';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -37,14 +38,20 @@ export class UploadService {
     const { SubscriptionRepository } = await import('../../subscriptions/repositories/subscription-repository.js');
     const subRepo = new SubscriptionRepository();
     const sub = await subRepo.getSubscription(userId);
-    const planId = sub?.status === 'active' ? sub.planId : 'free';
+    let planId = sub?.status === 'active' ? sub.planId : 'free';
+
+    // For launch period
+    if (isLaunchPeriod()) {
+       planId = 'platinum';
+    }
+
     const maxPhotos = UPLOAD_LIMITS[planId] || 3;
 
     const count = await this.repo.getPhotoCount(userId);
     if (count >= maxPhotos) {
       throw new ValidationError(
         maxPhotos < 6
-          ? `Free plan allows ${maxPhotos} photos. Upgrade to Silver+ to upload up to 6.`
+          ? `Free plan allows ${maxPhotos} photos. Upgrade to Gold or above to upload up to 6.`
           : `Maximum ${maxPhotos} photos allowed`,
       );
     }
@@ -140,7 +147,15 @@ export class UploadService {
       const { SubscriptionRepository } = await import('../../subscriptions/repositories/subscription-repository.js');
       const subRepo = new SubscriptionRepository();
       const sub = await subRepo.getSubscription(userId);
-      const planId = sub?.status === 'active' ? sub.planId : 'free';
+
+      // after launch period, update let to const
+      let planId = sub?.status === 'active' ? sub.planId : 'free';
+
+      // For launch period
+      if (isLaunchPeriod()) {
+        planId = 'platinum';
+      }
+
       if (planId === 'free') {
         throw new ValidationError('Photo visibility controls require Silver plan or above. Upgrade to manage who sees your photos.');
       }

@@ -43,9 +43,13 @@ export function Header() {
   const navLinks = isAuthenticated ? authNavLinks : publicNavLinks;
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/80">
-      <div className="page-container flex h-16 items-center justify-between">
-        <Logo size="md" />
+    <>
+      <div className="bg-gradient-to-r from-accent-500 to-accent-600 text-white text-center py-2 px-4 text-sm font-medium shadow-sm w-full">
+        🎉 Launch Offer: Enjoy all Platinum features for free until May 15th!
+      </div>
+      <header className="sticky top-0 z-40 w-full border-b bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/80">
+        <div className="page-container flex h-16 items-center justify-between">
+          <Logo size="md" />
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1">
@@ -95,6 +99,7 @@ export function Header() {
         </div>
       </div>
     </header>
+    </>
   );
 }
 

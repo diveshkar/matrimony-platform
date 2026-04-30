@@ -103,8 +103,8 @@ function UsageItem({
         </div>
         <span className="text-[10px] text-muted-foreground">{label}</span>
       </div>
-      <p className={cn('text-sm font-bold', isLow ? 'text-destructive' : 'text-foreground')}>
-        {unlimited ? '∞' : remaining}
+      <p className={cn('text-xs font-bold', isLow ? 'text-destructive' : 'font-sans text-emerald-600')}>
+        {unlimited ? 'Unlimited' : remaining}
         {!unlimited && <span className="text-[10px] font-normal text-muted-foreground"> left this month</span>}
       </p>
       {!unlimited && (
