@@ -19,7 +19,7 @@ const countryCodes = [
   // { code: '+91', country: 'IN', flag: '🇮🇳' },
   { code: '+1', country: 'US/CA', flag: '🇺🇸' },
   { code: '+61', country: 'AU', flag: '🇦🇺' },
-  { code: '+971', country: 'UAE', flag: '🇦🇪' },
+  // { code: '+971', country: 'UAE', flag: '🇦🇪' },
   { code: '+49', country: 'DE', flag: '🇩🇪' },
   { code: '+33', country: 'FR', flag: '🇫🇷' },
   { code: '+39', country: 'IT', flag: '🇮🇹' },
@@ -31,18 +31,19 @@ const countryCodes = [
   { code: '+974', country: 'QA', flag: '🇶🇦' },
   { code: '+966', country: 'SA', flag: '🇸🇦' },
   { code: '+65', country: 'SG', flag: '🇸🇬' },
-  { code: '+60', country: 'MY', flag: '🇲🇾' },
+  // { code: '+60', country: 'MY', flag: '🇲🇾' },
   { code: '+64', country: 'NZ', flag: '🇳🇿' },
 ];
 
 const countryToCode: Record<string, string> = {
   'United Kingdom': '+44', 'Sri Lanka': '+94', // 'India': '+91',
   'United States': '+1', 'Canada': '+1', 'Australia': '+61',
-  'United Arab Emirates': '+971', 'Germany': '+49', 'France': '+33',
+  // 'United Arab Emirates': '+971',
+  'Germany': '+49', 'France': '+33',
   'Italy': '+39', 'Switzerland': '+41', 'Netherlands': '+31',
   'Norway': '+47', 'Sweden': '+46', 'Denmark': '+45',
   'Qatar': '+974', 'Saudi Arabia': '+966',
-  'Singapore': '+65', 'Malaysia': '+60', 'New Zealand': '+64',
+  'Singapore': '+65', /* 'Malaysia': '+60', */ 'New Zealand': '+64',
 };
 
 type PhoneStep = 'enter' | 'verify' | 'verified';

@@ -19,11 +19,11 @@ const countryCodes = [
   { code: '+91', country: 'IN', flag: '🇮🇳' },
   { code: '+1', country: 'US/CA', flag: '🇺🇸' },
   { code: '+61', country: 'AU', flag: '🇦🇺' },
-  { code: '+971', country: 'UAE', flag: '🇦🇪' },
+  // { code: '+971', country: 'UAE', flag: '🇦🇪' },
   { code: '+49', country: 'DE', flag: '🇩🇪' },
   { code: '+33', country: 'FR', flag: '🇫🇷' },
   { code: '+65', country: 'SG', flag: '🇸🇬' },
-  { code: '+60', country: 'MY', flag: '🇲🇾' },
+  // { code: '+60', country: 'MY', flag: '🇲🇾' },
   { code: '+64', country: 'NZ', flag: '🇳🇿' },
 ];
 
