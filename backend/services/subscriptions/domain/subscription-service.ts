@@ -4,7 +4,7 @@ import { BaseRepository } from '../../shared/repositories/base-repository.js';
 import { ValidationError } from '../../shared/errors/app-errors.js';
 import { nowISO } from '../../shared/utils/date.js';
 import { logger } from '../../shared/utils/logger.js';
-import { sendEmail } from '../../shared/utils/email-service.js';
+
 
 let _stripe: Stripe | null = null;
 function getStripe(): Stripe {
@@ -196,7 +196,6 @@ export class SubscriptionService {
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice;
         const stripeSubId = invoice.subscription as string;
-        const stripeCustomerId = invoice.customer as string;
         if (!stripeSubId) break;
 
         const userId = await this.repo.findUserByStripeSubscriptionId(stripeSubId);
@@ -207,32 +206,9 @@ export class SubscriptionService {
 
         // Mark the subscription so the next sync — or any retry-success
         // (`invoice.paid`) — can reason about the failing state.
+        // Stripe's built-in dunning emails handle notifying the user.
         await this.repo.updateSubscription(userId, { paymentFailing: true });
-
-        // Pull the user's email + send a dunning notification with a
-        // Stripe Customer Portal link so they can update their card
-        // without ever leaving Stripe's PCI-secure surface.
-        try {
-          const account = await this.coreRepo.get<{ email?: string; phone?: string }>(
-            `USER#${userId}`,
-            'ACCOUNT#v1',
-          );
-          const recipient = account?.email;
-          if (!recipient) {
-            logger.warn('Payment failed but user has no email on file', { userId });
-            break;
-          }
-
-          const portalUrl = await this.createBillingPortalUrl(stripeCustomerId);
-          const nextAttempt = (invoice as unknown as { next_payment_attempt?: number }).next_payment_attempt;
-          await sendPaymentFailedEmail(recipient, portalUrl, nextAttempt);
-          logger.info('Payment-failed email sent', { userId });
-        } catch (err) {
-          logger.error('Failed to send payment-failed email', {
-            userId,
-            error: String(err),
-          });
-        }
+        logger.info('Payment failing flag set', { userId, stripeSubId });
         break;
       }
 
@@ -313,60 +289,3 @@ export class SubscriptionService {
   }
 }
 
-/**
- * Dunning email sent when an automatic renewal charge fails. Goes via
- * the existing dual-provider pipeline (Brevo primary, Resend fallback).
- *
- * The email contains a one-time Stripe Customer Portal link so the user
- * can update their card without us showing anything billing-related on
- * the website itself.
- */
-async function sendPaymentFailedEmail(
-  to: string,
-  portalUrl: string,
-  nextAttemptUnix?: number,
-): Promise<void> {
-  const nextAttemptText = nextAttemptUnix
-    ? new Date(nextAttemptUnix * 1000).toLocaleDateString('en-GB', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-      })
-    : 'within the next few days';
-
-  const html = `
-    <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">
-      <h2 style="color: #8B1A4A; margin: 0 0 16px;">Your last payment didn't go through</h2>
-      <p style="color: #333; line-height: 1.6; margin: 0 0 16px;">
-        We tried to renew your subscription with The World Tamil Matrimony but the
-        charge was declined by your bank.
-      </p>
-      <p style="color: #333; line-height: 1.6; margin: 0 0 24px;">
-        We'll automatically try again on <strong>${nextAttemptText}</strong>.
-        To avoid any interruption to your account, please update your card details below.
-      </p>
-      <div style="text-align: center; margin: 32px 0;">
-        <a href="${portalUrl}"
-           style="background: #8B1A4A; color: white; padding: 14px 28px; border-radius: 12px; text-decoration: none; font-weight: 600; display: inline-block;">
-          Update payment method
-        </a>
-      </div>
-      <p style="color: #666; font-size: 13px; line-height: 1.6; margin: 24px 0 0;">
-        This link is secure and managed by Stripe — we never see or store your card details.
-      </p>
-      <p style="color: #999; font-size: 12px; margin-top: 32px;">
-        If you didn't expect this email or no longer wish to subscribe, you can ignore it
-        and your subscription will be cancelled automatically after several failed attempts.
-      </p>
-    </div>
-  `;
-
-  const text = `Your last payment didn't go through.\n\nWe tried to renew your subscription with The World Tamil Matrimony but the charge was declined.\n\nWe'll try again on ${nextAttemptText}. To avoid any interruption, update your card here:\n${portalUrl}\n\nThis link is managed by Stripe — we never see or store your card details.`;
-
-  await sendEmail({
-    to,
-    subject: 'Your subscription payment failed — please update your card',
-    html,
-    text,
-  });
-}
