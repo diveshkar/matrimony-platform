@@ -1,5 +1,5 @@
 import { BaseRepository } from '../../shared/repositories/base-repository.js';
-import { nowISO } from '../../shared/utils/date.js';
+import { nowISO, isLaunchPeriod } from '../../shared/utils/date.js';
 
 export interface SubscriptionRecord {
   PK: string;
@@ -18,6 +18,7 @@ export interface SubscriptionRecord {
   // the next successful invoice.paid. Used by the dunning email flow to
   // know which users are currently in a card-failure state.
   paymentFailing?: boolean;
+  cancelAtPeriodEnd?: boolean;
   schemaVersion: number;
   createdAt: string;
   updatedAt: string;
@@ -101,7 +102,12 @@ export class SubscriptionRepository extends BaseRepository {
 
   async getUserEntitlement(userId: string): Promise<EntitlementRecord> {
     const sub = await this.getSubscription(userId);
-    const planId = sub?.status === 'active' ? sub.planId : 'free';
+    let planId = sub?.status === 'active' ? sub.planId : 'free';
+    
+    if (isLaunchPeriod()) {
+      planId = 'platinum';
+    }
+    
     const entitlement = await this.getEntitlement(planId);
 
     if (!entitlement) {

@@ -21,6 +21,7 @@ export interface MySubscription {
   subscription: {
     planId: string;
     status: string;
+    cancelAtPeriodEnd?: boolean;
     startDate?: string;
     endDate?: string;
   };

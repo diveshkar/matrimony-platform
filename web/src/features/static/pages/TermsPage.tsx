@@ -24,8 +24,9 @@ export default function TermsPage() {
                 1. Acceptance of Terms
               </h2>
               <p>
-                By accessing or using Matrimony, you agree to be bound by these Terms of Service and
-                our Privacy Policy. If you do not agree, please do not use our services.
+                By accessing or using The World Tamil Matrimony, you agree to be bound by these
+                Terms of Service and our Privacy Policy. If you do not agree, please do not use our
+                services.
               </p>
             </section>
 
@@ -76,9 +77,9 @@ export default function TermsPage() {
                 6. Intellectual Property
               </h2>
               <p>
-                All content, design, and technology on this platform is owned by Matrimony. You may
-                not copy, reproduce, or distribute any part of the service without written
-                permission.
+                All content, design, and technology on this platform is owned by The World Tamil
+                Matrimony. You may not copy, reproduce, or distribute any part of the service
+                without written permission.
               </p>
             </section>
 

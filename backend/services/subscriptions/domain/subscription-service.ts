@@ -240,7 +240,7 @@ export class SubscriptionService {
     let finalSub = sub || { planId: 'free', status: 'active' };
 
     // For launch period
-    const { isLaunchPeriod } = await import('../../shared/middleware/entitlement-check.js');
+    const { isLaunchPeriod } = await import('../../shared/utils/date.js');
     if (isLaunchPeriod()) {
       finalSub = { planId: 'platinum', status: 'active' } as any;
     }
@@ -275,25 +275,22 @@ export class SubscriptionService {
       throw new ValidationError('No active subscription to cancel');
     }
 
-    // Cancel in Stripe first (stops future charges)
+    // Cancel in Stripe to stop future charges at period end
     if (sub.stripeSubscriptionId && !sub.stripeSubscriptionId.startsWith('sub_test_')) {
       try {
-        await getStripe().subscriptions.cancel(sub.stripeSubscriptionId);
-        logger.info('Stripe subscription cancelled', { stripeSubId: sub.stripeSubscriptionId });
+        await getStripe().subscriptions.update(sub.stripeSubscriptionId, { cancel_at_period_end: true });
+        logger.info('Stripe subscription set to cancel at period end', { stripeSubId: sub.stripeSubscriptionId });
       } catch (err) {
-        logger.error('Failed to cancel Stripe subscription', { error: String(err), stripeSubId: sub.stripeSubscriptionId });
+        logger.error('Failed to update Stripe subscription', { error: String(err), stripeSubId: sub.stripeSubscriptionId });
         throw new ValidationError('Failed to cancel subscription with payment provider. Please try again or contact support.');
       }
     }
 
     // Only update DB if Stripe succeeded (or was test/seeded)
-    await this.repo.updateSubscription(userId, { status: 'cancelled' });
-    if (sub.stripeSubscriptionId) {
-      await this.repo.deleteStripeSubscriptionIndex(sub.stripeSubscriptionId);
-    }
-    logger.info('Subscription cancelled', { userId, planId: sub.planId });
+    await this.repo.updateSubscription(userId, { cancelAtPeriodEnd: true });
+    logger.info('Subscription set to cancel at period end', { userId, planId: sub.planId });
 
-    return { status: 'subscription_cancelled' };
+    return { status: 'subscription_cancelled_at_period_end' };
   }
 }
 

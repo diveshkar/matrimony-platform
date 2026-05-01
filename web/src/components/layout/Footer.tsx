@@ -14,10 +14,11 @@ const footerLinks = {
   legal: [
     { label: 'Terms of Service', href: ROUTES.TERMS },
     { label: 'Privacy Policy', href: ROUTES.PRIVACY },
+    { label: 'Refund Policy', href: ROUTES.REFUND },
     { label: 'Safety Tips', href: ROUTES.SAFETY },
   ],
   product: [
-    { label: 'Plans & Pricing', href: ROUTES.PLANS },
+    { label: 'Plans & Pricing', href: '/#plans' },
     { label: 'How It Works', href: '/#how-it-works' },
     { label: 'Success Stories', href: '/#success-stories' },
   ],

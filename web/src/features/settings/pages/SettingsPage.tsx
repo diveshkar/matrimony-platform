@@ -100,6 +100,7 @@ export default function SettingsPage() {
   const [deleting, setDeleting] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const planId = subResponse?.success ? subResponse.data.subscription.planId : 'free';
+  const cancelAtPeriodEnd = subResponse?.success ? subResponse.data.subscription.cancelAtPeriodEnd : false;
   const isPremium = planId !== 'free';
   const planLabel = planId.charAt(0).toUpperCase() + planId.slice(1);
 
@@ -173,7 +174,7 @@ export default function SettingsPage() {
                   variant={isPremium ? 'gold' : 'outline'}
                   className="mt-0.5 text-[9px]"
                 >
-                  {isPremium ? 'Active' : 'Free'}
+                  {isPremium ? (cancelAtPeriodEnd ? 'Cancels Soon' : 'Active') : 'Free'}
                 </Badge>
               </div>
             </div>

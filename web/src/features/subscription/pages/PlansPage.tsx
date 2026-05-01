@@ -81,6 +81,8 @@ export default function PlansPage() {
   // Silver hidden from UI but kept in backend/code for future re-enable
   const plans = plansResponse?.success ? plansResponse.data.filter((p) => p.id !== 'silver') : [];
   const currentPlan = subResponse?.success ? subResponse.data.subscription.planId : 'free';
+  const cancelAtPeriodEnd = subResponse?.success ? subResponse.data.subscription.cancelAtPeriodEnd : false;
+  const isLaunchPeriod = new Date() <= new Date('2026-05-15T00:00:00Z');
 
   if (isLoading) {
     return (
@@ -115,10 +117,32 @@ export default function PlansPage() {
         {currentPlan !== 'free' && (
           <Badge variant="gold" className="mt-3 text-[10px]">
             <Crown className="mr-1 h-3 w-3" />
-            {currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)} Plan Active
+            {currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)} Plan Active {cancelAtPeriodEnd && '(Cancels soon)'}
           </Badge>
         )}
       </motion.div>
+
+      {/* Launch Offer Banner */}
+      {isLaunchPeriod && currentPlan === 'platinum' && !cancelAtPeriodEnd && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mb-8 p-4 rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white shadow-soft-lg relative overflow-hidden max-w-2xl mx-auto"
+        >
+          <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
+                <Zap className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg leading-tight">Launch Promotion Active</h3>
+                <p className="text-sm text-violet-100 mt-0.5">You are enjoying full Platinum access for free until May 15th! Subscribe now to lock in your plan after the offer ends.</p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* Plan Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6 max-w-2xl mx-auto">
@@ -190,7 +214,7 @@ export default function PlansPage() {
                         Redirecting...
                       </>
                     ) : isCurrentPlan ? (
-                      'Current Plan'
+                      cancelAtPeriodEnd ? 'Cancels at period end' : 'Current Plan'
                     ) : (
                       `Get ${plan.name}`
                     )}
@@ -312,7 +336,7 @@ export default function PlansPage() {
       )}
 
       {/* Cancel Plan */}
-      {currentPlan !== 'free' && (
+      {currentPlan !== 'free' && !cancelAtPeriodEnd && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -323,7 +347,7 @@ export default function PlansPage() {
             onClick={() => setCancelOpen(true)}
             className="text-xs text-muted-foreground hover:text-destructive transition-colors underline underline-offset-2"
           >
-            Cancel my subscription and switch to Free
+            Cancel my subscription
           </button>
         </motion.div>
       )}
@@ -349,11 +373,11 @@ export default function PlansPage() {
             </div>
             <DialogTitle className="text-center">Cancel Subscription?</DialogTitle>
             <DialogDescription className="text-center">
-              You'll lose access to your {currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)} plan features immediately.
+              You will continue to have access to your {currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)} plan features until the end of your billing period.
             </DialogDescription>
           </DialogHeader>
           <div className="bg-amber-50/50 rounded-xl p-4 text-sm space-y-2">
-            <p className="font-medium text-amber-800">You'll lose access to:</p>
+            <p className="font-medium text-amber-800">After your billing period ends, you'll lose access to:</p>
             <ul className="space-y-1 text-xs text-amber-700">
               {currentPlan === 'platinum' && <li>- Priority search placement</li>}
               {currentPlan === 'platinum' && <li>- 3 profile boosts per month</li>}
@@ -382,7 +406,7 @@ export default function PlansPage() {
                 try {
                   await cancelSub.mutateAsync();
                   setCancelOpen(false);
-                  toast.info('Subscription cancelled', 'You are now on the Free plan');
+                  toast.info('Subscription will be cancelled', 'You will keep your features until the end of the billing period.');
                 } catch {
                   toast.error('Failed to cancel', 'Please try again');
                 }

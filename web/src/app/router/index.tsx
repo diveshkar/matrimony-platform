@@ -12,6 +12,7 @@ const NotFoundPage = lazy(() => import('@/features/home/pages/NotFoundPage'));
 const AboutPage = lazy(() => import('@/features/static/pages/AboutPage'));
 const TermsPage = lazy(() => import('@/features/static/pages/TermsPage'));
 const PrivacyPage = lazy(() => import('@/features/static/pages/PrivacyPage'));
+const RefundPolicyPage = lazy(() => import('@/features/static/pages/RefundPolicyPage'));
 const SafetyPage = lazy(() => import('@/features/static/pages/SafetyPage'));
 const FAQPage = lazy(() => import('@/features/static/pages/FAQPage'));
 const ContactPage = lazy(() => import('@/features/static/pages/ContactPage'));
@@ -72,6 +73,7 @@ export function AppRouter() {
           <Route path={ROUTES.ABOUT} element={<AboutPage />} />
           <Route path={ROUTES.TERMS} element={<TermsPage />} />
           <Route path={ROUTES.PRIVACY} element={<PrivacyPage />} />
+          <Route path={ROUTES.REFUND} element={<RefundPolicyPage />} />
           <Route path={ROUTES.SAFETY} element={<SafetyPage />} />
           <Route path={ROUTES.FAQ} element={<FAQPage />} />
           <Route path={ROUTES.CONTACT} element={<ContactPage />} />

@@ -109,7 +109,7 @@ export default function PrivacyPage() {
               <h2 className="font-heading text-lg font-semibold text-foreground">9. Contact</h2>
               <p>
                 For privacy-related enquiries or to exercise your data rights, contact our Data
-                Protection Officer at privacy@theworldtamilmatrimony.com.
+                Protection Officer at info@theworldtamilmatrimony.com.
               </p>
             </section>
           </div>

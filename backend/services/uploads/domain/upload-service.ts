@@ -4,7 +4,7 @@ import { PhotoRepository } from '../repositories/photo-repository.js';
 import { ValidationError, NotFoundError } from '../../shared/errors/app-errors.js';
 import { logger } from '../../shared/utils/logger.js';
 import type { PhotoMetadata } from '../../../packages/shared-types/index.js';
-import { isLaunchPeriod } from '@shared/middleware/entitlement-check.js';
+import { isLaunchPeriod } from '../../shared/utils/date.js';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
