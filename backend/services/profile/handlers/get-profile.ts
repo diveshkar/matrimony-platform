@@ -58,8 +58,7 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
         const viewerName = (viewerProfile?.name as string) || 'Someone';
         const { SubscriptionRepository } = await import('../../subscriptions/repositories/subscription-repository.js');
         const viewedSubRepo = new SubscriptionRepository();
-        const viewedSub = await viewedSubRepo.getSubscription(profileId);
-        const viewedPlan = viewedSub?.status === 'active' ? viewedSub.planId : 'free';
+        const viewedPlan = await viewedSubRepo.getEffectivePlan(profileId);
 
         const canSeeNames = viewedPlan === 'gold' || viewedPlan === 'platinum';
         const canSeeCount = viewedPlan === 'silver' || canSeeNames;

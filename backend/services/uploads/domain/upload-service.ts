@@ -37,13 +37,7 @@ export class UploadService {
 
     const { SubscriptionRepository } = await import('../../subscriptions/repositories/subscription-repository.js');
     const subRepo = new SubscriptionRepository();
-    const sub = await subRepo.getSubscription(userId);
-    let planId = sub?.status === 'active' ? sub.planId : 'free';
-
-    // For launch period
-    if (isLaunchPeriod()) {
-       planId = 'platinum';
-    }
+    const planId = await subRepo.getEffectivePlan(userId);
 
     const maxPhotos = UPLOAD_LIMITS[planId] || 3;
 
@@ -146,15 +140,7 @@ export class UploadService {
     if (visibility !== 'all') {
       const { SubscriptionRepository } = await import('../../subscriptions/repositories/subscription-repository.js');
       const subRepo = new SubscriptionRepository();
-      const sub = await subRepo.getSubscription(userId);
-
-      // after launch period, update let to const
-      let planId = sub?.status === 'active' ? sub.planId : 'free';
-
-      // For launch period
-      if (isLaunchPeriod()) {
-        planId = 'platinum';
-      }
+      const planId = await subRepo.getEffectivePlan(userId);
 
       if (planId === 'free') {
         throw new ValidationError('Photo visibility controls require Silver plan or above. Upgrade to manage who sees your photos.');

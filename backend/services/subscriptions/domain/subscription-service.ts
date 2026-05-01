@@ -242,7 +242,7 @@ export class SubscriptionService {
     // For launch period
     const { isLaunchPeriod } = await import('../../shared/utils/date.js');
     if (isLaunchPeriod()) {
-      finalSub = { planId: 'platinum', status: 'active' } as any;
+      finalSub = { ...finalSub, planId: 'platinum', status: 'active' } as any;
     }
 
     return {

@@ -314,8 +314,7 @@ export class ProfileService {
         const { SubscriptionRepository } = await import('../../subscriptions/repositories/subscription-repository.js');
         const usage = await getRemainingUsage(viewerId);
         const subRepo = new SubscriptionRepository();
-        const viewerSub = await subRepo.getSubscription(viewerId);
-        viewerPlan = viewerSub?.status === 'active' ? viewerSub.planId : 'free';
+        viewerPlan = await subRepo.getEffectivePlan(viewerId);
         photoViewLimit = PHOTO_VIEW_LIMITS[viewerPlan] || 1;
         hasContactAccess = usage.contactInfoAccess;
       } catch {

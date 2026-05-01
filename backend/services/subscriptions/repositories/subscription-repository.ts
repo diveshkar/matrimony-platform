@@ -96,17 +96,20 @@ export class SubscriptionRepository extends BaseRepository {
     await this.delete(`STRIPE_SUB#${stripeSubId}`, 'INDEX');
   }
 
+  async getEffectivePlan(userId: string): Promise<'free' | 'silver' | 'gold' | 'platinum'> {
+    if (isLaunchPeriod()) {
+      return 'platinum';
+    }
+    const sub = await this.getSubscription(userId);
+    return sub?.status === 'active' ? sub.planId : 'free';
+  }
+
   async getEntitlement(planId: string): Promise<EntitlementRecord | null> {
     return this.get<EntitlementRecord>(`PLAN#${planId}`, 'ENTITLEMENT#v1');
   }
 
   async getUserEntitlement(userId: string): Promise<EntitlementRecord> {
-    const sub = await this.getSubscription(userId);
-    let planId = sub?.status === 'active' ? sub.planId : 'free';
-    
-    if (isLaunchPeriod()) {
-      planId = 'platinum';
-    }
+    const planId = await this.getEffectivePlan(userId);
     
     const entitlement = await this.getEntitlement(planId);
 

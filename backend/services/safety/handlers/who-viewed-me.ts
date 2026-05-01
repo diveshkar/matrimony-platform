@@ -15,8 +15,7 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
   await checkEntitlement(authedEvent.auth.userId, 'who_viewed_me');
 
   const views = await repo.getProfileViews(authedEvent.auth.userId);
-  const sub = await subRepo.getSubscription(authedEvent.auth.userId);
-  const planId = sub?.status === 'active' ? sub.planId : 'free';
+  const planId = await subRepo.getEffectivePlan(authedEvent.auth.userId);
 
   if (planId === 'silver') {
     return success({ count: views.length, items: [], tier: 'count_only' }, requestId);
