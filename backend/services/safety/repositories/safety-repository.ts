@@ -205,7 +205,7 @@ export class SafetyRepository extends BaseRepository {
       limit: limit + 50,
       scanForward: false,
     });
-    return result.items.filter((i) => i.SK.startsWith('NOTIFICATION#')).slice(0, limit);
+    return result.items.filter((i) => i.SK.startsWith('NOTIFICATION#') && !i.isRead).slice(0, limit);
   }
 
   async markNotificationRead(userId: string, sk: string): Promise<void> {
