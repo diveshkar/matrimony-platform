@@ -479,21 +479,8 @@ export class DiscoveryService {
   ): Promise<{ items: DiscoveryProfile[]; nextCursor?: string }> {
     const startKey = cursor ? (() => { try { return JSON.parse(Buffer.from(cursor, 'base64').toString()); } catch { return undefined; } })() : undefined;
 
-    // Fix 6: also fetch interacted users so search excludes them
-    const [blockRecord, interactedResult] = await Promise.all([
-      this.coreRepo.get<{ blockedUserIds?: string[] }>(`USER#${userId}`, 'BLOCK'),
-      this.coreRepo.query<{ SK: string }>(`USER#${userId}`, { limit: 500 }),
-    ]);
+    const blockRecord = await this.coreRepo.get<{ blockedUserIds?: string[] }>(`USER#${userId}`, 'BLOCK');
     const blockedIds = new Set<string>(blockRecord?.blockedUserIds || []);
-
-    const interactedIds = new Set<string>();
-    for (const item of interactedResult.items) {
-      if (item.SK.startsWith('INTEREST#OUT#')) {
-        interactedIds.add(item.SK.replace('INTEREST#OUT#', ''));
-      } else if (item.SK.startsWith('INTEREST#IN#')) {
-        interactedIds.add(item.SK.replace('INTEREST#IN#', ''));
-      }
-    }
 
     let results: { items: DiscoveryProfile[]; lastKey?: Record<string, unknown> };
     const usedGetAllProfiles = !(filters.country && filters.gender) && !(filters.religion && filters.gender);
@@ -521,10 +508,7 @@ export class DiscoveryService {
     });
 
     let filtered = deduped.filter(
-      (p) =>
-        p.userId !== userId &&
-        !blockedIds.has(p.userId) &&
-        !interactedIds.has(p.userId), // Fix 6: skip already-interacted
+      (p) => p.userId !== userId && !blockedIds.has(p.userId)
     );
 
     if (filters.gender) filtered = filtered.filter((p) => p.gender === filters.gender);
