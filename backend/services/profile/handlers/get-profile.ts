@@ -61,17 +61,17 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
         const viewedPlan = await viewedSubRepo.getEffectivePlan(profileId);
 
         const canSeeNames = viewedPlan === 'gold' || viewedPlan === 'platinum';
-        const canSeeCount = viewedPlan === 'silver' || canSeeNames;
+        // const canSeeCount = viewedPlan === 'silver' || canSeeNames;
 
         await repo.createNotification(profileId, {
           type: 'profile_viewed',
           title: 'Someone viewed your profile',
           message: canSeeNames
             ? `${viewerName} viewed your profile`
-            : canSeeCount
-              ? 'Someone viewed your profile. Upgrade to Gold to see who!'
+            // : canSeeCount
+              // ? 'Someone viewed your profile. Upgrade to Gold to see who!'
               : 'Someone viewed your profile. Upgrade to see who!',
-          actionUrl: canSeeCount ? '/who-viewed-me' : '/plans',
+          actionUrl: canSeeNames ? '/who-viewed-me' : '/plans',
         });
       }
     } catch (err) {
