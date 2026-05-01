@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom';
-import { Bell, Heart, MessageCircle, Crown, CheckCheck, User } from 'lucide-react';
+import { Bell, Heart, MessageCircle, Crown, CheckCheck, User, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/common/EmptyState';
 import { cn } from '@/lib/utils/cn';
 import { formatRelativeTime } from '@/lib/utils/format';
-import { useNotifications, useMarkAllRead } from '../hooks/useSettings';
+import { useNotifications, useMarkAllRead, useMarkNotificationRead } from '../hooks/useSettings';
 
 const typeIcons: Record<string, typeof Bell> = {
   interest_received: Heart,
@@ -19,6 +19,7 @@ const typeIcons: Record<string, typeof Bell> = {
 export default function NotificationsPage() {
   const { data: response, isLoading } = useNotifications();
   const markAll = useMarkAllRead();
+  const markOne = useMarkNotificationRead();
 
   const notifications = response?.success ? response.data.items : [];
   const unreadCount = response?.success ? response.data.unreadCount : 0;
@@ -68,38 +69,55 @@ export default function NotificationsPage() {
           {notifications.map((notif) => {
             const Icon = typeIcons[notif.type] || Bell;
             return (
-              <Link key={notif.notificationId} to={notif.actionUrl || '#'}>
-                <Card
-                  className={cn(
-                    'border-0 transition-shadow rounded-xl',
-                    notif.isRead
-                      ? 'shadow-soft-sm'
-                      : 'shadow-soft bg-primary-50/30 border-l-4 border-l-primary-700',
-                  )}
-                >
-                  <CardContent className="p-4 flex items-start gap-3">
-                    <div
-                      className={cn(
-                        'flex h-9 w-9 shrink-0 items-center justify-center rounded-full',
-                        notif.isRead
-                          ? 'bg-muted text-muted-foreground'
-                          : 'bg-primary-100 text-primary-700',
-                      )}
-                    >
-                      <Icon className="h-4 w-4" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className={cn('text-sm', !notif.isRead && 'font-semibold')}>
-                        {notif.title}
-                      </h3>
-                      <p className="text-xs text-muted-foreground mt-0.5">{notif.message}</p>
-                    </div>
-                    <span className="text-[10px] text-muted-foreground shrink-0">
-                      {formatRelativeTime(notif.createdAt)}
-                    </span>
-                  </CardContent>
-                </Card>
-              </Link>
+              <div key={notif.notificationId} className="flex gap-2 items-start">
+                <Link to={notif.actionUrl || '#'} className="flex-1">
+                  <Card
+                    className={cn(
+                      'border-0 transition-shadow rounded-xl',
+                      notif.isRead
+                        ? 'shadow-soft-sm'
+                        : 'shadow-soft bg-primary-50/30 border-l-4 border-l-primary-700',
+                    )}
+                  >
+                    <CardContent className="p-4 flex items-start gap-3">
+                      <div
+                        className={cn(
+                          'flex h-9 w-9 shrink-0 items-center justify-center rounded-full',
+                          notif.isRead
+                            ? 'bg-muted text-muted-foreground'
+                            : 'bg-primary-100 text-primary-700',
+                        )}
+                      >
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className={cn('text-sm', !notif.isRead && 'font-semibold')}>
+                          {notif.title}
+                        </h3>
+                        <p className="text-xs text-muted-foreground mt-0.5">{notif.message}</p>
+                      </div>
+                      <span className="text-[10px] text-muted-foreground shrink-0">
+                        {formatRelativeTime(notif.createdAt)}
+                      </span>
+                    </CardContent>
+                  </Card>
+                </Link>
+                {!notif.isRead && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-lg h-9 w-9 p-0 flex items-center justify-center shrink-0"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      markOne.mutate(notif.SK);
+                    }}
+                    disabled={markOne.isPending}
+                    title="Mark as read"
+                  >
+                    <Check className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             );
           })}
         </div>

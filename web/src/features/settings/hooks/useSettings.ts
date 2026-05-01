@@ -62,6 +62,14 @@ export function useMarkAllRead() {
   });
 }
 
+export function useMarkNotificationRead() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (sk: string) => settingsApi.markNotificationRead(sk),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
+  });
+}
+
 export function usePrivacySettings() {
   return useQuery({ queryKey: ['privacy'], queryFn: () => settingsApi.getPrivacy() });
 }

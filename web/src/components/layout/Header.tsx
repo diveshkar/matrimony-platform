@@ -10,6 +10,7 @@ import {
   Eye,
   Camera,
   LogOut,
+  Check,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,7 +18,7 @@ import { Logo } from '@/components/common/Logo';
 import { useAuth } from '@/lib/auth/auth-context';
 import { useLogout } from '@/features/auth/hooks/useAuthMutation';
 import { useMySubscription } from '@/features/subscription/hooks/useSubscription';
-import { useNotifications, useMarkAllRead } from '@/features/settings/hooks/useSettings';
+import { useNotifications, useMarkAllRead, useMarkNotificationRead } from '@/features/settings/hooks/useSettings';
 import { useConversations } from '@/features/chat/hooks/useChat';
 import { formatRelativeTime } from '@/lib/utils/format';
 import { ROUTES } from '@/lib/constants/routes';
@@ -112,6 +113,7 @@ function NotificationBell() {
   const { isAuthenticated } = useAuth();
   const { data: response, refetch } = useNotifications(isAuthenticated);
   const markAll = useMarkAllRead();
+  const markOne = useMarkNotificationRead();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -163,36 +165,53 @@ function NotificationBell() {
           ) : (
             <div className="max-h-72 overflow-y-auto">
               {notifications.map((n) => (
-                <Link
+                <div
                   key={n.notificationId}
-                  to={n.actionUrl || ROUTES.NOTIFICATIONS}
-                  onClick={() => {
-                    setOpen(false);
-                    if (!n.isRead && n.SK) {
-                      import('@/features/settings/api/settings-api').then(({ settingsApi }) => {
-                        settingsApi.markNotificationRead(n.SK).then(() => refetch());
-                      });
-                    }
-                  }}
-                  className={cn(
-                    'flex items-start gap-3 px-4 py-3 hover:bg-warm-50 transition-colors border-b last:border-b-0',
-                    !n.isRead && 'bg-primary-50/30',
-                  )}
+                  className="flex items-start gap-2 px-4 py-3 hover:bg-warm-50 transition-colors border-b last:border-b-0"
                 >
-                  <div
+                  <Link
+                    to={n.actionUrl || ROUTES.NOTIFICATIONS}
+                    onClick={() => {
+                      setOpen(false);
+                      if (!n.isRead && n.SK) {
+                        import('@/features/settings/api/settings-api').then(({ settingsApi }) => {
+                          settingsApi.markNotificationRead(n.SK).then(() => refetch());
+                        });
+                      }
+                    }}
                     className={cn(
-                      'h-2 w-2 rounded-full mt-1.5 shrink-0',
-                      n.isRead ? 'bg-transparent' : 'bg-primary-700',
+                      'flex items-start gap-3 flex-1 min-w-0',
+                      !n.isRead && 'bg-primary-50/30 -mx-4 px-4 py-3 rounded-lg',
                     )}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className={cn('text-xs', !n.isRead && 'font-semibold')}>{n.title}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{n.message}</p>
-                  </div>
-                  <span className="text-[9px] text-muted-foreground shrink-0">
-                    {formatRelativeTime(n.createdAt)}
-                  </span>
-                </Link>
+                  >
+                    <div
+                      className={cn(
+                        'h-2 w-2 rounded-full mt-1.5 shrink-0',
+                        n.isRead ? 'bg-transparent' : 'bg-primary-700',
+                      )}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className={cn('text-xs', !n.isRead && 'font-semibold')}>{n.title}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{n.message}</p>
+                    </div>
+                    <span className="text-[9px] text-muted-foreground shrink-0">
+                      {formatRelativeTime(n.createdAt)}
+                    </span>
+                  </Link>
+                  {!n.isRead && (
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        markOne.mutate(n.SK);
+                      }}
+                      disabled={markOne.isPending}
+                      className="ml-1 p-1 hover:bg-primary-100 rounded-md transition-colors shrink-0"
+                      title="Mark as read"
+                    >
+                      <Check className="h-3.5 w-3.5 text-primary-700" />
+                    </button>
+                  )}
+                </div>
               ))}
             </div>
           )}
