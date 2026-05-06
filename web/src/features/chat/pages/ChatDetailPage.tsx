@@ -34,9 +34,9 @@ export default function ChatDetailPage() {
   const otherPhoto = currentConv?.otherUserPhoto;
   const otherUserId = currentConv?.otherUserId;
 
-  const { data: otherProfile, error: otherProfileError } = useQuery({
-    queryKey: ['profile', otherUserId],
-    queryFn: () => profileApi.getProfile(otherUserId!),
+  const { data: presenceResponse, error: presenceError } = useQuery({
+    queryKey: ['presence', otherUserId],
+    queryFn: () => profileApi.getPresence(otherUserId!),
     enabled: !!otherUserId,
     staleTime: 60_000,
     // Don't retry 404s — the user is gone, not transiently unavailable.
@@ -51,12 +51,12 @@ export default function ChatDetailPage() {
   // their account. Existing chat history is still shown but new messages
   // are disabled and a banner explains the state.
   const otherUserGone = (() => {
-    const axiosErr = otherProfileError as { response?: { status?: number } } | null;
+    const axiosErr = presenceError as { response?: { status?: number } } | null;
     return axiosErr?.response?.status === 404;
   })();
 
-  const lastActiveAt = otherProfile?.success ? (otherProfile.data as Record<string, unknown>).lastActiveAt as string : undefined;
-  const isRecentlyActive = lastActiveAt ? Date.now() - new Date(lastActiveAt).getTime() < 5 * 60 * 1000 : false;
+  const lastActiveAt = presenceResponse?.success ? presenceResponse.data.lastActiveAt : undefined;
+  const isRecentlyActive = presenceResponse?.success ? presenceResponse.data.isOnline : false;
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

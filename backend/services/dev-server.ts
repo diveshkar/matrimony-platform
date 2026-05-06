@@ -43,6 +43,7 @@ import { main as createProfileHandler } from './profile/handlers/create-profile.
 import { main as getMyProfileHandler } from './profile/handlers/get-my-profile.js';
 import { main as updateProfileHandler } from './profile/handlers/update-profile.js';
 import { main as getProfileHandler } from './profile/handlers/get-profile.js';
+import { main as getPresenceHandler } from './profile/handlers/get-presence.js';
 import { main as boostProfileHandler } from './profile/handlers/boost-profile.js';
 import { main as getBoostStatusHandler } from './profile/handlers/get-boost-status.js';
 import { main as validatePhoneHandler } from './profile/handlers/validate-phone.js';
@@ -232,6 +233,7 @@ route('post', '/profiles', createProfileHandler);
 route('get', '/me', getMyProfileHandler);
 route('patch', '/me', updateProfileHandler);
 route('get', '/profiles/:id', getProfileHandler);
+route('get', '/profiles/:id/presence', getPresenceHandler);
 route('post', '/me/boost', boostProfileHandler);
 route('get', '/me/boost', getBoostStatusHandler);
 route('post', '/me/validate-phone', validatePhoneHandler);

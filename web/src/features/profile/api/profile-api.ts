@@ -60,6 +60,12 @@ export interface ProfileResponse {
   privacy: Record<string, unknown> | null;
 }
 
+export interface PresenceData {
+  userId: string;
+  lastActiveAt: string | null;
+  isOnline: boolean;
+}
+
 export const profileApi = {
   create: (data: ProfileData) =>
     apiClient.post<ApiResponse<ProfileResponse['profile']>>('/profiles', data).then((r) => r.data),
@@ -71,6 +77,9 @@ export const profileApi = {
 
   getProfile: (id: string) =>
     apiClient.get<ApiResponse<Record<string, unknown>>>(`/profiles/${id}`).then((r) => r.data),
+
+  getPresence: (id: string) =>
+    apiClient.get<ApiResponse<PresenceData>>(`/profiles/${id}/presence`).then((r) => r.data),
 
   getBoostStatus: () =>
     apiClient.get<ApiResponse<{

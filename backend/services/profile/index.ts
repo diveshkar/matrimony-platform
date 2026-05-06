@@ -3,6 +3,7 @@ import { main as createProfile } from './handlers/create-profile.js';
 import { main as getMyProfile } from './handlers/get-my-profile.js';
 import { main as updateProfile } from './handlers/update-profile.js';
 import { main as getProfile } from './handlers/get-profile.js';
+import { main as getPresence } from './handlers/get-presence.js';
 import { main as boostProfile } from './handlers/boost-profile.js';
 import { main as getBoostStatus } from './handlers/get-boost-status.js';
 import { main as validatePhone } from './handlers/validate-phone.js';
@@ -13,6 +14,7 @@ const routes: Record<string, (e: APIGatewayProxyEventV2, c: Context) => Promise<
   'GET /me': getMyProfile,
   'PATCH /me': updateProfile,
   'GET /profiles/{id}': getProfile,
+  'GET /profiles/{id}/presence': getPresence,
   'POST /me/boost': boostProfile,
   'GET /me/boost': getBoostStatus,
   'POST /me/validate-phone': validatePhone,

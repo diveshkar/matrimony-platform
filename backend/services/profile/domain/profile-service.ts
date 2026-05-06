@@ -187,49 +187,58 @@ export class ProfileService {
     updates: Record<string, unknown>,
   ): Promise<Record<string, unknown>> {
     const existing = await this.repo.getProfile(userId);
-    if (!existing) {
-      throw new NotFoundError('Profile');
-    }
+    if (!existing) throw new NotFoundError('Profile');
 
-    // Hard-reject attempts to change immutable fields. Frontend already
-    // hides the inputs, but a direct API caller would otherwise silently
-    // succeed (with the values dropped) which is confusing.
-    if ('gender' in updates) {
+    // Work on a copy — never mutate caller's object
+    const sanitized = { ...updates };
+
+    // Reject immutable field changes
+    if ('gender' in sanitized && existing.gender !== sanitized.gender) {
       throw new ValidationError('Gender cannot be changed after profile creation');
     }
-    if ('profileFor' in updates) {
+    if ('profileFor' in sanitized && existing.profileFor !== sanitized.profileFor) {
       throw new ValidationError('Profile-for cannot be changed after profile creation');
     }
+    delete sanitized.gender;
+    delete sanitized.profileFor;
 
-
-    const newPhone = updates.phoneNumber as string | undefined;
+    // Handle phone change
+    const newPhone = sanitized.phoneNumber as string | undefined;
     if (newPhone) {
       const { validatePhoneNumber } = await import('./phone-validation.js');
-      const { changePhone, getUserPhone } = await import('./phone-registry.js');
-
+      const { getUserPhone } = await import('./phone-registry.js');
       const currentPhone = await getUserPhone(userId);
       if (currentPhone !== newPhone) {
         await validatePhoneNumber(newPhone);
-        await changePhone(userId, currentPhone, newPhone);
+        sanitized.whatsappNumber = newPhone;
+        delete sanitized.phoneNumber;
+        // ⚠️ Move changePhone() after updateProfile() to reduce partial-failure window
       }
-      updates.whatsappNumber = newPhone;
-      delete updates.phoneNumber;
     }
 
-    const { preferences, ...profileUpdates } = updates;
+    const { preferences, ...profileUpdates } = sanitized;
+    let profileResult = null;
 
-    let result = {};
     if (Object.keys(profileUpdates).length > 0) {
       const merged = { ...existing, ...profileUpdates };
       profileUpdates.profileCompletion = calculateCompletion(merged as Partial<UserProfile>);
-      result = await this.repo.updateProfile(userId, profileUpdates);
+      profileResult = await this.repo.updateProfile(userId, profileUpdates);
+
+      // Phone registry update AFTER profile save to reduce inconsistency risk
+      if (newPhone) {
+        const { changePhone, getUserPhone } = await import('./phone-registry.js');
+        const currentPhone = await getUserPhone(userId);
+        if (currentPhone !== newPhone) {
+          await changePhone(userId, currentPhone, newPhone);
+        }
+      }
     }
 
     if (preferences) {
       const prefs = preferences as Record<string, unknown>;
       await this.repo.savePreferences(userId, {
-        ageMin: (prefs.ageMin as number) || 18,
-        ageMax: (prefs.ageMax as number) || 45,
+        ageMin: (prefs.ageMin as number) ?? 18,
+        ageMax: (prefs.ageMax as number) ?? 45,
         heightMin: prefs.heightMin as number | undefined,
         heightMax: prefs.heightMax as number | undefined,
         religions: prefs.religions as string[] | undefined,
@@ -241,7 +250,51 @@ export class ProfileService {
       });
     }
 
-    return result;
+    return profileResult ?? {};
+  }
+
+  async getPresence(userId: string, viewerId: string): Promise<{
+    userId: string;
+    lastActiveAt: string | null;
+    isOnline: boolean;
+  }> {
+    const coreRepo = new BaseRepository('core');
+
+    const [profile, account, discoveryProfile] = await Promise.all([
+      this.repo.getProfile(userId),
+      coreRepo.get(`USER#${userId}`, 'ACCOUNT#v1'),
+      coreRepo.get<{ lastActiveAt?: string }>(`PROFILE#${userId}`, 'DISCOVERY#v1'),
+    ]);
+
+    if (!profile || !account) {
+      throw new NotFoundError('Profile');
+    }
+
+    if (viewerId !== userId) {
+      const [privacy, viewerBlocks, ownerBlocks] = await Promise.all([
+        this.repo.getPrivacy(userId),
+        coreRepo.get<{ blockedUserIds?: string[] }>(`USER#${viewerId}`, 'BLOCK'),
+        coreRepo.get<{ blockedUserIds?: string[] }>(`USER#${userId}`, 'BLOCK'),
+      ]);
+
+      const viewerBlocked = (ownerBlocks?.blockedUserIds || []).includes(viewerId);
+      const ownerBlocked = (viewerBlocks?.blockedUserIds || []).includes(userId);
+
+      if (privacy?.showInSearch === false || viewerBlocked || ownerBlocked) {
+        throw new NotFoundError('Profile');
+      }
+    }
+
+    const lastActiveAt = discoveryProfile?.lastActiveAt || null;
+    const isOnline = lastActiveAt
+      ? Date.now() - new Date(lastActiveAt).getTime() < 5 * 60 * 1000
+      : false;
+
+    return {
+      userId,
+      lastActiveAt,
+      isOnline,
+    };
   }
 
   async getPublicProfile(userId: string, viewerId?: string): Promise<Record<string, unknown>> {
