@@ -259,11 +259,12 @@ export class ProfileService {
     isOnline: boolean;
   }> {
     const coreRepo = new BaseRepository('core');
+    const discoveryRepo = new BaseRepository('discovery');
 
     const [profile, account, discoveryProfile] = await Promise.all([
       this.repo.getProfile(userId),
       coreRepo.get(`USER#${userId}`, 'ACCOUNT#v1'),
-      coreRepo.get<{ lastActiveAt?: string }>(`PROFILE#${userId}`, 'DISCOVERY#v1'),
+      discoveryRepo.get<{ lastActiveAt?: string }>(`PROFILE#${userId}`, 'DISCOVERY#v1'),
     ]);
 
     if (!profile || !account) {
