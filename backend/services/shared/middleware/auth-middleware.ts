@@ -10,6 +10,8 @@ const JWT_ISSUER = 'matrimony-api';
 
 const ACCOUNT_CACHE_TTL_MS = 60_000;
 const accountCache = new Map<string, number>();
+const PRESENCE_TOUCH_TTL_MS = 60_000;
+const presenceTouchCache = new Map<string, number>();
 
 let _coreRepo: BaseRepository | null = null;
 function getCoreRepo(): BaseRepository {
@@ -25,6 +27,21 @@ async function ensureAccountExists(userId: string): Promise<void> {
   if (!account) throw new UnauthorizedError('Account not found');
 
   accountCache.set(userId, Date.now());
+}
+
+async function touchPresenceIfNeeded(userId: string): Promise<void> {
+  const cached = presenceTouchCache.get(userId);
+  if (cached && Date.now() - cached < PRESENCE_TOUCH_TTL_MS) return;
+
+  presenceTouchCache.set(userId, Date.now());
+
+  try {
+    const { DiscoveryService } = await import('../../discovery/domain/discovery-service.js');
+    await new DiscoveryService().touchLastActive(userId);
+  } catch {
+    // Presence is best-effort; never fail an authenticated request because
+    // the discovery projection is missing or temporarily unavailable.
+  }
 }
 
 export interface AuthenticatedEvent extends APIGatewayProxyEventV2 {
@@ -67,6 +84,7 @@ export function withAuth(handler: AuthenticatedHandler): LambdaHandler {
     }
 
     await ensureAccountExists(claims.sub as string);
+    await touchPresenceIfNeeded(claims.sub as string);
 
     const authenticatedEvent = event as AuthenticatedEvent;
     authenticatedEvent.auth = {

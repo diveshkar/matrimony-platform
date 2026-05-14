@@ -1,7 +1,7 @@
 import { SubscriptionRepository } from '../../subscriptions/repositories/subscription-repository.js';
 import { BaseRepository } from '../repositories/base-repository.js';
 import { ForbiddenError } from '../errors/app-errors.js';
-import { nowISO } from '../utils/date.js';
+import { isLaunchPeriod, nowISO } from '../utils/date.js';
 
 const subRepo = new SubscriptionRepository();
 const coreRepo = new BaseRepository('core');
@@ -79,6 +79,14 @@ export async function checkEntitlement(
   userId: string,
   action: 'profile_view' | 'send_interest' | 'chat_access' | 'who_viewed_me' | 'contact_info',
 ): Promise<void> {
+  // // Temporary launch offer: profile views and interests are unlimited.
+  // if (
+  //   isLaunchPeriod() &&
+  //   (action === 'profile_view' || action === 'send_interest')
+  // ) {
+  //   return;
+  // }
+
   const entitlement = await subRepo.getUserEntitlement(userId);
 
   switch (action) {
@@ -136,6 +144,19 @@ export async function getRemainingUsage(userId: string): Promise<{
   whoViewedMeAccess: boolean;
   contactInfoAccess: boolean;
 }> {
+  // Temporary launch offer: show profile views and interests as unlimited.
+  // if (isLaunchPeriod()) {
+  //   return {
+  //     profileViewsRemaining: -1,
+  //     interestsRemaining: -1,
+  //     profileViewsPeriod: 'month',
+  //     interestsPeriod: 'month',
+  //     chatAccess: true,
+  //     whoViewedMeAccess: true,
+  //     contactInfoAccess: true,
+  //   };
+  // }
+
   const entitlement = await subRepo.getUserEntitlement(userId);
 
   const viewsDaily = entitlement.profileViewsPerDay;

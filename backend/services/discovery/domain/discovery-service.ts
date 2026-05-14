@@ -163,6 +163,43 @@ export class DiscoveryService {
     }
   }
 
+  async touchLastActive(userId: string): Promise<void> {
+    const existing = await this.discoveryRepo.get<DiscoveryProfile & { discoveryAllSk?: string }>(
+      `PROFILE#${userId}`,
+      'DISCOVERY#v1',
+    );
+    if (!existing) return;
+
+    const lastActiveAt = new Date().toISOString();
+    const newAllSk = `PROFILE#${lastActiveAt}#${userId}`;
+    const oldAllSk = existing.discoveryAllSk;
+
+    await this.discoveryRepo.update(`PROFILE#${userId}`, 'DISCOVERY#v1', {
+      lastActiveAt,
+      discoveryAllSk: newAllSk,
+    });
+
+    await this.discoveryRepo.put({
+      ...existing,
+      PK: 'DISCOVERY#ALL',
+      SK: newAllSk,
+      lastActiveAt,
+      discoveryAllSk: newAllSk,
+    } as unknown as Record<string, unknown>);
+
+    if (oldAllSk && oldAllSk !== newAllSk) {
+      try {
+        await this.discoveryRepo.delete('DISCOVERY#ALL', oldAllSk);
+      } catch (err) {
+        logger.warn('Failed to clean up old DISCOVERY#ALL presence entry', {
+          userId,
+          oldSk: oldAllSk,
+          error: String(err),
+        });
+      }
+    }
+  }
+
   async getRecommendations(
     userId: string,
     limit = 20,

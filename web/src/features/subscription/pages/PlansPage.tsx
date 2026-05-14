@@ -82,7 +82,7 @@ export default function PlansPage() {
   const plans = plansResponse?.success ? plansResponse.data.filter((p) => p.id !== 'silver') : [];
   const currentPlan = subResponse?.success ? subResponse.data.subscription.planId : 'free';
   const cancelAtPeriodEnd = subResponse?.success ? subResponse.data.subscription.cancelAtPeriodEnd : false;
-  const isLaunchPeriod = new Date() <= new Date('2026-05-15T00:00:00Z');
+  const isLaunchPeriod = new Date() <= new Date('2026-06-01T00:00:00Z');
 
   if (isLoading) {
     return (
@@ -137,7 +137,7 @@ export default function PlansPage() {
               </div>
               <div>
                 <h3 className="font-bold text-lg leading-tight">Launch Promotion Active</h3>
-                <p className="text-sm text-violet-100 mt-0.5">You are enjoying full Platinum access for free until May 15th! Subscribe now to lock in your plan after the offer ends.</p>
+                <p className="text-sm text-violet-100 mt-0.5">You are enjoying full Platinum access for free until June 1st! Subscribe now to lock in your plan after the offer ends.</p>
               </div>
             </div>
           </div>

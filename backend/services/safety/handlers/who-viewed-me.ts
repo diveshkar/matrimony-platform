@@ -21,7 +21,26 @@ async function handler(event: APIGatewayProxyEventV2, context: Context) {
     return success({ count: views.length, items: [], tier: 'count_only' }, requestId);
   }
 
-  return success({ count: views.length, items: views, tier: 'full' }, requestId);
+  const enrichedViews = await Promise.all(
+    views.map(async (view) => {
+      const [viewerProfile, viewerPlan] = await Promise.all([
+        repo.get<Record<string, unknown>>(`USER#${view.viewerId}`, 'PROFILE#v1'),
+        subRepo.getEffectivePlan(view.viewerId),
+      ]);
+
+      return {
+        ...view,
+        viewerName: (viewerProfile?.name as string | undefined) || view.viewerName,
+        viewerPhoto: (viewerProfile?.primaryPhotoUrl as string | undefined) || view.viewerPhoto,
+        viewerCity: (viewerProfile?.city as string | undefined) || view.viewerCity,
+        viewerCountry: (viewerProfile?.country as string | undefined) || view.viewerCountry,
+        viewerAboutMe: viewerProfile?.aboutMe as string | undefined,
+        viewerPlanId: viewerPlan,
+      };
+    }),
+  );
+
+  return success({ count: views.length, items: enrichedViews, tier: 'full' }, requestId);
 }
 
 export const main = createHandler(withAuth(handler));

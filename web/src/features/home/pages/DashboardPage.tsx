@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useQueryClient } from '@tanstack/react-query';
 import { UsageBar } from '@/features/subscription/components/UsageBar';
@@ -31,6 +31,7 @@ import { ROUTES } from '@/lib/constants/routes';
 import { ActivityStats } from '../components/ActivityStats';
 import { MutualMatchSpotlight } from '../components/MutualMatchSpotlight';
 import { PendingInterestsRow } from '../components/PendingInterestsRow';
+import { WhoViewedProfileRow } from '../components/WhoViewedProfileRow';
 
 function ReactivationBanner() {
   const { data: meResponse, isLoading } = useMe();
@@ -146,6 +147,7 @@ const quickActions = [
 
 export default function DashboardPage() {
   useAuth();
+  const navigate = useNavigate();
   const { data: subResponse } = useMySubscription();
   const { data: profileResponse } = useMyProfile();
 
@@ -167,7 +169,16 @@ export default function DashboardPage() {
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-900 via-primary-800 to-primary-900 text-white p-6 sm:p-8"
+        role="link"
+        tabIndex={0}
+        onClick={() => navigate(ROUTES.MY_PROFILE)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            navigate(ROUTES.MY_PROFILE);
+          }
+        }}
+        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-900 via-primary-800 to-primary-900 text-white p-6 sm:p-8 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
       >
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-accent-400/10 blur-[60px]" />
@@ -191,7 +202,7 @@ export default function DashboardPage() {
             </Badge>
           ) : (
             <Button variant="gold" size="sm" className="self-start gap-2" asChild>
-              <Link to={ROUTES.PLANS}>
+              <Link to={ROUTES.PLANS} onClick={(event) => event.stopPropagation()}>
                 <Crown className="h-4 w-4" />
                 Upgrade Plan
               </Link>
@@ -285,6 +296,7 @@ export default function DashboardPage() {
           clean dashboard without empty placeholders. */}
       <ActivityStats />
       <MutualMatchSpotlight />
+      <WhoViewedProfileRow />
       <PendingInterestsRow />
 
       {/* Quick actions grid — desktop only. The MobileQuickNav strip

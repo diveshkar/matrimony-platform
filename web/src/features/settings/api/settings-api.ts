@@ -12,6 +12,8 @@ export interface ViewItem {
   viewerAge?: number;
   viewerCity?: string;
   viewerCountry?: string;
+  viewerPlanId?: string;
+  viewerAboutMe?: string;
   createdAt: string;
 }
 

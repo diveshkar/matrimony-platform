@@ -7,7 +7,7 @@ import {
   useEffect,
   ReactNode,
 } from 'react';
-import { getStoredToken, clearTokens, storeTokens } from '@/lib/api/client';
+import { apiClient, getStoredToken, clearTokens, storeTokens } from '@/lib/api/client';
 
 interface User {
   id: string;
@@ -74,6 +74,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setState({ user: null, isAuthenticated: false, isLoading: false });
     }
   }, []);
+
+  useEffect(() => {
+    if (!state.isAuthenticated) return;
+
+    const touchPresence = () => {
+      apiClient.get('/auth/me').catch(() => {
+        /* Non-critical heartbeat. Token refresh/logout flows handle auth failures. */
+      });
+    };
+
+    touchPresence();
+    const interval = window.setInterval(touchPresence, 60_000);
+    return () => window.clearInterval(interval);
+  }, [state.isAuthenticated]);
 
   const login = useCallback((accessToken: string, refreshToken: string, user: User) => {
     storeTokens(accessToken, refreshToken);

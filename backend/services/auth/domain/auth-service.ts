@@ -191,6 +191,18 @@ export class AuthService {
     );
     await this.repo.setRefreshToken(account.userId, refreshToken);
 
+    if (account.onboardingComplete) {
+      try {
+        const { DiscoveryService } = await import('../../discovery/domain/discovery-service.js');
+        await new DiscoveryService().touchLastActive(account.userId);
+      } catch (err) {
+        logger.warn('Failed to touch presence after login', {
+          userId: account.userId,
+          error: String(err),
+        });
+      }
+    }
+
     return {
       accessToken,
       refreshToken,

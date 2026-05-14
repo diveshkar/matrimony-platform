@@ -16,7 +16,7 @@ export function ttlFromMinutes(minutes: number): number {
 
 // For launch period
 const LAUNCH_START = new Date('2026-04-30T00:00:00Z');
-const LAUNCH_END = new Date('2026-05-15T00:00:00Z');
+const LAUNCH_END = new Date('2026-06-01T00:00:00Z');
 
 export function isLaunchPeriod(): boolean {
   const now = new Date();
