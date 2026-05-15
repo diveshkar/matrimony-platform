@@ -42,7 +42,7 @@ export function Header() {
   const location = useLocation();
 
   const navLinks = isAuthenticated ? authNavLinks : publicNavLinks;
-  const isLaunchPeriod = new Date() <= new Date('2026-05-15T00:00:00Z');
+  const isLaunchPeriod = new Date() <= new Date('2026-06-01T00:00:00Z');
 
   return (
     <>
