@@ -1,6 +1,7 @@
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Search, Sparkles, Heart, Users, ArrowRight, Clock } from 'lucide-react';
+import { Search, Sparkles, Heart, Users, ArrowRight, Clock, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UsageBar } from '@/features/subscription/components/UsageBar';
@@ -8,11 +9,41 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { ProfileCard } from '../components/ProfileCard';
 import { useRecommendations } from '../hooks/useDiscovery';
 import { ROUTES } from '@/lib/constants/routes';
+import { discoveryApi, type DiscoveryProfile } from '../api/discovery-api';
 
 export default function DiscoverPage() {
   const { data: response, isLoading, isError, refetch } = useRecommendations();
+  const [profiles, setProfiles] = useState<DiscoveryProfile[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | undefined>();
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  const profiles = response?.success ? response.data.items : [];
+  useEffect(() => {
+    if (response?.success) {
+      setProfiles(response.data.items);
+      setNextCursor(response.data.nextCursor);
+    }
+  }, [response]);
+
+  const loadMore = useCallback(async () => {
+    if (!nextCursor || isLoadingMore) return;
+
+    setIsLoadingMore(true);
+    try {
+      const nextResponse = await discoveryApi.getRecommendations(20, nextCursor);
+      if (nextResponse.success) {
+        setProfiles((prev) => {
+          const existingIds = new Set(prev.map((profile) => profile.userId));
+          const newItems = nextResponse.data.items.filter(
+            (profile) => !existingIds.has(profile.userId),
+          );
+          return [...prev, ...newItems];
+        });
+        setNextCursor(nextResponse.data.nextCursor);
+      }
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [isLoadingMore, nextCursor]);
 
   return (
     <div className="space-y-8">
@@ -131,6 +162,25 @@ export default function DiscoverPage() {
               </motion.div>
             ))}
           </div>
+          {nextCursor && (
+            <div className="mt-6 flex justify-center">
+              <Button
+                variant="outline"
+                className="rounded-xl"
+                onClick={loadMore}
+                disabled={isLoadingMore}
+              >
+                {isLoadingMore ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  'Load more'
+                )}
+              </Button>
+            </div>
+          )}
         </>
       )}
     </div>

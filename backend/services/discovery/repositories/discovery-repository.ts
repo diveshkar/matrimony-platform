@@ -87,10 +87,12 @@ export class DiscoveryRepository extends BaseRepository {
 
   async getAllProfiles(
     limit = 50,
+    exclusiveStartKey?: Record<string, unknown>,
   ): Promise<{ items: DiscoveryProfile[]; lastKey?: Record<string, unknown> }> {
     return this.query<DiscoveryProfile>('DISCOVERY#ALL', {
       limit,
       scanForward: false,
+      exclusiveStartKey,
     });
   }
 

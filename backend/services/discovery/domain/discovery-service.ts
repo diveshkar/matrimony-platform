@@ -519,63 +519,68 @@ export class DiscoveryService {
     const blockRecord = await this.coreRepo.get<{ blockedUserIds?: string[] }>(`USER#${userId}`, 'BLOCK');
     const blockedIds = new Set<string>(blockRecord?.blockedUserIds || []);
 
-    let results: { items: DiscoveryProfile[]; lastKey?: Record<string, unknown> };
     const usedGetAllProfiles = !(filters.country && filters.gender) && !(filters.religion && filters.gender);
-
-    if (filters.country && filters.gender) {
-      results = await this.discoveryRepo.searchByCountryAndGender(filters.country, filters.gender, {
-        limit: limit + 10,
-        exclusiveStartKey: startKey,
-      });
-    } else if (filters.religion && filters.gender) {
-      results = await this.discoveryRepo.searchByReligionAndGender(
-        filters.religion,
-        filters.gender,
-        { limit: limit + 10, exclusiveStartKey: startKey },
-      );
-    } else {
-      results = await this.discoveryRepo.getAllProfiles(limit + 10);
-    }
-
     const seen = new Set<string>();
-    const deduped = results.items.filter((p) => {
-      if (seen.has(p.userId)) return false;
-      seen.add(p.userId);
-      return true;
-    });
+    const items: DiscoveryProfile[] = [];
+    const pageLimit = Math.min(50, Math.max(limit + 10, 30));
+    const maxPages = 8;
+    let lastKey = startKey;
+    let nextKey: Record<string, unknown> | undefined;
 
-    let filtered = deduped.filter(
-      (p) => p.userId !== userId && !blockedIds.has(p.userId)
-    );
+    for (let page = 0; page < maxPages && items.length < limit; page++) {
+      let results: { items: DiscoveryProfile[]; lastKey?: Record<string, unknown> };
 
-    if (filters.gender) filtered = filtered.filter((p) => p.gender === filters.gender);
-    if (filters.ageMin) filtered = filtered.filter((p) => p.age >= filters.ageMin!);
-    if (filters.ageMax) filtered = filtered.filter((p) => p.age <= filters.ageMax!);
-    if (filters.country) filtered = filtered.filter((p) => p.country === filters.country);
-    if (filters.state) filtered = filtered.filter((p) => p.state === filters.state);
-    if (filters.city)
-      filtered = filtered.filter((p) =>
-        p.city?.toLowerCase().includes(filters.city!.toLowerCase()),
-      );
-    if (filters.religion) filtered = filtered.filter((p) => p.religion === filters.religion);
-    if (filters.caste) filtered = filtered.filter((p) => p.caste === filters.caste);
-    if (filters.education) filtered = filtered.filter((p) => p.education === filters.education);
-    if (filters.maritalStatus)
-      filtered = filtered.filter((p) => p.maritalStatus === filters.maritalStatus);
-    if (filters.hasPhoto) filtered = filtered.filter((p) => !!p.primaryPhotoUrl);
+      if (filters.country && filters.gender) {
+        results = await this.discoveryRepo.searchByCountryAndGender(filters.country, filters.gender, {
+          limit: pageLimit,
+          exclusiveStartKey: lastKey,
+        });
+      } else if (filters.religion && filters.gender) {
+        results = await this.discoveryRepo.searchByReligionAndGender(
+          filters.religion,
+          filters.gender,
+          { limit: pageLimit, exclusiveStartKey: lastKey },
+        );
+      } else {
+        results = await this.discoveryRepo.getAllProfiles(pageLimit, lastKey);
+      }
 
-    let items = filtered.slice(0, limit);
+      nextKey = results.lastKey;
+      lastKey = results.lastKey;
 
-    // Fix 1: when using getAllProfiles (no GSI filter), verify active status
-    // GSI-based queries already only return profiles with current DISCOVERY#v1 record
-    if (usedGetAllProfiles && items.length > 0) {
-      const ids = items.map((p) => p.userId);
-      const activeMap = await this.discoveryRepo.getProfilesByIds(ids);
-      items = items.filter((p) => activeMap.has(p.userId));
+      let filtered = results.items.filter((p) => {
+        if (seen.has(p.userId)) return false;
+        seen.add(p.userId);
+        if (p.userId === userId) return false;
+        if (blockedIds.has(p.userId)) return false;
+        if (filters.gender && p.gender !== filters.gender) return false;
+        if (filters.ageMin && p.age < filters.ageMin) return false;
+        if (filters.ageMax && p.age > filters.ageMax) return false;
+        if (filters.country && p.country !== filters.country) return false;
+        if (filters.state && p.state !== filters.state) return false;
+        if (filters.city && !p.city?.toLowerCase().includes(filters.city.toLowerCase())) return false;
+        if (filters.religion && p.religion !== filters.religion) return false;
+        if (filters.caste && p.caste !== filters.caste) return false;
+        if (filters.education && p.education !== filters.education) return false;
+        if (filters.maritalStatus && p.maritalStatus !== filters.maritalStatus) return false;
+        if (filters.hasPhoto && !p.primaryPhotoUrl) return false;
+        return true;
+      });
+
+      // When using DISCOVERY#ALL, remove stale historical rows by checking
+      // each candidate still has the active PROFILE#{id}/DISCOVERY#v1 record.
+      if (usedGetAllProfiles && filtered.length > 0) {
+        const activeMap = await this.discoveryRepo.getProfilesByIds(filtered.map((p) => p.userId));
+        filtered = filtered.filter((p) => activeMap.has(p.userId));
+      }
+
+      items.push(...filtered.slice(0, limit - items.length));
+
+      if (!results.lastKey) break;
     }
 
-    const nextCursor = results.lastKey
-      ? Buffer.from(JSON.stringify(results.lastKey)).toString('base64')
+    const nextCursor = nextKey
+      ? Buffer.from(JSON.stringify(nextKey)).toString('base64')
       : undefined;
 
     return { items, nextCursor };

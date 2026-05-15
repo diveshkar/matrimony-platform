@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { Search as SearchIcon, SlidersHorizontal, Users } from 'lucide-react';
+import { useState, useCallback, useEffect } from 'react';
+import { Loader2, Search as SearchIcon, SlidersHorizontal, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -17,18 +17,32 @@ import {
   MARITAL_STATUS_OPTIONS,
   COUNTRY_OPTIONS,
 } from '@/lib/constants/enums';
-import type { SearchFilters } from '../api/discovery-api';
+import { discoveryApi, type DiscoveryProfile, type SearchFilters } from '../api/discovery-api';
 
 export default function SearchPage() {
   const isMobile = useIsMobile();
   const [showFilters, setShowFilters] = useState(!isMobile);
   const [filters, setFilters] = useState<SearchFilters>({});
+  const [profiles, setProfiles] = useState<DiscoveryProfile[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | undefined>();
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const debouncedFilters = useDebounce(filters, 400);
   const hasFilters = Object.values(filters).some((v) => v !== undefined && v !== '');
 
   const { data: response, isLoading } = useSearch(debouncedFilters, true);
-  const profiles = response?.success ? response.data.items : [];
+
+  useEffect(() => {
+    if (response?.success) {
+      setProfiles(response.data.items);
+      setNextCursor(response.data.nextCursor);
+    }
+  }, [response]);
+
+  useEffect(() => {
+    setProfiles([]);
+    setNextCursor(undefined);
+  }, [debouncedFilters]);
 
   const updateFilter = useCallback((key: string, value: unknown) => {
     setFilters((prev) => {
@@ -39,6 +53,31 @@ export default function SearchPage() {
   }, []);
 
   const clearFilters = useCallback(() => setFilters({}), []);
+
+  const loadMore = useCallback(async () => {
+    if (!nextCursor || isLoadingMore) return;
+
+    setIsLoadingMore(true);
+    try {
+      const nextResponse = await discoveryApi.search({
+        ...debouncedFilters,
+        cursor: nextCursor,
+      });
+
+      if (nextResponse.success) {
+        setProfiles((prev) => {
+          const existingIds = new Set(prev.map((profile) => profile.userId));
+          const newItems = nextResponse.data.items.filter(
+            (profile) => !existingIds.has(profile.userId),
+          );
+          return [...prev, ...newItems];
+        });
+        setNextCursor(nextResponse.data.nextCursor);
+      }
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [debouncedFilters, isLoadingMore, nextCursor]);
 
   const activeFilterCount = Object.values(filters).filter(
     (v) => v !== undefined && v !== '',
@@ -273,6 +312,25 @@ export default function SearchPage() {
                   <ProfileCard key={profile.userId} profile={profile} />
                 ))}
               </div>
+              {nextCursor && (
+                <div className="mt-6 flex justify-center">
+                  <Button
+                    variant="outline"
+                    className="rounded-xl"
+                    onClick={loadMore}
+                    disabled={isLoadingMore}
+                  >
+                    {isLoadingMore ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      'Load more'
+                    )}
+                  </Button>
+                </div>
+              )}
             </>
           )}
         </div>
