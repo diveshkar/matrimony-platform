@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { discoveryApi, type SearchFilters } from '../api/discovery-api';
 import { useAuth } from '@/lib/auth/auth-context';
 
@@ -24,6 +24,15 @@ export function useRecentlyJoined() {
   });
 }
 
+// export function useSearch(filters: SearchFilters, enabled = true) {
+//   return useQuery({
+//     queryKey: ['search', filters],
+//     queryFn: () => discoveryApi.search(filters),
+//     enabled,
+//     staleTime: 1000 * 30,
+//     refetchOnWindowFocus: true,
+//   });
+// }
 export function useSearch(filters: SearchFilters, enabled = true) {
   return useQuery({
     queryKey: ['search', filters],
@@ -31,5 +40,8 @@ export function useSearch(filters: SearchFilters, enabled = true) {
     enabled,
     staleTime: 1000 * 30,
     refetchOnWindowFocus: true,
+    // FIXED: keeps previous data visible while new results load
+    // so switching filters doesn't flash an empty screen
+    placeholderData: keepPreviousData,
   });
 }
